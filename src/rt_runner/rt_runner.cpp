@@ -66,7 +66,6 @@ int ORO_main(int argc, char** argv)
 
      // load the symbol    
     std::cout << "Loading symbol hello...\n";
-    typedef void (*hello_t)();    
     // reset errors    
     dlerror();
 
