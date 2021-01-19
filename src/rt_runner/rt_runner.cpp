@@ -13,13 +13,12 @@
 
 #include <dlfcn.h>
 
-/**
-* Include this header in order to use methods.
-*/
 #include <rtt/OperationCaller.hpp>
 
 #include <ocl/OCL.hpp>
 
+#include "ros/ros.h"
+#include "std_msgs/String.h"
 
 master::master(std::string const& name, RTT::extras::SlaveActivity* slave1,
                RTT::extras::SlaveActivity* slave2)
@@ -55,6 +54,27 @@ void master::cleanupHook() {
 using namespace RTT;
 int ORO_main(int argc, char** argv)
 {
+
+
+//
+// Ros stuff
+//
+
+ros::init(argc, argv, "talker");
+
+ros::NodeHandle n;
+
+//
+// Ros stuff - end
+//
+
+
+
+
+//
+// Load dynamic library stuff
+//
+
     std::cout << "Opening hello.so...\n";
     void* handle = dlopen("/home/stefan/Dokumente/Dropbox/KIT/Informatik/Antropromatik_Praktikum/code/devel/lib/orocos/gnulinux/minimum_test_1/libminimum_test_1-gnulinux.so", RTLD_LAZY);
     if (!handle) {
@@ -79,6 +99,11 @@ int ORO_main(int argc, char** argv)
     }
 
     TaskContext* task = creat_task("abc");
+
+//
+// Load dynamic library stuff  - end
+//
+
 
     Logger::In in("main()");
 
@@ -111,12 +136,14 @@ int ORO_main(int argc, char** argv)
     //master.start();
     task->start();
 
-    log(Info) << "**** Starting the TaskBrowser       ****" << endlog();
+    //log(Info) << "**** Starting the TaskBrowser       ****" << endlog();
     // Switch to user-interactive mode.
-    OCL::TaskBrowser browser(task);
+    //OCL::TaskBrowser browser(task);
 
     // Accept user commands from console.
-    browser.loop();
+    //browser.loop();
+
+    ros::spin();
 
     task->stop();
 

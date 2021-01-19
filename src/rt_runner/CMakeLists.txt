@@ -1,4 +1,6 @@
 
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg)
+
 # Use 'source orocos_toolchain/env.sh' if the command below fails:
 find_package(OROCOS-RTT QUIET)
 if (NOT OROCOS-RTT_FOUND)
@@ -28,6 +30,8 @@ orocos_use_package(ocl-taskbrowser)
 orocos_executable(rt_runner src/rt_runner/rt_runner.hpp src/rt_runner/rt_runner.cpp) # ...you may add multiple source files
 #
 # You may add multiple orocos_component statements.
+
+target_link_libraries(rt_runner ${catkin_LIBRARIES})
 
 #
 # Additional headers:
