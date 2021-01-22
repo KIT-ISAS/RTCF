@@ -7,20 +7,17 @@ project(rtcf)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED
+    roscpp
+    rospy
+    std_msgs
+    message_generation)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
 
 
-#############################################################################
-# Custom Code for orocos. Should be cleaned up
-#############################################################################
-
-INCLUDE(src/rt_runner/CMakeLists.txt)
-
-#############################################################################
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -60,11 +57,11 @@ INCLUDE(src/rt_runner/CMakeLists.txt)
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
+ add_service_files(
+   FILES
+   StartOrocosComponent.srv
 #   Service2.srv
-# )
+ )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -74,10 +71,10 @@ INCLUDE(src/rt_runner/CMakeLists.txt)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -111,9 +108,10 @@ INCLUDE(src/rt_runner/CMakeLists.txt)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rtcf
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
+
 
 ###########
 ## Build ##
@@ -197,6 +195,14 @@ include_directories(
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
+
+#############################################################################
+# Custom Code for orocos. Should be cleaned up
+#############################################################################
+
+INCLUDE(src/rt_runner/CMakeLists.txt)
+
+#############################################################################
 
 #############
 ## Testing ##
