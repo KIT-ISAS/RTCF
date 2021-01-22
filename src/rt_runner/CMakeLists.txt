@@ -27,7 +27,8 @@ orocos_use_package(ocl-taskbrowser)
 # Creates a commponent executable
 # and installs in the directory lib/orocos/slave_activity_non_rt/
 #
-orocos_executable(rt_runner src/rt_runner/rt_runner.hpp src/rt_runner/rt_runner.cpp) # ...you may add multiple source files
+orocos_executable(rt_runner src/rt_runner/rt_runner_node.hpp src/rt_runner/rt_runner_node.cpp
+    src/rt_runner/rt_runner.hpp src/rt_runner/rt_runner.cpp) # ...you may add multiple source files
 #
 # You may add multiple orocos_component statements.
 
@@ -38,7 +39,7 @@ target_link_libraries(rt_runner ${catkin_LIBRARIES})
 #
 # Installs in the include/orocos/slave_activity_non_rt/ directory
 #
-orocos_install_headers(src/rt_runner/rt_runner.hpp) # ...you may add multiple header files
+orocos_install_headers(src/rt_runner/rt_runner_node.hpp) # ...you may add multiple header files
 
 #
 # You may add multiple orocos_install_headers statements.
