@@ -1,123 +1,109 @@
 #include "rt_runner.hpp"
-#include <iostream>
-
-
-#include <rtt/TaskContext.hpp>
-#include <rtt/Activity.hpp>
-
 #include <dlfcn.h>
-
-#include <rtt/OperationCaller.hpp>
+#include <iostream>
+#include "rtt/extras/SlaveActivity.hpp"
 
 #include <ocl/OCL.hpp>
+#include <rtt/Activity.hpp>
+#include <rtt/OperationCaller.hpp>
+#include <rtt/TaskContext.hpp>
 
-RTRunner::RTRunner(){};
-RTRunner::~RTRunner(){};
+RTRunner::RTRunner() : main_context_("main_context"){};
 
-void RTRunner::configure(){};
-void RTRunner::shutdown(){};
+void RTRunner::configure() {
+    isActive = false;
+    main_activity_ = new RTT::Activity(ORO_SCHED_RT, 98);
+    main_context_.setActivity(main_activity_);
+    main_context_.configure();
+};
+void RTRunner::shutdown() { deactivateRTLoopCallback(); };
 
-bool RTRunner::loadOrocosComponent(){};
-bool RTRunner::unloadOrocosComponent(){};
+void RTRunner::activateRTLoopCallback() {
+    main_activity_->setPeriod(period_);
+    main_context_.start();
+    isActive = true;
+};
 
-void RTRunner::setFrequency(){};
-void RTRunner::activateRTLoopCallback(){};
-void RTRunner::deactivateRTLoopCallback(){};
+void RTRunner::deactivateRTLoopCallback() {
+    main_context_.stop();
+    isActive = false;
+};
 
-/*
- *using namespace RTT;
- *int ORO_main(int argc, char** argv) {
- *    //
- *    // Ros stuff
- *    //
- *
- *    ros::init(argc, argv, "talker");
- *
- *    ros::NodeHandle n;
- *
- *    //
- *    // Ros stuff - end
- *    //
- *
- *    //
- *    // Load dynamic library stuff
- *    //
- *
- *    std::cout << "Opening hello.so...\n";
- *    void* handle = dlopen(
- *        "/home/stefan/Dokumente/Dropbox/KIT/Informatik/Antropromatik_Praktikum/"
- *        "code/devel/lib/orocos/gnulinux/minimum_test_1/"
- *        "libminimum_test_1-gnulinux.so",
- *        RTLD_LAZY);
- *    if (!handle) {
- *        std::cerr << "Cannot open library: " << dlerror() << '\n';
- *        return 1;
- *    }
- *
- *    typedef TaskContext* create_t(std::string);
- *
- *    // load the symbol
- *    std::cout << "Loading symbol hello...\n";
- *    // reset errors
- *    dlerror();
- *
- *    create_t* creat_task = (create_t*)dlsym(handle, "createComponent");
- *
- *    const char* dlsym_error = dlerror();
- *    if (dlsym_error) {
- *        std::cerr << "Cannot load symbol 'hello': " << dlsym_error << '\n';
- *        dlclose(handle);
- *        return 1;
- *    }
- *
- *    TaskContext* task = creat_task("abc");
- *
- *    //
- *    // Load dynamic library stuff  - end
- *    //
- *
- *    Logger::In in("main()");
- *
- *    // Set log level more verbose than default,
- *    // such that we can see output :
- *    if (log().getLogLevel() < Logger::Info) {
- *        log().setLogLevel(Logger::Info);
- *        log(Info) << argv[0]
- *                  << " manually raises LogLevel to 'Info' (5). See also "
- *                     "file 'orocos.log'."
- *                  << endlog();
- *    }
- *
- *    RTT::Activity* master_one = new RTT::Activity(ORO_SCHED_RT, 99, 0.01);
- *    // a 'slave', takes over properties (period,...) of 'master_one':
- *    RTT::extras::SlaveActivity* slave_one =
- *        new RTT::extras::SlaveActivity(master_one);
- *    RTT::extras::SlaveActivity* slave_two =
- *        new RTT::extras::SlaveActivity(master_one);
- *
- *    master master("master", slave_one, slave_two);
- *
- *    // Create the activity which runs the task's engine:
- *    // master.setActivity(master_one);
- *    task->setActivity(master_one);
- *
- *    // master.configure();
- *    task->configure();
- *
- *    // master.start();
- *    task->start();
- *
- *    // log(Info) << "**** Starting the TaskBrowser       ****" << endlog();
- *    // Switch to user-interactive mode.
- *    // OCL::TaskBrowser browser(task);
- *
- *    // Accept user commands from console.
- *    // browser.loop();
- *
- *    ros::spin();
- *
- *    task->stop();
- *
- *    return 0;
- *}
- */
+bool RTRunner::loadOrocosComponent(std::string componentType,
+                                   std::string componentName) {
+    RTT::TaskContext* task;
+    bool error = createFromLibrary(componentType, componentName, task);
+
+    RTT::extras::SlaveActivity* slave_activity =
+        new RTT::extras::SlaveActivity(main_activity_);
+
+    OrocosContainer orocos_container;
+    orocos_container.taskContext = task;
+    orocos_container.activity = slave_activity;
+
+    orocosContainer_.push_back(orocos_container);
+
+    return error;
+};
+
+void RTRunner::setSlavesOnMainContext() {
+    main_context_.stop();
+
+    /* TODO: this has to be replaced <23-01-21, Stefan Geyer> */
+
+    std::vector<RTT::extras::SlaveActivity*> slaves;
+
+    for (auto orocos_container : orocosContainer_) {
+        slaves.push_back(orocos_container.activity);
+    }
+
+    main_context_.setSlaves(slaves);
+    if (isActive) {
+        main_context_.start();
+    }
+};
+
+bool RTRunner::createFromLibrary(std::string componentType,
+                                 std::string componentName,
+                                 RTT::TaskContext*& task) {
+    /* TODO: replace with function from orocos deployer <22-01-21, Stefan Geyer>
+     */
+    std::cout << "Opening " + componentName + "...\n";
+    void* handle = dlopen(componentName.c_str(), RTLD_LAZY);
+    if (!handle) {
+        std::cerr << "Cannot open library: " << dlerror() << '\n';
+        return false;
+    }
+
+    typedef RTT::TaskContext* create_t(std::string);
+
+    // load the symbol
+    std::cout << "Loading symbol hello...\n";
+    // reset errors
+    dlerror();
+
+    create_t* creat_task = (create_t*)dlsym(handle, "createComponent");
+
+    const char* dlsym_error = dlerror();
+    if (dlsym_error) {
+        std::cerr << "Cannot load symbol 'hello': " << dlsym_error << '\n';
+        dlclose(handle);
+        return false;
+    }
+
+    return creat_task(componentName);
+};
+
+bool RTRunner::unloadOrocosComponent() {
+    main_context_.stop();
+    main_context_.clearSlaves();
+
+    if (isActive) {
+        main_context_.start();
+    }
+
+    return true;
+};
+
+void RTRunner::setFrequency(float frequency) { period_ = 1 / frequency; };
+void RTRunner::setPeriod(float period) { period_ = period; };
