@@ -1,0 +1,3 @@
+std_msgs/String component_name
+---
+std_msgs/Bool success
