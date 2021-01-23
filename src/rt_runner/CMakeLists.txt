@@ -1,6 +1,3 @@
-
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg)
-
 # Use 'source orocos_toolchain/env.sh' if the command below fails:
 find_package(OROCOS-RTT QUIET)
 if (NOT OROCOS-RTT_FOUND)
@@ -11,9 +8,6 @@ endif()
 # documentation.
 include( ${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake )
 
-# Rest of the configuration is in src/
-#add_subdirectory( rtcf/src/rt_runner/src/CMakeLists.txt )
-
 #
 # Components, types and plugins.
 #
@@ -22,7 +16,6 @@ include( ${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake )
 # controlled by generated code of 'typegen'.
 #
 
-orocos_use_package(ocl-taskbrowser)
 
 # Creates a commponent executable
 # and installs in the directory lib/orocos/slave_activity_non_rt/
@@ -30,21 +23,10 @@ orocos_use_package(ocl-taskbrowser)
 orocos_executable(rt_runner src/rt_runner/rt_runner_node.cpp
     src/rt_runner/rt_runner.cpp
     src/rt_runner/main_context.cpp)
-#
-# You may add multiple orocos_component statements.
 
 target_link_libraries(rt_runner ${catkin_LIBRARIES})
 
-#
-# Additional headers:
-#
-# Installs in the include/orocos/slave_activity_non_rt/ directory
-#
 orocos_install_headers(src/rt_runner/rt_runner_node.hpp) # ...you may add multiple header files
-
-#
-# You may add multiple orocos_install_headers statements.
-
 
 #
 # Generates and installs our package. Must be the last statement such
