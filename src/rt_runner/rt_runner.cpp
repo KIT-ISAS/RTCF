@@ -29,17 +29,19 @@ void RTRunner::deactivateRTLoopCallback() {
     isActive = false;
 };
 
+//bool RTRunner::loadOrocosComponent(std::string componentType,
+                                   //std::string componentName,
+                                   //std::vector<std::string> mappings,
+                                   //bool isStartingPoint) {
 bool RTRunner::loadOrocosComponent(std::string componentType,
-                                   std::string componentName) {
+                                   std::string componentName){
     RTT::TaskContext* task;
     bool error = createFromLibrary(componentType, componentName, task);
 
     RTT::extras::SlaveActivity* slave_activity =
         new RTT::extras::SlaveActivity(main_activity_);
 
-    OrocosContainer orocos_container;
-    orocos_container.taskContext = task;
-    orocos_container.activity = slave_activity;
+    OrocosContainer orocos_container(task, slave_activity);
 
     orocosContainer_.push_back(orocos_container);
 
