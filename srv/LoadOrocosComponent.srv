@@ -1,0 +1,8 @@
+std_msgs/String component_name
+std_msgs/String component_type
+std_msgs/String[] mappings
+std_msgs/String[] whitelist
+std_msgs/Bool is_start
+
+---
+std_msgs/Bool success

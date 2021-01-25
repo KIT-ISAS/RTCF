@@ -3,28 +3,36 @@
 
 #include "ros/ros.h"
 
-class RTDummyNode
-{
-private:
+#include "ros/service_client.h"
+#include "rtcf/ActivateRTLoop.h"
+#include "rtcf/DeactivateRTLoop.h"
+#include "rtcf/LoadOrocosComponent.h"
+#include "rtcf/UnloadOrocosComponent.h"
+
+class RTDummyNode {
+   private:
     ros::NodeHandle n;
-    
+
     ros::NodeHandle node_handle_;
 
-public:
+   public:
     RTDummyNode(const ros::NodeHandle &node_handle);
 
     void configure();
     void shutdown();
     int loop();
-    
+
     void setupROS();
     void shutdownROS();
     void loadROSParameters();
 
-    void registerAtRTRunner();
-    void unregisterAtRTRunner();
+    void loadInRTRunner();
+    void unloadInRTRunner();
 
     void handleRemapping(int argc, char **argv);
+
+    ros::ServiceClient loadInRTRunnerClient;
+    ros::ServiceClient unloadInRTRunnerClient;
 };
 
 #endif /* RT_DUMMY_NODE_H */

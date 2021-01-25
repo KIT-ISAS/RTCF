@@ -5,6 +5,11 @@
 
 #include "ros/ros.h"
 
+#include "rtcf/LoadOrocosComponent.h"
+#include "rtcf/UnloadOrocosComponent.h"
+#include "rtcf/ActivateRTLoop.h"
+#include "rtcf/DeactivateRTLoop.h"
+
 class RTRunnerNode
 {
 private:
@@ -21,14 +26,28 @@ public:
     void setupROS();
     void shutdownROS();
     void loadROSParameters();
-    
-    void loadOrocosComponentCallback();
-    void unloadOrocosComponentCallback();
-    void activateRTLoopCallback();
-    void deactivateRTLoopCallback();
+
+    bool loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Request &req,
+                                     rtcf::LoadOrocosComponent::Response &res);
+
+    bool unloadOrocosComponentCallback(
+        rtcf::UnloadOrocosComponent::Request &req,
+        rtcf::UnloadOrocosComponent::Response &res);
+
+    bool activateRTLoopCallback(rtcf::ActivateRTLoop::Request &req,
+                                rtcf::ActivateRTLoop::Response &res);
+
+    bool deactivateRTLoopCallback(rtcf::DeactivateRTLoop::Request &req,
+                                  rtcf::DeactivateRTLoop::Response &res);
 
     ros::NodeHandle node_handle_;
     std::shared_ptr<RTRunner> rt_runner_;
+
+    ros::ServiceServer loadOrocosComponentService;
+    ros::ServiceServer unloadOrocosComponentService;
+    ros::ServiceServer activateRTLoopService;
+    ros::ServiceServer deactivateRTLoopService;
+
 };
 
 #endif /* RT_RUNNER_NODE_H */   

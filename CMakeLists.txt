@@ -55,7 +55,10 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg message_gen
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
-   StartOrocosComponent.srv
+   LoadOrocosComponent.srv
+   UnloadOrocosComponent.srv
+   ActivateRTLoop.srv
+   DeactivateRTLoop.srv
 #   Service2.srv
  )
 
