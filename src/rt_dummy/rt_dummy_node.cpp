@@ -1,5 +1,7 @@
 #include "rt_dummy_node.hpp"
 #include "rtcf/LoadOrocosComponent.h"
+#include <string>
+#include <vector>
 
 RTDummyNode::RTDummyNode(const ros::NodeHandle &node_handle){
 
@@ -46,7 +48,8 @@ void RTDummyNode::loadInRTRunner() {
     if (loadInRTRunnerClient.call(srv)) {
         ROS_INFO("client called successfully");
     } else {
-        ROS_ERROR("Failed to call service add_two_ints");
+        //ROS_ERROR("Failed to call service add_two_ints");
+        /* TODO: block for service to come online <26-01-21, Stefan Geyer> */
     }
 };
 
@@ -56,19 +59,34 @@ void RTDummyNode::unloadInRTRunner() {
     if (unloadInRTRunnerClient.call(srv)) {
         ROS_INFO("client called successfully");
     } else {
-        ROS_ERROR("Failed to call service add_two_ints");
+        //ROS_ERROR("Failed to call service add_two_ints");
+        /* TODO: block for service to come online <26-01-21, Stefan Geyer> */
     }
 };
 
-void handleRemapping(int argc, char **argv);
+void RTDummyNode::handleRemapping(std::vector<std::string> argv) {
+    /* TODO:  <26-01-21, Stefan Geyer> */
+    for (const auto s : argv) {
+        std::cout << s << std::endl;
+    }
+};
 
 int main(int argc, char **argv) {
     // Set up ROS.
+
+    // necessary because ros::init is absorging argv
+    std::vector<std::string> args;
+    for (int i = 0; i < argc; i++) {
+        args.push_back(argv[i]);
+    }
+
     ros::init(argc, argv, "RTDummy");
     ros::NodeHandle nh("~");
 
+
     RTDummyNode node = RTDummyNode(nh);
     node.configure();
+    node.handleRemapping(args);
 
     return node.loop();
 

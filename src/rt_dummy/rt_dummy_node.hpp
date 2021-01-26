@@ -29,7 +29,7 @@ class RTDummyNode {
     void loadInRTRunner();
     void unloadInRTRunner();
 
-    void handleRemapping(int argc, char **argv);
+    void handleRemapping(std::vector<std::string> argv);
 
     ros::ServiceClient loadInRTRunnerClient;
     ros::ServiceClient unloadInRTRunnerClient;

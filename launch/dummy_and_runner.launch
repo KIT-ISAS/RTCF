@@ -1,0 +1,16 @@
+<!-- KITcar launch script for preprocessing as a node -->
+<launch>
+
+    <!--<env if="$(arg debug_mode)" name="ROSCONSOLE_CONFIG_FILE" value="$(find perception)/rosconsole/perception.conf"/>-->
+
+
+    <node name="runner" pkg="rtcf" type="rt_runner-gnulinux" output="screen">
+    </node>
+
+    <node name="dummy_1" pkg="rtcf" type="rt_dummy" output="screen">
+        <remap from="lane_detection/preprocessed_image" to="preprocessing/preprocessed_image"/>
+        <remap from="lane_detection/region_of_interest" to="preprocessing/region_of_interest"/>
+        <remap from="lane_detection/auto_reset" to="/controller_interface/controller_interface/auto_reset" />
+    </node>
+</launch>
+
