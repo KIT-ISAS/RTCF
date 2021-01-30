@@ -1,7 +1,10 @@
 #include "rt_dummy_node.hpp"
 #include "rtcf/LoadOrocosComponent.h"
+#include "rtcf/mapping.h"
+#include <sstream>
 #include <string>
 #include <vector>
+#include <regex>
 
 RTDummyNode::RTDummyNode(const ros::NodeHandle &node_handle){
 
@@ -45,6 +48,23 @@ void loadROSParameters();
 void RTDummyNode::loadInRTRunner() {
     /* TODO:  <25-01-21, Stefan Geyer> */
     rtcf::LoadOrocosComponent srv;
+
+    /* TODO: move into function <30-01-21, Stefan Geyer> */
+    for (auto mapping : mappings) {
+        rtcf::mapping m;
+
+        std::stringstream ss_from;
+        ss_from << mapping.first;
+        m.from_topic.data = ss_from.str();
+
+        std::stringstream ss_to;
+        ss_to << mapping.first;
+        m.to_topic.data = ss_to.str();
+
+        srv.request.mappings.push_back(m);
+    }
+
+
     if (loadInRTRunnerClient.call(srv)) {
         ROS_INFO("client called successfully");
     } else {
@@ -65,9 +85,28 @@ void RTDummyNode::unloadInRTRunner() {
 };
 
 void RTDummyNode::handleRemapping(std::vector<std::string> argv) {
-    /* TODO:  <26-01-21, Stefan Geyer> */
+    std::regex from_regex("(^[a-zA-Z0-9/].+):=[a-zA-Z0-9/].+$");
+    std::regex to_regex("^[a-zA-Z0-9/].+:=([a-zA-Z0-9/].+$)");
+
+
     for (const auto s : argv) {
-        std::cout << s << std::endl;
+        std::smatch from_regex_match;
+        std::smatch to_regex_match;
+
+        bool from_match_found;
+        bool to_match_found;
+
+        from_match_found = std::regex_match(s, from_regex_match, from_regex);
+        to_match_found = std::regex_match(s, to_regex_match, to_regex);
+
+        if (from_match_found && to_match_found) {
+            std::pair<std::string, std::string> mapping;
+
+            mapping.first = from_regex_match[1];
+            mapping.second = to_regex_match[1];
+
+            mappings.push_back(mapping);
+        }
     }
 };
 

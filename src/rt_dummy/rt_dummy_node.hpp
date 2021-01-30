@@ -33,6 +33,8 @@ class RTDummyNode {
 
     ros::ServiceClient loadInRTRunnerClient;
     ros::ServiceClient unloadInRTRunnerClient;
+
+    std::vector<std::pair<std::string, std::string>> mappings;
 };
 
 #endif /* RT_DUMMY_NODE_H */
