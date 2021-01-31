@@ -24,12 +24,12 @@ struct dummy_attributes {
 class RTDummyNode {
    private:
     ros::NodeHandle n;
-
     ros::NodeHandle node_handle_;
 
     dummy_attributes dummy_attributes_;
 
     rtcf::LoadOrocosComponent genLoadMsg();
+    rtcf::UnloadOrocosComponent genUnloadMsg();
 
    public:
     RTDummyNode(const ros::NodeHandle &node_handle);
@@ -51,5 +51,7 @@ class RTDummyNode {
     ros::ServiceClient unloadInRTRunnerClient;
 
 };
+
+static std::unique_ptr<RTDummyNode> node_ptr;
 
 #endif /* RT_DUMMY_NODE_H */

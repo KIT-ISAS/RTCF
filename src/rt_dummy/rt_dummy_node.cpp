@@ -1,10 +1,15 @@
 #include "rt_dummy_node.hpp"
-#include "rtcf/LoadOrocosComponent.h"
-#include "rtcf/mapping.h"
+
+#include <signal.h>
+#include <regex>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <regex>
+
+#include "ros/duration.h"
+#include "ros/service.h"
+#include "rtcf/LoadOrocosComponent.h"
+#include "rtcf/mapping.h"
 
 RTDummyNode::RTDummyNode(const ros::NodeHandle &node_handle){
 
@@ -13,29 +18,25 @@ RTDummyNode::RTDummyNode(const ros::NodeHandle &node_handle){
 int RTDummyNode::loop() {
     loadInRTRunner();
     ros::spin();
-    unloadInRTRunner();
-    shutdown();
-    ros::spinOnce();
-
     return 0;
 };
 
-void RTDummyNode::configure(){
-
-};
+void RTDummyNode::configure() { setupROS(); };
 
 void RTDummyNode::shutdown() { shutdownROS(); };
 
-int loop();
-
 void RTDummyNode::setupROS() {
+    ros::service::waitForService("/rt_runner/load_orocos_component",
+                                 ros::Duration(10));
     loadInRTRunnerClient =
         node_handle_.serviceClient<rtcf::LoadOrocosComponent>(
-            "load_orocos_component");
+            "/rt_runner/load_orocos_component");
 
+    ros::service::waitForService("/rt_runner/unload_orocos_component",
+                                 ros::Duration(10));
     unloadInRTRunnerClient =
         node_handle_.serviceClient<rtcf::UnloadOrocosComponent>(
-            "unload_orocos_component");
+            "/rt_runner/unload_orocos_component");
 };
 
 void RTDummyNode::shutdownROS() {
@@ -67,29 +68,33 @@ rtcf::LoadOrocosComponent RTDummyNode::genLoadMsg() {
     return srv;
 };
 
+rtcf::UnloadOrocosComponent RTDummyNode::genUnloadMsg() {
+    rtcf::UnloadOrocosComponent srv;
+
+    srv.request.component_name.data = dummy_attributes_.name;
+
+    return srv;
+};
+
 void loadROSParameters();
 
 void RTDummyNode::loadInRTRunner() {
-    /* TODO:  <25-01-21, Stefan Geyer> */
-
     rtcf::LoadOrocosComponent srv = genLoadMsg();
 
     if (loadInRTRunnerClient.call(srv)) {
         ROS_INFO("client called successfully");
     } else {
-        // ROS_ERROR("Failed to call service add_two_ints");
-        /* TODO: block for service to come online <26-01-21, Stefan Geyer> */
+        ROS_ERROR("Failed to call service load in RT Runner");
     }
 };
 
 void RTDummyNode::unloadInRTRunner() {
-    /* TODO:  <25-01-21, Stefan Geyer> */
-    rtcf::UnloadOrocosComponent srv;
+    rtcf::UnloadOrocosComponent srv = genUnloadMsg();
+
     if (unloadInRTRunnerClient.call(srv)) {
         ROS_INFO("client called successfully");
     } else {
-        // ROS_ERROR("Failed to call service add_two_ints");
-        /* TODO: block for service to come online <26-01-21, Stefan Geyer> */
+        ROS_INFO("Failed to call service unload in RT Runner");
     }
 };
 
@@ -170,8 +175,13 @@ void RTDummyNode::handleArgs(std::vector<std::string> argv) {
     }
 };
 
+void sigintHandler(int sig) {
+    ROS_DEBUG("sigint handler called");
+    node_ptr->unloadInRTRunner();
+    ros::shutdown();
+}
+
 int main(int argc, char **argv) {
-    // Set up ROS.
 
     // necessary because ros::init is absorging argv
     std::vector<std::string> args;
@@ -179,15 +189,17 @@ int main(int argc, char **argv) {
         args.push_back(argv[i]);
     }
 
-    ros::init(argc, argv, "RTDummy");
+    ros::init(argc, argv, "RTDummy", ros::init_options::NoSigintHandler);
     ros::NodeHandle nh("~");
 
+    node_ptr = std::make_unique<RTDummyNode>(nh);
+    signal(SIGINT, sigintHandler);
 
-    RTDummyNode node = RTDummyNode(nh);
-    node.configure();
-    node.handleArgs(args);
+    node_ptr->handleArgs(args);
 
-    return node.loop();
+    node_ptr->configure();
+    node_ptr->loop();
+    node_ptr->shutdown();
 
     return 0;
 }  // end main()
