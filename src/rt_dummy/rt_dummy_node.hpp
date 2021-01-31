@@ -9,11 +9,27 @@
 #include "rtcf/LoadOrocosComponent.h"
 #include "rtcf/UnloadOrocosComponent.h"
 
+struct mapping {
+    std::string from_topic;
+    std::string to_topic;
+};
+
+struct dummy_attributes {
+    std::vector<mapping> mappings;
+    std::string name;
+    std::string rt_type;
+    bool is_start = false;
+};
+
 class RTDummyNode {
    private:
     ros::NodeHandle n;
 
     ros::NodeHandle node_handle_;
+
+    dummy_attributes dummy_attributes_;
+
+    rtcf::LoadOrocosComponent genLoadMsg();
 
    public:
     RTDummyNode(const ros::NodeHandle &node_handle);
@@ -29,12 +45,11 @@ class RTDummyNode {
     void loadInRTRunner();
     void unloadInRTRunner();
 
-    void handleRemapping(std::vector<std::string> argv);
+    void handleArgs(std::vector<std::string> argv);
 
     ros::ServiceClient loadInRTRunnerClient;
     ros::ServiceClient unloadInRTRunnerClient;
 
-    std::vector<std::pair<std::string, std::string>> mappings;
 };
 
 #endif /* RT_DUMMY_NODE_H */
