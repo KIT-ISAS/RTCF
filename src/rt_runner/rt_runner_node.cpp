@@ -90,14 +90,16 @@ bool RTRunnerNode::unloadOrocosComponentCallback(
 
 bool RTRunnerNode::activateRTLoopCallback(rtcf::ActivateRTLoop::Request &req,
                                           rtcf::ActivateRTLoop::Response &res) {
-    /* TODO:  <25-01-21, Stefan Geyer> */
+    rt_runner_->activateRTLoop();
+
     return true;
 };
 
 bool RTRunnerNode::deactivateRTLoopCallback(
     rtcf::DeactivateRTLoop::Request &req,
     rtcf::DeactivateRTLoop::Response &res) {
-    /* TODO:  <25-01-21, Stefan Geyer> */
+    rt_runner_->deactivateRTLoop();
+
     return true;
 };
 

@@ -16,15 +16,15 @@ void RTRunner::configure() {
     main_context_.setActivity(main_activity_);
     main_context_.configure();
 };
-void RTRunner::shutdown() { deactivateRTLoopCallback(); };
+void RTRunner::shutdown() { deactivateRTLoop(); };
 
-void RTRunner::activateRTLoopCallback() {
+void RTRunner::activateRTLoop() {
     main_activity_->setPeriod(period_);
     main_context_.start();
     isActive = true;
 };
 
-void RTRunner::deactivateRTLoopCallback() {
+void RTRunner::deactivateRTLoop() {
     main_context_.stop();
     isActive = false;
 };

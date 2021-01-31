@@ -64,8 +64,8 @@ class RTRunner {
                              std::string componentName);
     bool unloadOrocosComponent();
 
-    void activateRTLoopCallback();
-    void deactivateRTLoopCallback();
+    void activateRTLoop();
+    void deactivateRTLoop();
 
     void setFrequency(float frequency);
     void setPeriod(float period);
