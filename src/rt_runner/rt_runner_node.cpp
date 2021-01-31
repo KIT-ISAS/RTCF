@@ -30,7 +30,6 @@ void RTRunnerNode::shutdown() {
 int RTRunnerNode::loop() {
     ros::spin();
     shutdown();
-    ros::spinOnce();
 
     return 0;
 };
