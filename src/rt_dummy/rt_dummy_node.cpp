@@ -77,7 +77,7 @@ void RTDummyNode::loadInRTRunner() {
     if (loadInRTRunnerClient.call(srv)) {
         ROS_INFO("client called successfully");
     } else {
-        //ROS_ERROR("Failed to call service add_two_ints");
+        // ROS_ERROR("Failed to call service add_two_ints");
         /* TODO: block for service to come online <26-01-21, Stefan Geyer> */
     }
 };
