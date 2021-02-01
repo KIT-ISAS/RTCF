@@ -5,6 +5,7 @@
 #include "rt_runner.hpp"
 
 #include <rtt/os/main.h>
+#include <vector>
 
 #include "ros/init.h"
 #include "ros/node_handle.h"
@@ -61,6 +62,17 @@ bool RTRunnerNode::loadOrocosComponentCallback(
     rtcf::LoadOrocosComponent::Response &res) {
     /* TODO: do something here <25-01-21, Stefan Geyer> */
 
+    const std::string name = req.component_name.data;
+    const std::string rt_type = req.component_type.data;
+    const bool is_start = req.is_start.data;
+    std::vector<mapping> mappings;
+    for (auto m : req.mappings) {
+        mapping mapping;
+        mapping.from_topic = m.from_topic.data;
+        mapping.to_topic = m.to_topic.data;
+        mappings.push_back(mapping);
+    }
+
     ROS_DEBUG_STREAM("load service got called");
     ROS_DEBUG_STREAM("got component name: " << req.component_name.data
                                             << std::endl);
@@ -68,23 +80,24 @@ bool RTRunnerNode::loadOrocosComponentCallback(
                                                << std::endl);
     ROS_DEBUG_STREAM("got is rt start point: " << (req.is_start.data == true)
                                                << std::endl);
-    for (auto m : req.mappings) {
+    for (auto m : mappings) {
         ROS_DEBUG_STREAM("got topic mapping: from: ["
-                         << m.from_topic.data << "] to: [" << m.to_topic.data
+                         << m.from_topic << "] to: [" << m.to_topic
                          << "]" << std::endl);
     }
-    res.success.data = true;
-    return true;
+
+    return rt_runner_->loadOrocosComponent(rt_type, name, is_start, mappings);
 };
 
 bool RTRunnerNode::unloadOrocosComponentCallback(
     rtcf::UnloadOrocosComponent::Request &req,
     rtcf::UnloadOrocosComponent::Response &res) {
-    /* TODO:  <25-01-21, Stefan Geyer> */
+
+    const std::string name = req.component_name.data;
     ROS_DEBUG_STREAM("unload service got called");
-    ROS_DEBUG_STREAM("got component name: " << req.component_name.data
-                                            << std::endl);
-    return true;
+    ROS_DEBUG_STREAM("got component name: " << name << std::endl);
+
+    return rt_runner_->unloadOrocosComponent(name);
 };
 
 bool RTRunnerNode::activateRTLoopCallback(rtcf::ActivateRTLoop::Request &req,

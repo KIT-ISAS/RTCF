@@ -13,27 +13,43 @@
 #include <rtt/TaskContext.hpp>
 #include <rtt/Activity.hpp>
 
+struct mapping {
+    std::string from_topic;
+    std::string to_topic;
+};
 
 struct OrocosContainer {
-    OrocosContainer(RTT::TaskContext* taskContext,
+    OrocosContainer(std::string componentType, std::string componentName,
+                    bool is_start, std::vector<mapping> mappings,
+                    RTT::TaskContext* taskContext,
                     RTT::extras::SlaveActivity* activity)
-        : taskContext(taskContext), activity(activity) {
+        : componentType_(componentType),
+          componentName_(componentName),
+          is_start_(is_start),
+          mappings_(mappings),
+          taskContext_(taskContext),
+          activity_(activity) {
         getPorts();
     }
 
-    RTT::TaskContext* taskContext;
-    RTT::extras::SlaveActivity* activity;
+    std::string componentType_;
+    std::string componentName_;
+    bool is_start_;
+    std::vector<mapping> mappings_;
 
-    RTT::DataFlowInterface::Ports input_ports;
-    RTT::DataFlowInterface::Ports output_ports;
+    RTT::TaskContext* taskContext_;
+    RTT::extras::SlaveActivity* activity_;
+
+    RTT::DataFlowInterface::Ports input_ports_;
+    RTT::DataFlowInterface::Ports output_ports_;
 
     void getPorts() {
         for (RTT::base::PortInterface* port :
-             taskContext->ports()->getPorts()) {
+             taskContext_->ports()->getPorts()) {
             if (typeid(port) == typeid(RTT::base::InputPortInterface)) {
-                input_ports.push_back(port);
+                input_ports_.push_back(port);
             } else if (typeid(port) == typeid(RTT::base::OutputPortInterface)) {
-                output_ports.push_back(port);
+                output_ports_.push_back(port);
             } else {
                 std::cout << "Port is neighter Input or Output Port"
                           << std::endl;
@@ -50,6 +66,7 @@ class RTRunner {
                            RTT::TaskContext*& task);
 
     void setSlavesOnMainContext();
+    void buildRTOrder();
 
 
     bool isActive;
@@ -61,8 +78,9 @@ class RTRunner {
     void shutdown();
 
     bool loadOrocosComponent(std::string componentType,
-                             std::string componentName);
-    bool unloadOrocosComponent();
+                             std::string componentName, bool is_start,
+                             std::vector<mapping> mappings);
+    bool unloadOrocosComponent(std::string componentName);
 
     void activateRTLoop();
     void deactivateRTLoop();
