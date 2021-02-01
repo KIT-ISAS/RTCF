@@ -29,10 +29,6 @@ void RTRunner::deactivateRTLoop() {
     isActive = false;
 };
 
-//bool RTRunner::loadOrocosComponent(std::string componentType,
-                                   //std::string componentName,
-                                   //std::vector<std::string> mappings,
-                                   //bool isStartingPoint) {
 bool RTRunner::loadOrocosComponent(std::string componentType,
                                    std::string componentName){
     RTT::TaskContext* task;
