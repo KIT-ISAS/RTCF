@@ -1,6 +1,7 @@
 #include "rt_runner.hpp"
 #include <dlfcn.h>
 #include <iostream>
+#include "rtcf_types.hpp"
 #include "rtt/extras/SlaveActivity.hpp"
 
 #include "ros/ros.h"
@@ -48,7 +49,7 @@ bool RTRunner::loadOrocosComponent(std::string componentType,
 
     orocosContainer_.push_back(orocos_container);
 
-    buildRTOrder();
+    generateRTOrder();
     setSlavesOnMainContext();
 
     return error;
@@ -126,7 +127,7 @@ bool RTRunner::unloadOrocosComponent(std::string componentName) {
     /* TODO:  <01-02-21, Stefan Geyer> */
     main_context_.stop();
 
-    buildRTOrder();
+    generateRTOrder();
     setSlavesOnMainContext();
 
     if (isActive) {
@@ -136,9 +137,50 @@ bool RTRunner::unloadOrocosComponent(std::string componentName) {
     return true;
 };
 
-void RTRunner::buildRTOrder(){
+void RTRunner::generateRTOrder(){
     /* TODO: Fix me <01-02-21, Stefan Geyer> */
+    auto graph = buildGraph();
 };
+
+GraphOrocosContainers RTRunner::buildGraph() {
+    GraphOrocosContainers graph;
+    for (const auto& container : orocosContainer_) {
+        graph.push_back(GraphOrocosContainer(container));
+    }
+
+    // Try to connect each outport with each inport.
+    // To many for loops. There should be a solution with
+    // standard algorithms.
+    for (auto& start_node : graph) {
+        for (auto& out_port : start_node.output_ports_) {
+            for (auto& end_node : graph) {
+                for (auto& in_port : end_node.input_ports_) {
+                    if (out_port.mapping_name_ == in_port.mapping_name_) {
+                        ROS_INFO_STREAM("connecte: "
+                                        << start_node.componentName_ << " | "
+                                        << out_port.original_name_
+                                        << " with: " << end_node.componentName_
+                                        << " | " << in_port.original_name_);
+                        start_node.connected_container_.push_back(&end_node);
+                        in_port.is_connected = true;
+
+                        in_port.corr_orocos_ptr_ = &start_node;
+                        in_port.corr_port_ptr_ = &out_port;
+                        out_port.corr_orocos_ptr_ = &end_node;
+                        out_port.corr_port_ptr_ = &in_port;
+                    }
+                }
+            }
+        }
+    }
+
+    // Mandatory sorting for determenism.
+    std::sort(graph.begin(), graph.end(), [](const auto& a, const auto& b) {
+        return (a.componentName_ > b.componentName_);
+    });
+
+    return graph;
+}
 
 void RTRunner::setFrequency(float frequency) { period_ = 1 / frequency; };
 void RTRunner::setPeriod(float period) { period_ = period; };

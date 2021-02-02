@@ -101,12 +101,18 @@ struct OrocosContainer {
     }
 };
 
+struct GraphOrocosContainer;
+
 struct GraphPortContainer : PortContainer {
     GraphPortContainer(const PortContainer port_container)
         : PortContainer(port_container) {}
 
     bool is_connected = false;
     bool is_satified = false;
+
+    GraphOrocosContainer* corr_orocos_ptr_ = nullptr;
+    GraphPortContainer* corr_port_ptr_ = nullptr;
+
 };
 
 struct GraphOrocosContainer : OrocosContainer {
@@ -125,5 +131,7 @@ struct GraphOrocosContainer : OrocosContainer {
 
     std::vector<GraphOrocosContainer*> connected_container_;
 };
+
+typedef std::vector<GraphOrocosContainer> GraphOrocosContainers;
 
 #endif /* RTCF_TYPES_H */

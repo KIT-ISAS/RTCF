@@ -16,13 +16,13 @@
 
 class RTRunner {
    private:
-    bool infererOrder();
+    void generateRTOrder();
+    GraphOrocosContainers buildGraph();
 
     bool createFromLibrary(std::string componentType, std::string componentName,
                            RTT::TaskContext*& task);
 
     void setSlavesOnMainContext();
-    void buildRTOrder();
 
 
     bool isActive;
