@@ -10,9 +10,11 @@
     <arg name="rt_type" value="sum" />
     <arg name="is_first" value="true" />
     <node name="sum_dummy_1" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=$(arg is_first)" output="screen">
-        <remap from="lane_detection/preprocessed_image" to="preprocessing/preprocessed_image"/>
-        <remap from="lane_detection/region_of_interest" to="preprocessing/region_of_interest"/>
-        <remap from="lane_detection/auto_reset" to="/controller_interface/controller_interface/auto_reset" />
+        <remap from="out_Port" to="/mapped/out_Port"/>
+        <remap from="in_Port_1" to="/mapped/in_Port_1"/>
+        <remap from="in_Port_2" to="/mapped/in_Port_2"/>
+        <remap from="in_Port_3" to="/mapped/in_Port_3"/>
+        <remap from="in_Port_4" to="/mapped/in_Port_4"/>
 
     </node>
 </launch>
