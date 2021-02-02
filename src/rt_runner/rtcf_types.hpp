@@ -80,7 +80,6 @@ struct OrocosContainer {
 
     void handleMappings() {
         for (const auto& m : mappings_) {
-            std::cout <<"got called" << std::endl;
             for (auto& p : input_ports_) {
                 if (m.from_topic == p.original_name_) {
                     p.mapping_name_ = m.to_topic;
