@@ -101,4 +101,29 @@ struct OrocosContainer {
     }
 };
 
+struct GraphPortContainer : PortContainer {
+    GraphPortContainer(const PortContainer port_container)
+        : PortContainer(port_container) {}
+
+    bool is_connected = false;
+    bool is_satified = false;
+};
+
+struct GraphOrocosContainer : OrocosContainer {
+    GraphOrocosContainer(const OrocosContainer orocos_container)
+        : OrocosContainer(orocos_container) {
+        for (const auto& p : orocos_container.input_ports_) {
+            input_ports_.push_back(GraphPortContainer(p));
+        }
+        for (const auto& p : orocos_container.output_ports_) {
+            output_ports_.push_back(GraphPortContainer(p));
+        }
+    }
+
+    std::vector<GraphPortContainer> input_ports_;
+    std::vector<GraphPortContainer> output_ports_;
+
+    std::vector<GraphOrocosContainer*> connected_container_;
+};
+
 #endif /* RTCF_TYPES_H */
