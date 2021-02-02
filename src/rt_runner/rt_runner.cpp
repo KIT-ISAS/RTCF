@@ -41,6 +41,9 @@ bool RTRunner::loadOrocosComponent(std::string componentType,
     RTT::extras::SlaveActivity* slave_activity =
         new RTT::extras::SlaveActivity(main_activity_);
 
+    task->setActivity(slave_activity);
+    task->configure();
+
     OrocosContainer orocos_container(componentType, componentName, is_start, mappings, task, slave_activity);
 
     orocosContainer_.push_back(orocos_container);

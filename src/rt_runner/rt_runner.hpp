@@ -2,6 +2,7 @@
 #define RT_RUNNER_H
 
 #include "main_context.hpp"
+#include "rtcf_types.hpp"
 #include <typeinfo>
 #include <vector>
 
@@ -12,51 +13,6 @@
 #include "rtt/extras/SlaveActivity.hpp"
 #include <rtt/TaskContext.hpp>
 #include <rtt/Activity.hpp>
-
-struct mapping {
-    std::string from_topic;
-    std::string to_topic;
-};
-
-struct OrocosContainer {
-    OrocosContainer(std::string componentType, std::string componentName,
-                    bool is_start, std::vector<mapping> mappings,
-                    RTT::TaskContext* taskContext,
-                    RTT::extras::SlaveActivity* activity)
-        : componentType_(componentType),
-          componentName_(componentName),
-          is_start_(is_start),
-          mappings_(mappings),
-          taskContext_(taskContext),
-          activity_(activity) {
-        getPorts();
-    }
-
-    std::string componentType_;
-    std::string componentName_;
-    bool is_start_;
-    std::vector<mapping> mappings_;
-
-    RTT::TaskContext* taskContext_;
-    RTT::extras::SlaveActivity* activity_;
-
-    RTT::DataFlowInterface::Ports input_ports_;
-    RTT::DataFlowInterface::Ports output_ports_;
-
-    void getPorts() {
-        for (RTT::base::PortInterface* port :
-             taskContext_->ports()->getPorts()) {
-            if (typeid(port) == typeid(RTT::base::InputPortInterface)) {
-                input_ports_.push_back(port);
-            } else if (typeid(port) == typeid(RTT::base::OutputPortInterface)) {
-                output_ports_.push_back(port);
-            } else {
-                std::cout << "Port is neighter Input or Output Port"
-                          << std::endl;
-            }
-        }
-    }
-};
 
 class RTRunner {
    private:
