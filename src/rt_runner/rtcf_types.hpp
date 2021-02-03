@@ -173,8 +173,8 @@ struct GraphOrocosContainer : OrocosContainer {
 
         /* TODO: here could problems happen with call by value <03-02-21, Stefan
          * Geyer> */
-        for (auto output_port : output_ports_) {
-            for (auto inport_match : output_port.inport_matches) {
+        for (auto& output_port : output_ports_) {
+            for (auto& inport_match : output_port.inport_matches) {
                 inport_match.corr_port_ptr_->is_satisfied = true;
                 if (!inport_match.corr_orocos_ptr_->is_queued) {
                     inport_match.corr_orocos_ptr_->is_queued = true;
