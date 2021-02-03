@@ -138,8 +138,69 @@ bool RTRunner::unloadOrocosComponent(std::string componentName) {
 };
 
 void RTRunner::generateRTOrder(){
-    /* TODO: Fix me <01-02-21, Stefan Geyer> */
-    auto graph = buildGraph();
+    GraphOrocosContainers graph = buildGraph();
+
+    if (graph.empty()) {
+        return;
+    }
+
+    GraphOrocosContainers queue;
+
+    for (GraphOrocosContainer& n : graph) {
+        if (n.is_start_) {
+            n.is_queued = true;
+            queue.push_back(n);
+        }
+    }
+
+    if (queue.empty()) {
+        queue.push_back(graph.at(0));
+    }
+
+    while (queue.size() > 0) {
+        auto it_outer = std::begin(queue);
+        for (; it_outer != std::end(queue); it_outer++) {
+            GraphOrocosContainer& active_node = *it_outer;
+
+            if (active_node.is_satisfied() || active_node.is_start_) {
+                GraphOrocosContainers to_enque =
+                    active_node.enqueue_and_satisfy_nodes();
+                /* TODO: check if erase works as expected <03-02-21, Stefan
+                 * Geyer> */
+                queue.erase(it_outer);
+                queue.insert(queue.end(), to_enque.begin(), to_enque.end());
+                RTOrder.push_back(active_node);
+                break;
+            }
+        }
+
+        // if for loop finished without break
+        if (it_outer == std::end(queue)) {
+            auto it_inner = std::begin(graph);
+            for (; it_inner != std::end(graph); it_inner++) {
+                GraphOrocosContainer active_node = *it_inner;
+                if ((active_node.is_satisfied()) && (!active_node.is_queued)){
+                GraphOrocosContainers to_enque =
+                    active_node.enqueue_and_satisfy_nodes();
+                /* TODO: check if erase works as expected <03-02-21, Stefan
+                 * Geyer> */
+                queue.insert(queue.end(), to_enque.begin(), to_enque.end());
+                break;
+                }
+            }
+
+            if (it_inner == std::end(graph)){
+                GraphOrocosContainer &active_node = queue.at(0);
+                GraphOrocosContainers to_enque =
+                    active_node.enqueue_and_satisfy_nodes();
+                /* TODO: check if erase works as expected <03-02-21, Stefan
+                 * Geyer> */
+                queue.erase(queue.begin());
+                queue.insert(queue.end(), to_enque.begin(), to_enque.end());
+                RTOrder.push_back(active_node);
+            }
+        }
+    }
 };
 
 GraphOrocosContainers RTRunner::buildGraph() {

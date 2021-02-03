@@ -109,7 +109,7 @@ struct GraphPortContainer : PortContainer {
         : PortContainer(port_container) {}
 
     bool is_connected = false;
-    bool is_satified = false;
+    bool is_satisfied = false;
 };
 
 struct GraphPortMatch {
@@ -137,6 +137,8 @@ struct GraphOutportContainer : GraphPortContainer {
     GraphPortMatches inport_matches;
 };
 
+typedef std::vector<GraphOrocosContainer> GraphOrocosContainers;
+
 struct GraphOrocosContainer : OrocosContainer {
     GraphOrocosContainer(const OrocosContainer orocos_container)
         : OrocosContainer(orocos_container) {
@@ -148,11 +150,41 @@ struct GraphOrocosContainer : OrocosContainer {
         }
     }
 
+    bool is_queued = false;
+
     std::vector<GraphInportContainer> input_ports_;
     std::vector<GraphOutportContainer> output_ports_;
 
     std::vector<GraphOrocosContainer*> connected_container_;
+
+    bool is_satisfied() {
+        bool is_satisfied = true;
+
+        for (const GraphInportContainer& p : input_ports_) {
+          if (p.is_connected && !p.is_satisfied) {
+            is_satisfied = false;
+          }
+        }
+        return is_satisfied;
+    }
+
+    GraphOrocosContainers enqueue_and_satisfy_nodes() {
+        GraphOrocosContainers to_enqueue;
+
+        /* TODO: here could problems happen with call by value <03-02-21, Stefan
+         * Geyer> */
+        for (auto output_port : output_ports_) {
+            for (auto inport_match : output_port.inport_matches) {
+                inport_match.corr_port_ptr_->is_satisfied = true;
+                if (!inport_match.corr_orocos_ptr_->is_queued) {
+                    inport_match.corr_orocos_ptr_->is_queued = true;
+                    to_enqueue.push_back(*inport_match.corr_orocos_ptr_);
+                }
+            }
+        }
+
+        return to_enqueue;
+    }
 };
-typedef std::vector<GraphOrocosContainer> GraphOrocosContainers;
 
 #endif /* RTCF_TYPES_H */
