@@ -100,6 +100,8 @@ struct OrocosContainer {
     }
 };
 
+/* TODO: This whole block beneth should be done better <03-02-21, Stefan Geyer> */
+
 struct GraphOrocosContainer;
 
 struct GraphPortContainer : PortContainer {
@@ -108,29 +110,49 @@ struct GraphPortContainer : PortContainer {
 
     bool is_connected = false;
     bool is_satified = false;
+};
+
+struct GraphPortMatch {
+    GraphPortMatch(GraphOrocosContainer* corr_orocos_ptr,
+                   GraphPortContainer* corr_port_ptr)
+        : corr_orocos_ptr_(corr_orocos_ptr), corr_port_ptr_(corr_port_ptr){};
+    GraphPortMatch(){};
 
     GraphOrocosContainer* corr_orocos_ptr_ = nullptr;
     GraphPortContainer* corr_port_ptr_ = nullptr;
+};
+typedef std::vector<GraphPortMatch> GraphPortMatches;
 
+struct GraphInportContainer : GraphPortContainer {
+    GraphInportContainer(const PortContainer port_container)
+        : GraphPortContainer(port_container) {}
+
+    GraphPortMatch outport_match;
+};
+
+struct GraphOutportContainer : GraphPortContainer {
+    GraphOutportContainer(const PortContainer port_container)
+        : GraphPortContainer(port_container) {}
+
+    GraphPortMatches inport_matches;
 };
 
 struct GraphOrocosContainer : OrocosContainer {
     GraphOrocosContainer(const OrocosContainer orocos_container)
         : OrocosContainer(orocos_container) {
         for (const auto& p : orocos_container.input_ports_) {
-            input_ports_.push_back(GraphPortContainer(p));
+            input_ports_.push_back(GraphInportContainer(p));
         }
         for (const auto& p : orocos_container.output_ports_) {
-            output_ports_.push_back(GraphPortContainer(p));
+            output_ports_.push_back(GraphOutportContainer(p));
         }
     }
 
-    std::vector<GraphPortContainer> input_ports_;
-    std::vector<GraphPortContainer> output_ports_;
+    std::vector<GraphInportContainer> input_ports_;
+    std::vector<GraphOutportContainer> output_ports_;
 
     std::vector<GraphOrocosContainer*> connected_container_;
 };
-
 typedef std::vector<GraphOrocosContainer> GraphOrocosContainers;
 
 #endif /* RTCF_TYPES_H */

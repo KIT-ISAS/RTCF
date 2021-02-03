@@ -161,13 +161,15 @@ GraphOrocosContainers RTRunner::buildGraph() {
                                         << out_port.original_name_
                                         << " with: " << end_node.componentName_
                                         << " | " << in_port.original_name_);
+
                         start_node.connected_container_.push_back(&end_node);
                         in_port.is_connected = true;
 
-                        in_port.corr_orocos_ptr_ = &start_node;
-                        in_port.corr_port_ptr_ = &out_port;
-                        out_port.corr_orocos_ptr_ = &end_node;
-                        out_port.corr_port_ptr_ = &in_port;
+                        in_port.outport_match.corr_orocos_ptr_ = &start_node;
+                        in_port.outport_match.corr_port_ptr_ = &out_port;
+
+                        GraphPortMatch port_match(&end_node, &in_port);
+                        out_port.inport_matches.push_back(port_match);
                     }
                 }
             }
