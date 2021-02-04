@@ -145,61 +145,108 @@ void RTRunner::generateRTOrder() {
         return;
     }
 
-    GraphOrocosContainers queue;
+    std::vector<GraphOrocosContainer*> queue;
 
     for (GraphOrocosContainer& n : graph) {
         if (n.is_start_) {
             n.is_queued = true;
-            queue.push_back(n);
+            queue.push_back(&n);
         }
     }
 
     if (queue.empty()) {
-        queue.push_back(graph.at(0));
+        GraphOrocosContainer* start_container = &(graph.at(0));
+        start_container->is_queued = true;
+        start_container->is_start_ = true;
+        queue.push_back(start_container);
     }
 
-    while (queue.size() > 0) {
+    while (graph.size() != RTOrder.size()) {
+        // for (const auto& node : queue) {
+        //[> TODO: hier morgen weiter machen <03-02-21, Stefan Geyer> <]
+        // ROS_INFO_STREAM("queue is: " << node.componentName_);
+        //}
+        //
+        bool outer_loop_finised = true;
+        bool inner_loop_finised = true;
+        bool innerst_loop_finished = true;
+
         auto it_outer = std::begin(queue);
         for (; it_outer != std::end(queue); it_outer++) {
-            GraphOrocosContainer& active_node = *it_outer;
+            GraphOrocosContainer* active_node = *it_outer;
 
-            if (active_node.is_satisfied() || active_node.is_start_) {
-                GraphOrocosContainers to_enque =
-                    active_node.enqueue_and_satisfy_nodes();
+            if (active_node->is_satisfied() || active_node->is_start_) {
+                ROS_INFO_STREAM(
+                    "active node is: " << (*it_outer)->componentName_);
+                std::cout << "debug 1" << std::endl;
+                std::vector<GraphOrocosContainer*> to_enque =
+                    active_node->enqueue_and_satisfy_nodes();
                 // TODO: check if erase works as expected <03-02-21, Stefan
                 // Geyer>
+                RTOrder.push_back(*active_node);
                 queue.erase(it_outer);
-                queue.insert(queue.end(), to_enque.begin(), to_enque.end());
-                RTOrder.push_back(active_node);
+                for (GraphOrocosContainer* new_queue_element : to_enque) {
+                    queue.push_back(new_queue_element);
+                }
+                outer_loop_finised = false;
                 break;
             }
         }
 
         //// if for loop finished without break
-        if (it_outer == std::end(queue)) {
+        if (outer_loop_finised) {
             auto it_inner = std::begin(graph);
             for (; it_inner != std::end(graph); it_inner++) {
+                std::cout << "debug 2" << std::endl;
                 GraphOrocosContainer& active_node = *it_inner;
                 if ((active_node.is_satisfied()) && (!active_node.is_queued)) {
-                    GraphOrocosContainers to_enque =
+                    std::cout << "debug 2.1" << std::endl;
+                    std::vector<GraphOrocosContainer*> to_enque =
                         active_node.enqueue_and_satisfy_nodes();
                     // TODO: check if erase works as expected <03-02-21, Stefan
                     // Geyer>
-                    queue.insert(queue.end(), to_enque.begin(), to_enque.end());
                     RTOrder.push_back(active_node);
+                    for (GraphOrocosContainer* new_queue_element : to_enque) {
+                        queue.push_back(new_queue_element);
+                    }
+                    inner_loop_finised = false;
                     break;
                 }
             }
 
-            if (it_inner == std::end(graph) && !queue.empty()) {
-                GraphOrocosContainer& active_node = queue.at(0);
-                GraphOrocosContainers to_enque =
-                    active_node.enqueue_and_satisfy_nodes();
-                ////TODO: check if erase works as expected <03-02-21, Stefan
-                /// Geyer>
-                queue.erase(queue.begin());
-                queue.insert(queue.end(), to_enque.begin(), to_enque.end());
-                RTOrder.push_back(active_node);
+            if (inner_loop_finised) {
+                if (!queue.empty()) {
+                    GraphOrocosContainer* active_node = *queue.begin();
+                    std::vector<GraphOrocosContainer*> to_enque =
+                        active_node->enqueue_and_satisfy_nodes();
+                    ////TODO: check if erase works as expected <03-02-21, Stefan
+                    /// Geyer>
+                    RTOrder.push_back(*active_node);
+                    queue.erase(queue.begin());
+                    for (GraphOrocosContainer* new_queue_element : to_enque) {
+                        queue.push_back(new_queue_element);
+                    }
+                    innerst_loop_finished = false;
+
+                } else {
+                    auto it_innerst = std::begin(graph);
+                    for (; it_innerst != std::end(graph); it_innerst++) {
+                        GraphOrocosContainer& active_node = *it_innerst;
+                        if (!active_node.is_queued) {
+                            std::vector<GraphOrocosContainer*> to_enque =
+                                active_node.enqueue_and_satisfy_nodes();
+                            // TODO: check if erase works as expected <03-02-21,
+                            // Stefan Geyer>
+                            active_node.is_queued=true;
+                            RTOrder.push_back(active_node);
+                            for (GraphOrocosContainer* new_queue_element :
+                                 to_enque) {
+                                queue.push_back(new_queue_element);
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -214,6 +261,11 @@ GraphOrocosContainers RTRunner::buildGraph() {
     for (const auto& container : orocosContainer_) {
         graph.push_back(GraphOrocosContainer(container));
     }
+
+    // Mandatory sorting for determenism.
+    std::sort(graph.begin(), graph.end(), [](const auto& a, const auto& b) {
+        return (a.componentName_ > b.componentName_);
+    });
 
     // Try to connect each outport with each inport.
     // To many for loops. There should be a solution with
@@ -242,11 +294,6 @@ GraphOrocosContainers RTRunner::buildGraph() {
             }
         }
     }
-
-    // Mandatory sorting for determenism.
-    std::sort(graph.begin(), graph.end(), [](const auto& a, const auto& b) {
-        return (a.componentName_ > b.componentName_);
-    });
 
     return graph;
 }

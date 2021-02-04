@@ -168,8 +168,8 @@ struct GraphOrocosContainer : OrocosContainer {
         return is_satisfied;
     }
 
-    GraphOrocosContainers enqueue_and_satisfy_nodes() {
-        GraphOrocosContainers to_enqueue;
+    std::vector<GraphOrocosContainer*> enqueue_and_satisfy_nodes() {
+        std::vector<GraphOrocosContainer*> to_enqueue;
 
         /* TODO: here could problems happen with call by value <03-02-21, Stefan
          * Geyer> */
@@ -178,7 +178,7 @@ struct GraphOrocosContainer : OrocosContainer {
                 inport_match.corr_port_ptr_->is_satisfied = true;
                 if (!inport_match.corr_orocos_ptr_->is_queued) {
                     inport_match.corr_orocos_ptr_->is_queued = true;
-                    to_enqueue.push_back(*inport_match.corr_orocos_ptr_);
+                    to_enqueue.push_back(inport_match.corr_orocos_ptr_);
                 }
             }
         }

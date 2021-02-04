@@ -18,9 +18,33 @@
     </node>
 
     <!--FIX not working args -->
-    <node name="sum_dummy_2" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=$(arg is_first)" output="screen">
+    <node name="sum_dummy_2" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
         <remap from="out_Port" to="/mapped/out_Port_2"/>
         <remap from="in_Port_1" to="/mapped/out_Port"/>
     </node>
+
+    <node name="sum_dummy_3" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
+        <remap from="out_Port" to="/mapped/out_Port_3"/>
+        <remap from="in_Port_1" to="/mapped/out_Port_2"/>
+    </node>
+
+    <node name="sum_dummy_4" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
+        <remap from="out_Port" to="/mapped/in_Port_1"/>
+        <remap from="in_Port_1" to="/mapped/out_Port_3"/>
+    </node>
+
+
+    <node name="sum_dummy_5" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
+        <remap from="out_Port" to="/mapped/out_Port_4"/>
+        <remap from="in_Port_1" to="/mapped/out_Port"/>
+        <remap from="in_Port_2" to="/mapped/out_Port_3"/>
+    </node>
+
+    <node name="sum_dummy_6" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=true" output="screen">
+        <remap from="out_Port" to="/mapped/out_Port_4"/>
+        <remap from="in_Port_1" to="/mapped/out_Port_7"/>
+        <remap from="in_Port_2" to="/mapped/out_Port_7"/>
+    </node>
+
 </launch>
 
