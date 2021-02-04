@@ -9,7 +9,8 @@
 
     <arg name="rt_type" value="sum" />
     <arg name="is_first" value="true" /> <!--- defaulten auf false -->
-    <node name="sum_dummy_1" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=$(arg is_first)" output="screen">
+
+    <node name="sum_dummy_1" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=true" output="screen">
         <remap from="out_Port" to="/mapped/out_Port"/>
         <remap from="in_Port_1" to="/mapped/in_Port_1"/>
         <remap from="in_Port_2" to="/mapped/in_Port_2"/>
@@ -40,7 +41,7 @@
         <remap from="in_Port_2" to="/mapped/out_Port_3"/>
     </node>
 
-    <node name="sum_dummy_6" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=true" output="screen">
+    <node name="sum_dummy_6" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
         <remap from="out_Port" to="/mapped/out_Port_4"/>
         <remap from="in_Port_1" to="/mapped/out_Port_7"/>
         <remap from="in_Port_2" to="/mapped/out_Port_7"/>
