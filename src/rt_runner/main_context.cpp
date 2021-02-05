@@ -13,6 +13,7 @@ bool MainContext::startHook(){
 }
 
 void MainContext::updateHook(){
+    std::cout << "Master Hook" << std::endl;
     for ( RTT::extras::SlaveActivity* slave : slaves_ ) {
         slave->execute();
     }
@@ -26,6 +27,7 @@ void MainContext::cleanupHook() {
 }
 
 void MainContext::setSlaves(std::vector<RTT::extras::SlaveActivity*> slaves) {
+    std::cout << "Set Slaves" << std::endl;
     slaves_ = slaves;
 };
 
