@@ -17,6 +17,10 @@
 class RTRunner {
    private:
     void generateRTOrder();
+
+    void connectPorts();
+    void disconnectPorts();
+
     GraphOrocosContainers buildGraph();
 
     bool createFromLibrary(std::string componentType, std::string componentName,
