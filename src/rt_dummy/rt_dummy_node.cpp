@@ -27,13 +27,13 @@ void RTDummyNode::shutdown() { shutdownROS(); };
 
 void RTDummyNode::setupROS() {
     ros::service::waitForService("/rt_runner/load_orocos_component",
-                                 ros::Duration(10));
+                                 ros::Duration(-1));
     loadInRTRunnerClient =
         node_handle_.serviceClient<rtcf::LoadOrocosComponent>(
             "/rt_runner/load_orocos_component");
 
     ros::service::waitForService("/rt_runner/unload_orocos_component",
-                                 ros::Duration(10));
+                                 ros::Duration(-1));
     unloadInRTRunnerClient =
         node_handle_.serviceClient<rtcf::UnloadOrocosComponent>(
             "/rt_runner/unload_orocos_component");
