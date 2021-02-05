@@ -301,7 +301,7 @@ void RTRunner::disconnectPorts() {
 
 GraphOrocosContainers RTRunner::buildGraph() {
     GraphOrocosContainers graph;
-    for (const auto& container : orocosContainer_) {
+    for (auto& container : orocosContainer_) {
         graph.push_back(GraphOrocosContainer(container));
     }
 
