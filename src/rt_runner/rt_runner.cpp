@@ -176,11 +176,11 @@ void RTRunner::generateRTOrder() {
     }
 
     while (graph.size() != RTOrder.size()) {
-        // for (const auto& node : queue) {
-        //[> TODO: hier morgen weiter machen <03-02-21, Stefan Geyer> <]
-        // ROS_INFO_STREAM("queue is: " << node.componentName_);
-        //}
-        //
+        ROS_INFO_STREAM("----");
+        for (const auto& node : queue) {
+            ROS_INFO_STREAM("queue is: " << node->componentName_);
+        }
+
         bool outer_loop_finised = true;
         bool inner_loop_finised = true;
         bool innerst_loop_finished = true;
@@ -190,9 +190,8 @@ void RTRunner::generateRTOrder() {
             GraphOrocosContainer* active_node = *it_outer;
 
             if (active_node->is_satisfied() || active_node->is_start_) {
-                ROS_INFO_STREAM(
-                    "active node is: " << (*it_outer)->componentName_);
-                std::cout << "debug 1" << std::endl;
+                ROS_DEBUG_STREAM(
+                    "active node in inner loop is: " << (*it_outer)->componentName_);
                 std::vector<GraphOrocosContainer*> to_enque =
                     active_node->enqueue_and_satisfy_nodes();
                 // TODO: check if erase works as expected <03-02-21, Stefan
@@ -211,14 +210,15 @@ void RTRunner::generateRTOrder() {
         if (outer_loop_finised) {
             auto it_inner = std::begin(graph);
             for (; it_inner != std::end(graph); it_inner++) {
-                std::cout << "debug 2" << std::endl;
                 GraphOrocosContainer& active_node = *it_inner;
+                ROS_DEBUG_STREAM(
+                    "active node in outer loop 1 is: " << active_node.componentName_);
                 if ((active_node.is_satisfied()) && (!active_node.is_queued)) {
-                    std::cout << "debug 2.1" << std::endl;
                     std::vector<GraphOrocosContainer*> to_enque =
                         active_node.enqueue_and_satisfy_nodes();
                     // TODO: check if erase works as expected <03-02-21, Stefan
                     // Geyer>
+                    active_node.is_queued = true;
                     RTOrder.push_back(active_node);
                     for (GraphOrocosContainer* new_queue_element : to_enque) {
                         queue.push_back(new_queue_element);
@@ -231,10 +231,10 @@ void RTRunner::generateRTOrder() {
             if (inner_loop_finised) {
                 if (!queue.empty()) {
                     GraphOrocosContainer* active_node = *queue.begin();
+                ROS_DEBUG_STREAM(
+                    "active node in outer loop 2 is: " << active_node->componentName_);
                     std::vector<GraphOrocosContainer*> to_enque =
                         active_node->enqueue_and_satisfy_nodes();
-                    ////TODO: check if erase works as expected <03-02-21, Stefan
-                    /// Geyer>
                     RTOrder.push_back(*active_node);
                     queue.erase(queue.begin());
                     for (GraphOrocosContainer* new_queue_element : to_enque) {
@@ -249,8 +249,6 @@ void RTRunner::generateRTOrder() {
                         if (!active_node.is_queued) {
                             std::vector<GraphOrocosContainer*> to_enque =
                                 active_node.enqueue_and_satisfy_nodes();
-                            // TODO: check if erase works as expected <03-02-21,
-                            // Stefan Geyer>
                             active_node.is_queued=true;
                             RTOrder.push_back(active_node);
                             for (GraphOrocosContainer* new_queue_element :
