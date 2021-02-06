@@ -11,21 +11,14 @@
         <rosparam param="frequency">1.0</rosparam>
     </node>
 
-    <arg name="rt_type" value="sum" />
-    <arg name="is_first" value="true" /> <!--- defaulten auf false -->
-
     <node name="sum_dummy_1" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=true" output="screen">
-        <remap from="out_Port" to="/mapped/out_Port"/>
-        <remap from="in_Port_1" to="/mapped/in_Port_1"/>
-        <remap from="in_Port_2" to="/mapped/in_Port_2"/>
-        <remap from="in_Port_3" to="/mapped/in_Port_3"/>
-        <remap from="in_Port_4" to="/mapped/in_Port_4"/>
+        <remap from="out_Port" to="/mapped/out_Port_1"/>
+        <remap from="in_Port_1" to="/mapped/in_Port"/>
     </node>
 
-    <!--FIX not working args -->
     <node name="sum_dummy_2" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
         <remap from="out_Port" to="/mapped/out_Port_2"/>
-        <remap from="in_Port_1" to="/mapped/out_Port"/>
+        <remap from="in_Port_1" to="/mapped/out_Port_1"/>
     </node>
 
     <node name="sum_dummy_3" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
@@ -34,23 +27,19 @@
     </node>
 
     <node name="sum_dummy_4" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
-        <remap from="out_Port" to="/mapped/in_Port_1"/>
+        <remap from="out_Port" to="/mapped/out_Port_4"/>
         <remap from="in_Port_1" to="/mapped/out_Port_3"/>
     </node>
 
-
     <node name="sum_dummy_5" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
-        <remap from="out_Port" to="/mapped/out_Port_8"/>
-        <remap from="in_Port_1" to="/mapped/out_Port"/>
-        <remap from="in_Port_2" to="/mapped/out_Port_3"/>
+        <remap from="out_Port" to="/mapped/out_Port_5"/>
+        <remap from="in_Port_1" to="/mapped/out_Port_4"/>
     </node>
 
     <node name="sum_dummy_6" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
-        <remap from="out_Port" to="/mapped/out_Port_4"/>
-        <remap from="in_Port_1" to="/mapped/out_Port_7"/>
-        <remap from="in_Port_2" to="/mapped/out_Port_8"/>
+        <remap from="out_Port" to="/mapped/out_Port_6"/>
+        <remap from="in_Port_1" to="/mapped/out_Port_5"/>
     </node>
-    <!--FIX not working args -->
 
 </launch>
 
