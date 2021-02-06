@@ -5,6 +5,10 @@
 
 
     <node name="runner" pkg="rtcf" type="rt_runner-gnulinux" output="screen">
+        <rosparam param="mode">"active"</rosparam>
+        <rosparam param="whitelist_ros_mapping">".*ros.*"</rosparam>
+        <rosparam param="num_components_expected">8</rosparam>
+        <rosparam param="frequency">1.0</rosparam>
     </node>
 
     <arg name="rt_type" value="sum" />
@@ -46,6 +50,7 @@
         <remap from="in_Port_1" to="/mapped/out_Port_7"/>
         <remap from="in_Port_2" to="/mapped/out_Port_8"/>
     </node>
+    <!--FIX not working args -->
 
 </launch>
 
