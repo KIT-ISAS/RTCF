@@ -19,13 +19,13 @@ RTRunnerNode::RTRunnerNode(const ros::NodeHandle &node_handle)
 RTRunnerNode::~RTRunnerNode() { shutdown(); };
 
 void RTRunnerNode::configure() {
-    setupROS();
     loadROSParameters();
     rt_runner_->configure();
+    setupROSServices();
 };
 void RTRunnerNode::shutdown() {
+    shutdownROSServices();
     rt_runner_->shutdown();
-    shutdownROS();
 };
 
 int RTRunnerNode::loop() {
@@ -35,27 +35,65 @@ int RTRunnerNode::loop() {
     return 0;
 };
 
-void RTRunnerNode::setupROS() {
-    loadOrocosComponentService = node_handle_.advertiseService(
-        "/rt_runner/load_orocos_component", &RTRunnerNode::loadOrocosComponentCallback,
-        this);
-    unloadOrocosComponentService = node_handle_.advertiseService(
-        "/rt_runner/unload_orocos_component", &RTRunnerNode::unloadOrocosComponentCallback,
-        this);
-    activateRTLoopService = node_handle_.advertiseService(
-        "/rt_runner/activate_rt_loop", &RTRunnerNode::activateRTLoopCallback, this);
-    deactivateRTLoopService = node_handle_.advertiseService(
-        "/rt_runner/deactivate_rt_loop", &RTRunnerNode::deactivateRTLoopCallback, this);
+void RTRunnerNode::setupROSServices() {
+  loadOrocosComponentService = node_handle_.advertiseService(
+      "/rt_runner/load_orocos_component",
+      &RTRunnerNode::loadOrocosComponentCallback, this);
+  unloadOrocosComponentService = node_handle_.advertiseService(
+      "/rt_runner/unload_orocos_component",
+      &RTRunnerNode::unloadOrocosComponentCallback, this);
+  activateRTLoopService = node_handle_.advertiseService(
+      "/rt_runner/activate_rt_loop", &RTRunnerNode::activateRTLoopCallback,
+      this);
+  deactivateRTLoopService = node_handle_.advertiseService(
+      "/rt_runner/deactivate_rt_loop", &RTRunnerNode::deactivateRTLoopCallback,
+      this);
 };
 
-void RTRunnerNode::shutdownROS() {
-    loadOrocosComponentService.shutdown();
-    unloadOrocosComponentService.shutdown();
-    activateRTLoopService.shutdown();
-    deactivateRTLoopService.shutdown();
+void RTRunnerNode::shutdownROSServices() {
+  loadOrocosComponentService.shutdown();
+  unloadOrocosComponentService.shutdown();
+  activateRTLoopService.shutdown();
+  deactivateRTLoopService.shutdown();
 };
 
-void RTRunnerNode::loadROSParameters(){};
+void RTRunnerNode::loadROSParameters(){
+    std::string mode;
+    if (node_handle_.getParam("mode", mode)) {
+        ROS_INFO_STREAM("RTRunner mode is:  " << mode);
+        rt_runner_->setMode(mode);
+    }
+
+    int num_components_expected;
+    if (node_handle_.getParam("num_components_expected",
+                              num_components_expected)) {
+        ROS_INFO_STREAM(
+            "RTRunner num components expected: " << num_components_expected);
+        rt_runner_->setNumComponentsExpected(num_components_expected);
+    }
+
+    std::string whitelist_ros_mapping;
+    if (node_handle_.getParam("whitelist_ros_mapping", whitelist_ros_mapping)) {
+        ROS_INFO_STREAM(
+            "RTRunner whitelist for ros mapping: " << whitelist_ros_mapping);
+        rt_runner_->setWhitelistRosMapping(whitelist_ros_mapping);
+    }
+
+    float frequency;
+    if (node_handle_.getParam("frequency", frequency)) {
+        ROS_INFO_STREAM(
+            "RTRunner frequency is: " << frequency);
+        rt_runner_->setFrequency(frequency);
+    }
+
+    float period;
+    if (node_handle_.getParam("period", period)) {
+        ROS_INFO_STREAM(
+            "RTRunner period is: " << period);
+        rt_runner_->setPeriod(period);
+
+    }
+};
 
 bool RTRunnerNode::loadOrocosComponentCallback(
     rtcf::LoadOrocosComponent::Request &req,

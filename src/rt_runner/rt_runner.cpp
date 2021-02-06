@@ -12,12 +12,17 @@
 #include <rtt/TaskContext.hpp>
 #include <vector>
 
+#include <rtt_roscomm/rostopic.h>
+
 RTRunner::RTRunner() : main_context_("main_context"){};
 
 void RTRunner::configure() {
-    isActive = false;
+    if (mode_ == "active") {
+        isActive = true;
+    }
     period_ = 1.0;
     main_activity_ = new RTT::Activity(ORO_SCHED_RT, 98);
+    main_activity_->setPeriod(period_);
     main_context_.setActivity(main_activity_);
     main_context_.configure();
 };
@@ -59,7 +64,8 @@ bool RTRunner::loadOrocosComponent(std::string componentType,
 
     setSlavesOnMainContext();
 
-    if (isActive) {
+    if (isActive || ((RTOrder.size()==num_components_expected_) && (mode_=="wait_for_components"))) {
+        isActive = true;
         main_context_.start();
     }
 
@@ -79,9 +85,6 @@ void RTRunner::setSlavesOnMainContext() {
 
     main_context_.clearSlaves();
     main_context_.setSlaves(slaves);
-    if (isActive) {
-        main_context_.start();
-    }
 };
 
 bool RTRunner::createFromLibrary(std::string componentType,
@@ -341,5 +344,12 @@ GraphOrocosContainers RTRunner::buildGraph() {
     return graph;
 }
 
+void RTRunner::setMode(std::string mode) { mode_ = mode; }
+void RTRunner::setNumComponentsExpected(int num) {
+    num_components_expected_ = num;
+};
+void RTRunner::setWhitelistRosMapping(std::string whitelist) {
+    whitelist_ros_mapping_ = whitelist;
+};
 void RTRunner::setFrequency(float frequency) { period_ = 1 / frequency; };
 void RTRunner::setPeriod(float period) { period_ = period; };

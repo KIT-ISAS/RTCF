@@ -22,9 +22,9 @@ public:
     void configure();
     void shutdown();
     int loop();
-    
-    void setupROS();
-    void shutdownROS();
+
+    void setupROSServices();
+    void shutdownROSServices();
     void loadROSParameters();
 
     bool loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Request &req,

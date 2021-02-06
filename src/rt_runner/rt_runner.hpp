@@ -29,7 +29,7 @@ class RTRunner {
     void setSlavesOnMainContext();
 
 
-    bool isActive;
+    bool isActive = false;
 
    public:
     RTRunner();
@@ -47,6 +47,10 @@ class RTRunner {
 
     void setFrequency(float frequency);
     void setPeriod(float period);
+    void setMode(std::string mode);
+    void setNumComponentsExpected(int num);
+    void setWhitelistRosMapping(std::string whitelist);
+
 
     RTT::Activity* main_activity_;
     std::vector<OrocosContainer> orocosContainer_;
@@ -55,6 +59,10 @@ class RTRunner {
 
     float period_;
     MainContext main_context_;
+
+    std::string mode_ = "inactive";
+    int num_components_expected_ = 0;
+    std::string whitelist_ros_mapping_ = "";
 };
 
 

@@ -56,15 +56,33 @@
   <build_depend>rospy</build_depend>
   <build_depend>orogen</build_depend>
   <build_depend>message_generation</build_depend>
+  <build_depend>rtt_ros</build_depend> 
+  <build_depend>std_msgs</build_depend> 
+  <build_depend>rtt_roscomm</build_depend> 
 
-  <exec_depend>rtt</exec_depend>
   <exec_depend>roscpp</exec_depend>
+  <exec_depend>rtt</exec_depend>
+  <exec_depend>rtt_ros</exec_depend> 
+  <exec_depend>rtt_rosnode</exec_depend> 
+  <exec_depend>rtt_roscomm</exec_depend> 
+  <exec_depend>rtt_rosparam</exec_depend> 
+  <exec_depend>rtt_std_srvs</exec_depend>
+  <exec_depend>rtt_std_msgs</exec_depend> 
   <exec_depend>message_runtime</exec_depend>
 
 
-  <!-- The export tag contains other, unspecified, tags -->
+  <!--<run_depend>rtt_rosnode</run_depend> -->
+  <!--<run_depend>rtt_rosparam</run_depend> -->
+
+
   <export>
-    <!-- Other tools can request additional information be placed here -->
+    <rtt_ros>
+      <plugin_depend>rtt_rosnode</plugin_depend>
+      <plugin_depend>rtt_roscomm</plugin_depend>
+      <plugin_depend>rtt_rosparam</plugin_depend>
+      <plugin_depend>rtt_std_msgs</plugin_depend>
+      <plugin_depend>rtt_std_srvs</plugin_depend>
+    </rtt_ros>
 
   </export>
 </package>
