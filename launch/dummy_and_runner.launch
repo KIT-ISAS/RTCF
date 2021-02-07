@@ -11,34 +11,14 @@
         <rosparam param="frequency">1.0</rosparam>
     </node>
 
-    <node name="sum_dummy_1" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=true" output="screen">
+    <node name="sum_dummy_1" pkg="rtcf" type="rt_dummy" args="rt_type=sum is_first=true" output="screen">
         <remap from="out_Port" to="/mapped/out_Port_1"/>
-        <remap from="in_Port_1" to="/mapped/in_Port"/>
+        <remap from="in_Port_1" to="/mapped/to_ros_in_Port"/>
     </node>
 
-    <node name="sum_dummy_2" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
-        <remap from="out_Port" to="/mapped/out_Port_2"/>
+    <node name="sum_dummy_2" pkg="rtcf" type="rt_dummy" args="rt_type=sum is_first=false" output="screen">
+        <remap from="out_Port" to="/mapped/out_Port_2_to_ros"/>
         <remap from="in_Port_1" to="/mapped/out_Port_1"/>
-    </node>
-
-    <node name="sum_dummy_3" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
-        <remap from="out_Port" to="/mapped/out_Port_3"/>
-        <remap from="in_Port_1" to="/mapped/out_Port_2"/>
-    </node>
-
-    <node name="sum_dummy_4" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
-        <remap from="out_Port" to="/mapped/out_Port_4"/>
-        <remap from="in_Port_1" to="/mapped/out_Port_3"/>
-    </node>
-
-    <node name="sum_dummy_5" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
-        <remap from="out_Port" to="/mapped/out_Port_5"/>
-        <remap from="in_Port_1" to="/mapped/out_Port_4"/>
-    </node>
-
-    <node name="sum_dummy_6" pkg="rtcf" type="rt_dummy" args="rt_type=$(arg rt_type) is_first=false" output="screen">
-        <remap from="out_Port" to="/mapped/out_Port_6"/>
-        <remap from="in_Port_1" to="/mapped/out_Port_5"/>
     </node>
 
 </launch>
