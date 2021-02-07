@@ -19,7 +19,10 @@ class RTRunner {
     void generateRTOrder();
 
     void connectPorts();
-    void disconnectPorts();
+    void connectOrocosPorts();
+    void connectPortsToRos();
+    void disconnectAllPorts();
+
 
     GraphOrocosContainers buildGraph();
 

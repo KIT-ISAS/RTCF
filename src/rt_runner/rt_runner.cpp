@@ -11,8 +11,10 @@
 #include <rtt/OperationCaller.hpp>
 #include <rtt/TaskContext.hpp>
 #include <vector>
+#include <regex>
 
 #include <rtt_roscomm/rostopic.h>
+#include <rtt_ros/rtt_ros.h>
 
 RTRunner::RTRunner() : main_context_("main_context"){};
 
@@ -44,6 +46,8 @@ bool RTRunner::loadOrocosComponent(std::string componentType,
                                    std::vector<mapping> mappings) {
     main_context_.stop();
 
+    rtt_ros::import(componentType);
+
     RTT::TaskContext* task;
     bool error = createFromLibrary(componentType, componentName, task);
 
@@ -58,7 +62,7 @@ bool RTRunner::loadOrocosComponent(std::string componentType,
 
     orocosContainer_.push_back(orocos_container);
 
-    disconnectPorts();
+    disconnectAllPorts();
     generateRTOrder();
     connectPorts();
 
@@ -141,7 +145,7 @@ bool RTRunner::unloadOrocosComponent(std::string componentName) {
     /* TODO:  <01-02-21, Stefan Geyer> */
     main_context_.stop();
 
-    disconnectPorts();
+    disconnectAllPorts();
     generateRTOrder();
     connectPorts();
 
@@ -272,6 +276,10 @@ void RTRunner::generateRTOrder() {
 };
 
 void RTRunner::connectPorts() {
+    connectOrocosPorts();
+    connectPortsToRos();
+}
+void RTRunner::connectOrocosPorts() {
     for (GraphOrocosContainer orocos_container : RTOrder) {
         for (GraphOutportContainer outport : orocos_container.output_ports_) {
             if (outport.is_connected) {
@@ -292,14 +300,35 @@ void RTRunner::connectPorts() {
     }
 }
 
-void RTRunner::disconnectPorts() {
+void RTRunner::connectPortsToRos() {
+    auto whitelist = std::regex(whitelist_ros_mapping_);
     for (GraphOrocosContainer orocos_container : RTOrder) {
         for (GraphOutportContainer outport : orocos_container.output_ports_) {
-            if (outport.is_connected) {
-                outport.port_->disconnect();
+            if ( std::regex_match(outport.mapping_name_, whitelist)) {
+                outport.port_->createStream(rtt_roscomm::topic(outport.mapping_name_));
+                ROS_INFO_STREAM("connected orocos outport: " << outport.mapping_name_ << " with ros topic: " << outport.mapping_name_);
+            }
+        }
+
+        for (GraphInportContainer inport : orocos_container.input_ports_) {
+            if ( std::regex_match(inport.mapping_name_, whitelist)) {
+                inport.port_->createStream(rtt_roscomm::topic(inport.mapping_name_));
+                ROS_INFO_STREAM("connected orocos inport: " << inport.mapping_name_ << " with ros topic: " << inport.mapping_name_);
             }
         }
     }
+
+}
+
+
+void RTRunner::disconnectAllPorts() {
+  for (GraphOrocosContainer orocos_container : RTOrder) {
+    for (GraphOutportContainer outport : orocos_container.output_ports_) {
+      if (outport.is_connected) {
+        outport.port_->disconnect();
+      }
+    }
+  }
 }
 
 GraphOrocosContainers RTRunner::buildGraph() {

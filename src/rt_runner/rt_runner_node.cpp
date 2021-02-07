@@ -29,7 +29,8 @@ void RTRunnerNode::shutdown() {
 };
 
 int RTRunnerNode::loop() {
-    ros::spin();
+    ros::MultiThreadedSpinner spinner(4);
+    spinner.spin();
     shutdown();
 
     return 0;
