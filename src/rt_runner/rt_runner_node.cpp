@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include "ros/service_server.h"
+#include "ros/spinner.h"
 #include "rt_runner.hpp"
 
 #include <rtt/os/main.h>
@@ -10,9 +11,13 @@
 #include "ros/init.h"
 #include "ros/node_handle.h"
 #include "ros/ros.h"
+#include <ros/callback_queue.h>
+#include <ros/callback_queue_interface.h>
 
-RTRunnerNode::RTRunnerNode(const ros::NodeHandle &node_handle)
-    : node_handle_(node_handle) {
+RTRunnerNode::RTRunnerNode( const ros::NodeHandle &node_handle, const ros::NodeHandle &node_handle_services, std::shared_ptr<ros::CallbackQueue> queue_services_ptr)
+    : node_handle_(node_handle), node_handle_services_(node_handle_services) {
+    queue_services_ptr_ = queue_services_ptr;
+    //node_handle_services_.setCallbackQueue(&queue_services_);
     rt_runner_ = std::make_shared<RTRunner>();
 };
 
@@ -29,24 +34,31 @@ void RTRunnerNode::shutdown() {
 };
 
 int RTRunnerNode::loop() {
-    ros::MultiThreadedSpinner spinner(4);
-    spinner.spin();
+    //ros::MultiThreadedSpinner spinner(4);
+    //spinner.spin();
+    ros::AsyncSpinner spinner(1);
+    spinner.start();
+
+    while (ros::ok()) {
+        queue_services_ptr_->callOne(ros::WallDuration(0.1));
+    }
+
     shutdown();
 
     return 0;
 };
 
 void RTRunnerNode::setupROSServices() {
-  loadOrocosComponentService = node_handle_.advertiseService(
+  loadOrocosComponentService = node_handle_services_.advertiseService(
       "/rt_runner/load_orocos_component",
       &RTRunnerNode::loadOrocosComponentCallback, this);
-  unloadOrocosComponentService = node_handle_.advertiseService(
+  unloadOrocosComponentService = node_handle_services_.advertiseService(
       "/rt_runner/unload_orocos_component",
       &RTRunnerNode::unloadOrocosComponentCallback, this);
-  activateRTLoopService = node_handle_.advertiseService(
+  activateRTLoopService = node_handle_services_.advertiseService(
       "/rt_runner/activate_rt_loop", &RTRunnerNode::activateRTLoopCallback,
       this);
-  deactivateRTLoopService = node_handle_.advertiseService(
+  deactivateRTLoopService = node_handle_services_.advertiseService(
       "/rt_runner/deactivate_rt_loop", &RTRunnerNode::deactivateRTLoopCallback,
       this);
 };
@@ -157,8 +169,12 @@ bool RTRunnerNode::deactivateRTLoopCallback(
 int ORO_main(int argc, char **argv) {
     ros::init(argc, argv, "RTRunner");
     ros::NodeHandle nh("~");
+    ros::NodeHandle nh_services;
 
-    RTRunnerNode node = RTRunnerNode(nh);
+    auto queue_services_ptr = std::make_shared<ros::CallbackQueue>();
+    nh_services.setCallbackQueue(queue_services_ptr.get());
+
+    RTRunnerNode node = RTRunnerNode(nh, nh_services, queue_services_ptr);
     node.configure();
 
     return node.loop();
