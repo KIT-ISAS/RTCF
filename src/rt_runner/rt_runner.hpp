@@ -59,6 +59,7 @@ class RTRunner {
     std::vector<OrocosContainer> orocosContainer_;
 
     GraphOrocosContainers RTOrder;
+    GraphOrocosContainers active_graph_;
 
     float period_;
     MainContext main_context_;
