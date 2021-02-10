@@ -41,9 +41,9 @@ class RTRunner {
     void shutdown();
 
     bool loadOrocosComponent(std::string componentType,
-                             std::string componentName, bool is_start,
-                             std::vector<mapping> mappings);
-    bool unloadOrocosComponent(std::string componentName);
+                             std::string componentName, std::string ns,
+                             bool is_start, std::vector<mapping> mappings);
+    bool unloadOrocosComponent(std::string componentName, std::string ns);
 
     void activateRTLoop();
     void deactivateRTLoop();

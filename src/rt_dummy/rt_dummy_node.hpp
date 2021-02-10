@@ -23,7 +23,6 @@ struct dummy_attributes {
 
 class RTDummyNode {
    private:
-    ros::NodeHandle n;
     ros::NodeHandle node_handle_;
 
     dummy_attributes dummy_attributes_;

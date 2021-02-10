@@ -41,9 +41,9 @@ void RTRunner::deactivateRTLoop() {
     isActive = false;
 };
 
-bool RTRunner::loadOrocosComponent(std::string componentType,
-                                   std::string componentName, bool is_start,
-                                   std::vector<mapping> mappings) {
+    bool RTRunner::loadOrocosComponent(std::string componentType,
+                             std::string componentName, std::string ns,
+                             bool is_start, std::vector<mapping> mappings) {
     main_context_.stop();
 
     rtt_ros::import(componentType);
@@ -58,7 +58,7 @@ bool RTRunner::loadOrocosComponent(std::string componentType,
     task->configure();
     task->start();
 
-    OrocosContainer orocos_container(componentType, componentName, is_start, mappings, task, slave_activity);
+    OrocosContainer orocos_container(componentType, componentName, ns, is_start, mappings, task, slave_activity);
 
     orocosContainer_.push_back(orocos_container);
 
@@ -141,7 +141,7 @@ bool RTRunner::createFromLibrary(std::string componentType,
     return true;
 };
 
-bool RTRunner::unloadOrocosComponent(std::string componentName) {
+bool RTRunner::unloadOrocosComponent(std::string componentName, std::string ns) {
     /* TODO:  <01-02-21, Stefan Geyer> */
     main_context_.stop();
 

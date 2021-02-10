@@ -1,9 +1,11 @@
 #ifndef RTCF_TYPES_H
 #define RTCF_TYPES_H
 
+#include <memory>
 #include <vector>
 #include <string>
 
+#include "ros/node_handle.h"
 #include "ros/ros.h"
 
 #include <ocl/OCL.hpp>
@@ -32,21 +34,25 @@ struct PortContainer {
 
 struct OrocosContainer {
     OrocosContainer(std::string componentType, std::string componentName,
-                    bool is_start, std::vector<mapping> mappings,
+                    std::string ns, bool is_start,
+                    std::vector<mapping> mappings,
                     RTT::TaskContext* taskContext,
                     RTT::extras::SlaveActivity* activity)
         : componentType_(componentType),
           componentName_(componentName),
+          ns_(ns),
           is_start_(is_start),
           mappings_(mappings),
           taskContext_(taskContext),
           activity_(activity) {
+        createNodeHandle();
         handlePorts();
         handleMappings();
     }
 
     std::string componentType_;
     std::string componentName_;
+    std::string ns_;
     bool is_start_;
     std::vector<mapping> mappings_;
 
@@ -55,6 +61,12 @@ struct OrocosContainer {
 
     std::vector<PortContainer> input_ports_;
     std::vector<PortContainer> output_ports_;
+
+    std::shared_ptr<ros::NodeHandle> node_handle_;
+
+    void createNodeHandle() {
+        node_handle_ = std::make_shared<ros::NodeHandle>(ns_);
+    };
 
     void handlePorts() {
       for (RTT::base::PortInterface *port : taskContext_->ports()->getPorts()) {

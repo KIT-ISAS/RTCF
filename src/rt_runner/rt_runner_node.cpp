@@ -115,6 +115,7 @@ bool RTRunnerNode::loadOrocosComponentCallback(
 
     const std::string name = req.component_name.data;
     const std::string rt_type = req.component_type.data;
+    const std::string ns = req.ns.data;
     const bool is_start = req.is_start.data;
     std::vector<mapping> mappings;
     for (auto m : req.mappings) {
@@ -129,15 +130,16 @@ bool RTRunnerNode::loadOrocosComponentCallback(
                                             << std::endl);
     ROS_DEBUG_STREAM("got component rt type: " << req.component_type.data
                                                << std::endl);
-    ROS_DEBUG_STREAM("got is rt start point: " << (req.is_start.data == true)
+    ROS_DEBUG_STREAM("got is_rt_start point: " << (req.is_start.data == true)
                                                << std::endl);
+    ROS_DEBUG_STREAM("got namespace name: " << ns << std::endl);
     for (auto m : mappings) {
         ROS_DEBUG_STREAM("got topic mapping: from: ["
                          << m.from_topic << "] to: [" << m.to_topic
                          << "]" << std::endl);
     }
 
-    return rt_runner_->loadOrocosComponent(rt_type, name, is_start, mappings);
+    return rt_runner_->loadOrocosComponent(rt_type, name, ns, is_start, mappings);
 };
 
 bool RTRunnerNode::unloadOrocosComponentCallback(
@@ -148,7 +150,11 @@ bool RTRunnerNode::unloadOrocosComponentCallback(
     ROS_DEBUG_STREAM("unload service got called");
     ROS_DEBUG_STREAM("got component name: " << name << std::endl);
 
-    return rt_runner_->unloadOrocosComponent(name);
+    const std::string ns= req.ns.data;
+    ROS_DEBUG_STREAM("unload service got called");
+    ROS_DEBUG_STREAM("got namespace name: " << ns << std::endl);
+
+    return rt_runner_->unloadOrocosComponent(name, ns);
 };
 
 bool RTRunnerNode::activateRTLoopCallback(rtcf::ActivateRTLoop::Request &req,

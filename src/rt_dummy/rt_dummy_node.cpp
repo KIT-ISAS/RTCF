@@ -11,9 +11,7 @@
 #include "rtcf/LoadOrocosComponent.h"
 #include "rtcf/mapping.h"
 
-RTDummyNode::RTDummyNode(const ros::NodeHandle &node_handle){
-
-};
+RTDummyNode::RTDummyNode(const ros::NodeHandle &node_handle) : node_handle_(node_handle) {};
 
 int RTDummyNode::loop() {
     loadInRTRunner();
@@ -65,6 +63,10 @@ rtcf::LoadOrocosComponent RTDummyNode::genLoadMsg() {
     srv.request.component_type.data = dummy_attributes_.rt_type;
     srv.request.is_start.data = dummy_attributes_.is_start;
 
+    std::stringstream ss;
+    ss << node_handle_.getNamespace();
+    srv.request.ns.data = ss.str();
+
     return srv;
 };
 
@@ -72,6 +74,10 @@ rtcf::UnloadOrocosComponent RTDummyNode::genUnloadMsg() {
     rtcf::UnloadOrocosComponent srv;
 
     srv.request.component_name.data = dummy_attributes_.name;
+
+    std::stringstream ss;
+    ss << node_handle_.getNamespace();
+    srv.request.ns.data = ss.str();
 
     return srv;
 };
