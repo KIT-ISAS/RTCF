@@ -1,6 +1,7 @@
 #ifndef RTCF_TYPES_H
 #define RTCF_TYPES_H
 
+#include <boost/functional/forward_adapter.hpp>
 #include <memory>
 #include <vector>
 #include <string>
@@ -17,6 +18,8 @@
 #include "rtt/base/InputPortInterface.hpp"
 #include "rtt/base/PortInterface.hpp"
 #include "rtt/extras/SlaveActivity.hpp"
+
+#include "rtcf/rtcf_extension.hpp"
 
 struct mapping {
     std::string from_topic;
@@ -45,7 +48,7 @@ struct OrocosContainer {
           mappings_(mappings),
           taskContext_(taskContext),
           activity_(activity) {
-        createNodeHandle();
+        handleNodeHandle();
         handlePorts();
         handleMappings();
     }
@@ -64,8 +67,12 @@ struct OrocosContainer {
 
     std::shared_ptr<ros::NodeHandle> node_handle_;
 
-    void createNodeHandle() {
+    void handleNodeHandle() {
         node_handle_ = std::make_shared<ros::NodeHandle>(ns_);
+
+        if (auto taskHandle = dynamic_cast<RtcfExtension *>(taskContext_)) {
+            taskHandle->node_handle_ptr_ = node_handle_.get();
+        }
     };
 
     void handlePorts() {

@@ -8,10 +8,10 @@ class RtcfExtension
 private:
 
 public:
-    RtcfExtension();
-    virtual ~RtcfExtension();
+    RtcfExtension() {};
+    virtual ~RtcfExtension() {};
 
-    ros::NodeHandle nh_;
+    ros::NodeHandle* node_handle_ptr_;
 };
 
 #endif /* RTCF_EXTENSION_H */

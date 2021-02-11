@@ -14,7 +14,6 @@
 #include <rtt/TaskContext.hpp>
 #include <rtt/Activity.hpp>
 
-#include "rtcf/rtcf_extension.hpp"
 
 class RTRunner {
    private:
