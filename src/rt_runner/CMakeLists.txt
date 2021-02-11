@@ -26,10 +26,12 @@ orocos_executable(rt_runner src/rt_runner/rt_runner_node.cpp
 
 target_link_libraries(rt_runner ${catkin_LIBRARIES})
 
-orocos_install_headers(src/rt_runner/rt_runner_node.hpp) # ...you may add multiple header files
+orocos_install_headers(src/rt_runner/rt_runner_node.hpp include/rtcf/rtcf_extension.hpp) # ...you may add multiple header files
 
 #
 # Generates and installs our package. Must be the last statement such
 # that it can pick up all above settings.
 #
-orocos_generate_package()
+orocos_generate_package(
+  INCLUDE_DIRS include
+    )
