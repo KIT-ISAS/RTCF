@@ -27,12 +27,16 @@ struct mapping {
 };
 
 struct PortContainer {
-    PortContainer(RTT::base::PortInterface* port) : port_(port) { getName(); }
+    PortContainer(RTT::base::PortInterface* port) : port_(port) {
+        getName();
+        setDefaultMapping();
+    }
     RTT::base::PortInterface* port_;
     std::string original_name_;
     std::string mapping_name_;
 
     void getName() { original_name_ = port_->getName(); }
+    void setDefaultMapping() { mapping_name_ = original_name_; }
 };
 
 struct OrocosContainer {
@@ -101,18 +105,22 @@ struct OrocosContainer {
         for (const auto& m : mappings_) {
             for (auto& p : input_ports_) {
                 if (m.from_topic == p.original_name_) {
-                    p.mapping_name_ = m.to_topic;
+                    const auto resolved_mapping =
+                        node_handle_->resolveName(m.to_topic);
+                    p.mapping_name_ = resolved_mapping;
                     ROS_INFO_STREAM("connection input port: "
-                                     << m.from_topic
-                                     << " with mapping: " << m.to_topic);
+                                    << m.from_topic
+                                    << " with mapping: " << m.to_topic);
                 }
             }
             for (auto& p : output_ports_) {
                 if (m.from_topic == p.original_name_) {
-                    p.mapping_name_ = m.to_topic;
+                    const auto resolved_mapping =
+                        node_handle_->resolveName(m.to_topic);
+                    p.mapping_name_ = resolved_mapping;
                     ROS_INFO_STREAM("connection output port: "
-                                     << m.from_topic
-                                     << " with mapping: " << m.to_topic);
+                                    << m.from_topic
+                                    << " with mapping: " << m.to_topic);
                 }
             }
         }
