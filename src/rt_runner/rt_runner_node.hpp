@@ -28,6 +28,7 @@ public:
  void setupROSServices();
  void shutdownROSServices();
  void loadROSParameters();
+ void stopComponents();
 
  bool loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Request &req,
                                   rtcf::LoadOrocosComponent::Response &res);
@@ -53,5 +54,7 @@ public:
  ros::ServiceServer deactivateRTLoopService;
 
 };
+
+static std::unique_ptr<RTRunnerNode> node_ptr;
 
 #endif /* RT_RUNNER_NODE_H */   

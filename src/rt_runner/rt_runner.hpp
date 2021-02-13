@@ -40,6 +40,7 @@ class RTRunner {
 
     void configure();
     void shutdown();
+    void stopComponents();
 
     bool loadOrocosComponent(std::string componentType,
                              std::string componentName, std::string ns,
@@ -62,7 +63,7 @@ class RTRunner {
     GraphOrocosContainers RTOrder;
     GraphOrocosContainers active_graph_;
 
-    float period_;
+    float period_ = 1.0;
     MainContext main_context_;
 
     std::string mode_ = "inactive";

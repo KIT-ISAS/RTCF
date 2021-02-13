@@ -1,6 +1,7 @@
 #include "rt_runner_node.hpp"
 #include <iostream>
 #include <memory>
+#include <signal.h>
 #include "ros/service_server.h"
 #include "ros/spinner.h"
 #include "rt_runner.hpp"
@@ -170,7 +171,16 @@ bool RTRunnerNode::deactivateRTLoopCallback(
     rt_runner_->deactivateRTLoop();
 
     return true;
+
 };
+
+void RTRunnerNode::stopComponents() { rt_runner_->stopComponents(); };
+
+void sigintHandler(int sig) {
+    ROS_DEBUG("sigint handler called");
+    node_ptr->stopComponents();
+    ros::shutdown();
+}
 
 int ORO_main(int argc, char **argv) {
     ros::init(argc, argv, "RTRunner");
@@ -180,8 +190,10 @@ int ORO_main(int argc, char **argv) {
     auto queue_services_ptr = std::make_shared<ros::CallbackQueue>();
     nh_services.setCallbackQueue(queue_services_ptr.get());
 
-    RTRunnerNode node = RTRunnerNode(nh, nh_services, queue_services_ptr);
-    node.configure();
+    node_ptr = std::make_unique<RTRunnerNode>(nh, nh_services, queue_services_ptr);
+    signal(SIGINT, sigintHandler);
 
-    return node.loop();
+    node_ptr->configure();
+
+    return node_ptr->loop();
 }

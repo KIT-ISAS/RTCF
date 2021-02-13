@@ -22,7 +22,6 @@ void RTRunner::configure() {
     if (mode_ == "active") {
         isActive = true;
     }
-    period_ = 1.0;
     main_activity_ = new RTT::Activity(ORO_SCHED_RT, 98);
     main_activity_->setPeriod(period_);
     main_context_.setActivity(main_activity_);
@@ -375,6 +374,13 @@ GraphOrocosContainers RTRunner::buildGraph() {
     return graph;
 }
 
+void RTRunner::stopComponents() {
+    main_context_.stop();
+    for (auto& component : RTOrder) {
+        component.taskContext_->stop();
+    }
+};
+
 void RTRunner::setMode(std::string mode) { mode_ = mode; }
 void RTRunner::setNumComponentsExpected(int num) {
     num_components_expected_ = num;
@@ -382,5 +388,5 @@ void RTRunner::setNumComponentsExpected(int num) {
 void RTRunner::setWhitelistRosMapping(std::string whitelist) {
     whitelist_ros_mapping_ = whitelist;
 };
-void RTRunner::setFrequency(float frequency) { period_ = 1 / frequency; };
+void RTRunner::setFrequency(float frequency) { period_ = 1.0 / frequency; };
 void RTRunner::setPeriod(float period) { period_ = period; };
