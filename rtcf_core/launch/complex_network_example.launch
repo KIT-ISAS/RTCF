@@ -7,13 +7,13 @@
     <node name="runner" pkg="rtcf" type="rt_runner-gnulinux" output="screen">
         <rosparam param="mode">"wait_for_components"</rosparam>
         <rosparam param="num_components_expected">10</rosparam>
-        <rosparam param="frequency">0.2</rosparam>
+        <rosparam param="frequency">1000</rosparam>
     </node>
 
 
     <node name="node_1" pkg="rtcf" type="rt_dummy" output="screen">
         <rosparam param="is_first">true</rosparam>
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream1"/>
         <remap from="out_Port" to="/stream2"/>
@@ -30,7 +30,7 @@
 
 
     <node name="node_5" pkg="rtcf" type="rt_dummy" output="screen">
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream3"/>
         <remap from="in_Port_2" to="/stream4_4"/>
@@ -38,7 +38,7 @@
     </node>
 
     <node name="node_6" pkg="rtcf" type="rt_dummy" output="screen">
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream4_1"/>
         <remap from="in_Port_2" to="/stream4_3"/>
@@ -47,14 +47,14 @@
 
 
     <node name="node_7" pkg="rtcf" type="rt_dummy" output="screen">
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream4_2"/>
         <remap from="out_Port" to="/stream4_3"/>
     </node>
 
     <node name="node_8" pkg="rtcf" type="rt_dummy" output="screen">
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream4_3"/>
         <remap from="out_Port" to="/stream4_4"/>
@@ -63,7 +63,7 @@
 
         
     <node name="node_3" pkg="rtcf" type="rt_dummy" output="screen">
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream3"/>
         <remap from="out_Port" to="/stream5"/>
@@ -71,7 +71,7 @@
 
 
     <node name="node_9" pkg="rtcf" type="rt_dummy" output="screen">
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
         <rosparam param="is_sync">true</rosparam>
 
         <remap from="in_Port_1" to="/stream4_4"/>
@@ -81,7 +81,7 @@
 
 
     <node name="node_4" pkg="rtcf" type="rt_dummy" output="screen">
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream3"/>
         <remap from="out_Port" to="/stream7"/>
@@ -89,7 +89,7 @@
 
 
     <node name="node_10" pkg="rtcf" type="rt_dummy" output="screen">
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
         <rosparam param="is_sync">true</rosparam>
 
         <remap from="in_Port_1" to="/stream5"/>
