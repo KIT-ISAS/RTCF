@@ -1,0 +1,47 @@
+<package>
+  <name>sum</name>
+  <version>1.0.0</version>
+  <description>This package contains the components of the sum package</description>
+  <maintainer email="unknown@maintainer.com">Unknown Author</maintainer>
+
+  <license>Unknown</license>
+
+  <url type="website"></url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Unknown Author</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rtcf</build_depend>
+  <build_depend>rtt</build_depend>
+  <build_depend>orogen</build_depend>
+  <build_depend>ocl</build_depend>
+  <build_depend>rtt_ros</build_depend>
+  <build_depend>rtt_std_msgs</build_depend>
+  <build_depend>rtt_std_srvs</build_depend>
+  <build_depend>rtt_sensor_msgs</build_depend>
+
+  <run_depend>rtcf</run_depend>
+  <run_depend>rtt</run_depend>
+  <run_depend>ocl</run_depend>
+  <run_depend>rtt_ros</run_depend>
+  <run_depend>rtt_rosnode</run_depend>
+  <run_depend>rtt_roscomm</run_depend>
+  <run_depend>rtt_rosparam</run_depend>
+  <run_depend>rtt_std_msgs</run_depend>
+  <run_depend>rtt_std_srvs</run_depend>
+  <run_depend>rtt_sensor_msgs</run_depend>
+
+  <export>
+      <!-- Plugin deps are loaded automatically by the rtt_ros import service -->
+    <rtt_ros>
+      <plugin_depend>rtt_rosnode</plugin_depend>
+      <plugin_depend>rtt_roscomm</plugin_depend>
+      <plugin_depend>rtt_rosparam</plugin_depend>
+      <plugin_depend>rtt_std_msgs</plugin_depend>
+      <plugin_depend>rtt_sensor_msgs</plugin_depend>
+      <plugin_depend>rtt_std_srvs</plugin_depend>
+    </rtt_ros>
+  </export>
+</package>
