@@ -41,7 +41,7 @@ struct PortContainer {
 
 struct OrocosContainer {
     OrocosContainer(std::string componentType, std::string componentName,
-                    std::string ns, bool is_start,
+                    std::string ns, bool is_start, bool is_sync,
                     std::vector<mapping> mappings,
                     RTT::TaskContext* taskContext,
                     RTT::extras::SlaveActivity* activity)
@@ -49,6 +49,7 @@ struct OrocosContainer {
           componentName_(componentName),
           ns_(ns),
           is_start_(is_start),
+          is_sync_(is_sync),
           mappings_(mappings),
           taskContext_(taskContext),
           activity_(activity) {
@@ -61,6 +62,7 @@ struct OrocosContainer {
     std::string componentName_;
     std::string ns_;
     bool is_start_;
+    bool is_sync_;
     std::vector<mapping> mappings_;
 
     RTT::TaskContext* taskContext_;
@@ -198,8 +200,6 @@ struct GraphOrocosContainer : OrocosContainer {
     std::vector<GraphOrocosContainer*> enqueue_and_satisfy_nodes() {
         std::vector<GraphOrocosContainer*> to_enqueue;
 
-        /* TODO: here could problems happen with call by value <03-02-21, Stefan
-         * Geyer> */
         for (auto& output_port : output_ports_) {
             for (auto& inport_match : output_port.inport_matches) {
                 inport_match.corr_port_ptr_->is_satisfied = true;

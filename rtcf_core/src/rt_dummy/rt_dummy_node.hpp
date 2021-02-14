@@ -19,6 +19,7 @@ struct dummy_attributes {
     std::string name;
     std::string rt_type;
     bool is_start = false;
+    bool is_sync = false;
 };
 
 class RTDummyNode {

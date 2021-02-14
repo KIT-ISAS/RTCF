@@ -62,6 +62,7 @@ rtcf::LoadOrocosComponent RTDummyNode::genLoadMsg() {
     srv.request.component_name.data = dummy_attributes_.name;
     srv.request.component_type.data = dummy_attributes_.rt_type;
     srv.request.is_start.data = dummy_attributes_.is_start;
+    srv.request.is_sync.data = dummy_attributes_.is_sync;
 
     std::stringstream ss;
     ss << node_handle_.getNamespace();
@@ -82,7 +83,24 @@ rtcf::UnloadOrocosComponent RTDummyNode::genUnloadMsg() {
     return srv;
 };
 
-void loadROSParameters();
+void RTDummyNode::loadROSParameters() {
+    bool is_first = false;
+    if (node_handle_.getParam("is_first", is_first)) {
+        dummy_attributes_.is_start = is_first;
+    }
+
+    std::string rt_type;
+    if (node_handle_.getParam("rt_type", rt_type)) {
+        dummy_attributes_.rt_type = rt_type;
+    } else {
+        ROS_ERROR_STREAM("No rt_type for rt dummy given");
+    }
+
+    bool is_sync = false;
+    if (node_handle_.getParam("is_sync", is_sync)) {
+        dummy_attributes_.is_sync = is_sync;
+    }
+}
 
 void RTDummyNode::loadInRTRunner() {
     rtcf::LoadOrocosComponent srv = genLoadMsg();
@@ -150,35 +168,7 @@ void RTDummyNode::handleArgs(std::vector<std::string> argv) {
         }
     }
 
-    /***************************
-     *  Handle Orocos RT Type  *
-     ***************************/
 
-    std::regex rt_type_regex("^rt_type=(.+$)");
-
-    for (const auto s : argv) {
-        std::smatch regex_match;
-        if (std::regex_match(s, regex_match, rt_type_regex)) {
-            dummy_attributes_.rt_type = regex_match[1];
-            ROS_INFO_STREAM(
-                "got orocos rt type: " << dummy_attributes_.rt_type);
-        }
-    }
-
-    /**********************************************
-     *  Handle if node is start point in rt loop  *
-     **********************************************/
-
-    std::regex is_start_regex("^is_first=(.+$)");
-
-    for (const auto s : argv) {
-        std::smatch regex_match;
-        if (std::regex_match(s, regex_match, is_start_regex)) {
-            dummy_attributes_.is_start = (regex_match[1] == "true");
-            ROS_INFO_STREAM(
-                "Got node as rt start point: " << dummy_attributes_.is_start);
-        }
-    }
 };
 
 void sigintHandler(int sig) {
@@ -204,6 +194,7 @@ int main(int argc, char **argv) {
     node_ptr->handleArgs(args);
 
     node_ptr->configure();
+    node_ptr->loadROSParameters();
     node_ptr->loop();
     node_ptr->shutdown();
 

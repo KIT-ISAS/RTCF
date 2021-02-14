@@ -40,9 +40,10 @@ void RTRunner::deactivateRTLoop() {
     isActive = false;
 };
 
-    bool RTRunner::loadOrocosComponent(std::string componentType,
-                             std::string componentName, std::string ns,
-                             bool is_start, std::vector<mapping> mappings) {
+bool RTRunner::loadOrocosComponent(std::string componentType,
+                                   std::string componentName, std::string ns,
+                                   bool is_start, bool is_sync,
+                                   std::vector<mapping> mappings) {
     main_context_.stop();
 
     rtt_ros::import(componentType);
@@ -57,7 +58,7 @@ void RTRunner::deactivateRTLoop() {
     task->configure();
     task->start();
 
-    OrocosContainer orocos_container(componentType, componentName, ns, is_start, mappings, task, slave_activity);
+    OrocosContainer orocos_container(componentType, componentName, ns, is_start, is_sync, mappings, task, slave_activity);
 
     orocosContainer_.push_back(orocos_container);
 
@@ -190,8 +191,9 @@ void RTRunner::generateRTOrder() {
 
         bool outer_loop_finised = true;
         bool inner_loop_finised = true;
-        bool innerst_loop_finished = true;
+        bool innerst_loop_finised = true;
 
+        //Handle nodes which are in queue and are satisfied or start_node
         auto it_outer = std::begin(queue);
         for (; it_outer != std::end(queue); it_outer++) {
             GraphOrocosContainer* active_node = *it_outer;
@@ -213,7 +215,8 @@ void RTRunner::generateRTOrder() {
             }
         }
 
-        //// if for loop finished without break
+        // if for loop finished without break
+        //Handle nodes which are in graph and are satisfied
         if (outer_loop_finised) {
             auto it_inner = std::begin(active_graph_);
             for (; it_inner != std::end(active_graph_); it_inner++) {
@@ -235,21 +238,31 @@ void RTRunner::generateRTOrder() {
                 }
             }
 
+            // Handle first node which is in queue and is not sync
             if (inner_loop_finised) {
-                if (!queue.empty()) {
-                    GraphOrocosContainer* active_node = *queue.begin();
-                    ROS_DEBUG_STREAM("active node in outer loop 2 is: "
-                                     << active_node->componentName_);
-                    std::vector<GraphOrocosContainer*> to_enque =
-                        active_node->enqueue_and_satisfy_nodes();
-                    RTOrder.push_back(*active_node);
-                    queue.erase(queue.begin());
-                    for (GraphOrocosContainer* new_queue_element : to_enque) {
-                        queue.push_back(new_queue_element);
-                    }
-                    innerst_loop_finished = false;
+                bool queue_is_empty = queue.empty();
+                if (!queue_is_empty) {
+                    auto it_innerst = std::begin(queue);
+                    for (; it_innerst != std::end(queue); it_innerst++) {
+                        GraphOrocosContainer* active_node = *it_innerst;
 
-                } else {
+                        if (!active_node->is_sync_) {
+                            std::vector<GraphOrocosContainer*> to_enque =
+                                active_node->enqueue_and_satisfy_nodes();
+                            RTOrder.push_back(*active_node);
+                            queue.erase(it_innerst);
+                            for (GraphOrocosContainer* new_queue_element :
+                                 to_enque) {
+                                queue.push_back(new_queue_element);
+                            }
+                            innerst_loop_finised = false;
+                            break;
+                        }
+                    }
+                }
+                // If no other optional is possible Handle first node which
+                // is in not in queue yet and handle no matter what
+                if (queue_is_empty || innerst_loop_finised == true) {
                     auto it_innerst = std::begin(active_graph_);
                     for (; it_innerst != std::end(active_graph_);
                          it_innerst++) {

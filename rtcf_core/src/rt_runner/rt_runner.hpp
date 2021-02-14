@@ -44,7 +44,8 @@ class RTRunner {
 
     bool loadOrocosComponent(std::string componentType,
                              std::string componentName, std::string ns,
-                             bool is_start, std::vector<mapping> mappings);
+                             bool is_start, bool is_sync,
+                             std::vector<mapping> mappings);
     bool unloadOrocosComponent(std::string componentName, std::string ns);
 
     void activateRTLoop();

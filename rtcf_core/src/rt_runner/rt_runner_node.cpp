@@ -118,6 +118,7 @@ bool RTRunnerNode::loadOrocosComponentCallback(
     const std::string rt_type = req.component_type.data;
     const std::string ns = req.ns.data;
     const bool is_start = req.is_start.data;
+    const bool is_sync = req.is_sync.data;
     std::vector<mapping> mappings;
     for (auto m : req.mappings) {
         mapping mapping;
@@ -133,14 +134,16 @@ bool RTRunnerNode::loadOrocosComponentCallback(
                                                << std::endl);
     ROS_DEBUG_STREAM("got is_rt_start point: " << (req.is_start.data == true)
                                                << std::endl);
+    ROS_DEBUG_STREAM("got is_sync: " << (req.is_sync.data == true)
+                                     << std::endl);
     ROS_DEBUG_STREAM("got namespace name: " << ns << std::endl);
     for (auto m : mappings) {
         ROS_DEBUG_STREAM("got topic mapping: from: ["
-                         << m.from_topic << "] to: [" << m.to_topic
-                         << "]" << std::endl);
+                         << m.from_topic << "] to: [" << m.to_topic << "]"
+                         << std::endl);
     }
 
-    return rt_runner_->loadOrocosComponent(rt_type, name, ns, is_start, mappings);
+    return rt_runner_->loadOrocosComponent(rt_type, name, ns, is_start, is_sync, mappings);
 };
 
 bool RTRunnerNode::unloadOrocosComponentCallback(
