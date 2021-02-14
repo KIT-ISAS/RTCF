@@ -5,6 +5,7 @@
 #include <rtt/extras/SlaveActivity.hpp>
 #include <rtt/os/TimeService.hpp>
 #include <vector>
+#include "ros/ros.h"
 
 class MainContext : public RTT::TaskContext
 {
@@ -23,6 +24,14 @@ public:
     void clearSlaves();
 
     std::vector<RTT::extras::SlaveActivity*> slaves_;
+
+
+    RTT::os::TimeService* time_service_ptr;
+    RTT::os::TimeService::ticks current_time;
+
+    RTT::os::TimeService::nsecs ticks_array_start[500000];
+    RTT::os::TimeService::nsecs ticks_array_stop[500000];
+    unsigned long long iteration_counter = 0;
 };
 
 #endif /* MAIN_CONTEXT_H */

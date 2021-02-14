@@ -9,7 +9,6 @@
 #include "ros/node_handle.h"
 #include "ros/ros.h"
 
-#include <ocl/OCL.hpp>
 #include <rtt/Activity.hpp>
 #include <rtt/OperationCaller.hpp>
 #include <rtt/TaskContext.hpp>

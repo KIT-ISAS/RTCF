@@ -5,13 +5,13 @@
 
 
     <node name="runner" pkg="rtcf" type="rt_runner-gnulinux" output="screen">
-        <rosparam param="mode">"active"</rosparam>
-        <rosparam param="whitelist_ros_mapping">".*ros.*"</rosparam>
-        <rosparam param="num_components_expected">8</rosparam>
-        <rosparam param="frequency">1.0</rosparam>
+        <rosparam param="mode">"wait_for_components"</rosparam>
+        <!--<rosparam param="whitelist_ros_mapping">".*ros.*"</rosparam>-->
+        <rosparam param="num_components_expected">2</rosparam>
+        <rosparam param="frequency">100.0</rosparam>
     </node>
 
-    <node name="sum_dummy_1" pkg="rtcf" type="rt_dummy" args="rt_type=sum is_first=true" output="screen">
+    <node name="foobar_1" pkg="rtcf" type="rt_dummy" args="rt_type=foobar is_first=true" output="screen">
         <remap from="out_Port" to="/mapped/out_Port_1"/>
         <remap from="in_Port_1" to="/mapped/to_ros_in_Port"/>
 
@@ -22,7 +22,7 @@
         <rosparam param="some_int">4</rosparam>
     </node>
 
-    <node name="sum_dummy_2" pkg="rtcf" type="rt_dummy" args="rt_type=sum is_first=false" output="screen">
+    <node name="foobar_2" pkg="rtcf" type="rt_dummy" args="rt_type=foobar is_first=false" output="screen">
         <remap from="out_Port" to="/mapped/out_Port_2_to_ros"/>
         <remap from="in_Port_1" to="/mapped/out_Port_1"/>
 
