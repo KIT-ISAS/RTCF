@@ -10,21 +10,6 @@ cmake_minimum_required(VERSION 2.8)
 #
 project(sum)
 
-#find_package(catkin REQUIRED COMPONENTS rtcf
-#)
-
-#include_directories(
-  #include
-  #${catkin_INCLUDE_DIRS}
-  #${rtcf_INCLUDE_DIRS}
-  #${rtcf_INCLUDES}
-#)
-
-#include_directories(${CATKIN_DEVEL_PREFIX}/include)
-#include_directories(${CATKIN_GLOBAL_INCLUDE_DESTINATION})
-#include_directories(${CATKIN_GLOBAL_INCLUDE_DESTINATION}/rtcf)
-
-      
 # Use 'source orocos_toolchain/env.sh' if the command below fails:
 find_package(OROCOS-RTT QUIET)
 if (NOT OROCOS-RTT_FOUND)
@@ -42,7 +27,4 @@ add_subdirectory( src )
 # Generates and installs our package. Must be the last statement such
 # that it can pick up all above settings.
 #
-orocos_generate_package(
-    #INCLUDE_DIRS include
-    #CATKIN_DEPENDS rtcf
-    )
+orocos_generate_package()
