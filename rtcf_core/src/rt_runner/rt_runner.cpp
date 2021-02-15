@@ -145,6 +145,14 @@ bool RTRunner::unloadOrocosComponent(std::string componentName, std::string ns) 
     main_context_.stop();
 
     disconnectAllPorts();
+
+    auto it = std::begin(orocosContainer_);
+    for (; it != std::end(orocosContainer_); it++) {
+        if (it->componentName_ == componentName) {
+            orocosContainer_.erase(it);
+        }
+    }
+
     generateRTOrder();
     connectPorts();
 

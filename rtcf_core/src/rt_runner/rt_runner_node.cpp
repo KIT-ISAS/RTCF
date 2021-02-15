@@ -151,11 +151,10 @@ bool RTRunnerNode::unloadOrocosComponentCallback(
     rtcf::UnloadOrocosComponent::Response &res) {
 
     const std::string name = req.component_name.data;
+    const std::string ns= req.ns.data;
+
     ROS_DEBUG_STREAM("unload service got called");
     ROS_DEBUG_STREAM("got component name: " << name << std::endl);
-
-    const std::string ns= req.ns.data;
-    ROS_DEBUG_STREAM("unload service got called");
     ROS_DEBUG_STREAM("got namespace name: " << ns << std::endl);
 
     return rt_runner_->unloadOrocosComponent(name, ns);
