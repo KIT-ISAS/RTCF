@@ -25,13 +25,9 @@ public:
 
     std::vector<RTT::extras::SlaveActivity*> slaves_;
 
-
     RTT::os::TimeService* time_service_ptr;
     RTT::os::TimeService::ticks current_time;
 
-    RTT::os::TimeService::nsecs ticks_array_start[500000];
-    RTT::os::TimeService::nsecs ticks_array_stop[500000];
-    unsigned long long iteration_counter = 0;
 };
 
 #endif /* MAIN_CONTEXT_H */

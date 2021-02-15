@@ -16,25 +16,13 @@ bool MainContext::startHook(){
   return true;
 }
 
-void MainContext::updateHook(){
-    ticks_array_start[iteration_counter] = time_service_ptr->getNSecs();
-
-
-    for ( RTT::extras::SlaveActivity* slave : slaves_ ) {
+void MainContext::updateHook() {
+    for (RTT::extras::SlaveActivity* slave : slaves_) {
         slave->execute();
     }
-
-    ticks_array_stop[iteration_counter] = time_service_ptr->getNSecs();
-    iteration_counter++;
-
 }
 
 void MainContext::stopHook() {
-    ROS_INFO_STREAM(iteration_counter << " lines in log");
-    for (unsigned long long i = 0; i < iteration_counter; i++) {
-        ROS_INFO_STREAM("start time:" << ticks_array_start[i]);
-        ROS_INFO_STREAM("stop time:" << ticks_array_stop[i]);
-    }
     std::cout << "Main Context stopping !" << std::endl;
 }
 
