@@ -7,7 +7,7 @@ project(rtcf)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg message_generation rtt_ros rtt_roscomm)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg message_generation rtt_ros rtt_roscomm rostest)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -213,6 +213,27 @@ INCLUDE(src/rt_dummy/CMakeLists.txt)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
+
+if(CATKIN_ENABLE_TESTING)
+
+    include_directories(${GTEST_INCLUDE_DIRS})
+
+    find_package(rostest REQUIRED)
+    add_executable(test_integration_sum tests/integration_test_sum.cpp)
+
+    target_link_libraries(test_integration_sum ${catkin_LIBRARIES} ${common_LIBRARIES} ${GTEST_LIBRARIES})
+    add_rostest(launch/tests/integration_test_sum.test DEPENDENCIES test_integration_sum)
+
+    #add_dependencies(test_crosswalk ${catkin_EXPORTED_TARGETS})
+    #if(TARGET tests)
+      #add_dependencies(tests test_crosswalk)
+    #endif()
+
+
+    include_directories(${GTEST_INCLUDE_DIRS})
+
+
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
