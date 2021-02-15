@@ -23,29 +23,33 @@ bool Sum::startHook(){
   return true;
 }
 
-void Sum::updateHook(){
-  std::cout << "Sum executes updateHook !" <<std::endl;
-    std::cout << node_handle_ptr_->getNamespace() << std::endl;
-
+void Sum::updateHook() {
     out_msg.data = 0.0;
 
-    if (inPort_1.read(in_msg_1)==RTT::NewData) {
+    new_msg_1 = (inPort_1.read(in_msg_1) == RTT::NewData);
+    new_msg_2 = (inPort_2.read(in_msg_2) == RTT::NewData);
+    new_msg_3 = (inPort_3.read(in_msg_3) == RTT::NewData);
+    new_msg_4 = (inPort_4.read(in_msg_4) == RTT::NewData);
+
+    if (new_msg_1) {
         out_msg.data += in_msg_1.data;
     }
 
-    if (inPort_2.read(in_msg_2)==RTT::NewData) {
+    if (new_msg_2) {
         out_msg.data += in_msg_2.data;
     }
 
-    if (inPort_3.read(in_msg_3)==RTT::NewData) {
+    if (new_msg_3) {
         out_msg.data += in_msg_3.data;
     }
 
-    if (inPort_4.read(in_msg_4)==RTT::NewData) {
+    if (new_msg_4) {
         out_msg.data += in_msg_4.data;
     }
 
-    outPort.write(out_msg);
+    if (new_msg_1 || new_msg_2 || new_msg_3 || new_msg_4) {
+        outPort.write(out_msg);
+    }
 }
 
 void Sum::stopHook() {

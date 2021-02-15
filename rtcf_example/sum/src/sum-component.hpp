@@ -29,5 +29,10 @@ class Sum : public RTT::TaskContext, public RtcfExtension {
     std_msgs::Float64 in_msg_4;
 
     std_msgs::Float64 out_msg;
+
+    bool new_msg_1;
+    bool new_msg_2;
+    bool new_msg_3;
+    bool new_msg_4;
 };
 #endif
