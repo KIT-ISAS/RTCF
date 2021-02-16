@@ -20,7 +20,7 @@
     </node>
 
     <node name="node_2" pkg="rtcf" type="rt_dummy" output="screen">
-        <rosparam param="rt_type">"whoami"</rosparam>
+        <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream2"/>
         <remap from="out_Port" to="/stream3"/>
