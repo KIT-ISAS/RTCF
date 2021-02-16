@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <regex>
 
 #include "ros/node_handle.h"
 #include "ros/ros.h"
@@ -40,13 +41,14 @@ struct PortContainer {
 
 struct OrocosContainer {
     OrocosContainer(std::string componentType, std::string componentName,
-                    std::string ns, bool is_start, bool is_sync,
-                    std::vector<mapping> mappings,
+                    std::string ns, std::string topics_ignore_for_graph,
+                    bool is_start, bool is_sync, std::vector<mapping> mappings,
                     RTT::TaskContext* taskContext,
                     RTT::extras::SlaveActivity* activity)
         : componentType_(componentType),
           componentName_(componentName),
           ns_(ns),
+          topics_ignore_for_graph_(topics_ignore_for_graph),
           is_start_(is_start),
           is_sync_(is_sync),
           mappings_(mappings),
@@ -60,6 +62,7 @@ struct OrocosContainer {
     std::string componentType_;
     std::string componentName_;
     std::string ns_;
+    std::string topics_ignore_for_graph_;
     bool is_start_;
     bool is_sync_;
     std::vector<mapping> mappings_;
@@ -185,13 +188,18 @@ struct GraphOrocosContainer : OrocosContainer {
 
     std::vector<GraphOrocosContainer*> connected_container_;
 
+    bool topic_is_ignored(const std::string topic) {
+        auto topic_is_ignored_regex = std::regex(topics_ignore_for_graph_);
+        return std::regex_match(topic, topic_is_ignored_regex);
+    }
+
     bool is_satisfied() {
         bool is_satisfied = true;
 
         for (const GraphInportContainer& p : input_ports_) {
-          if (p.is_connected && !p.is_satisfied) {
-            is_satisfied = false;
-          }
+            if ((p.is_connected && !p.is_satisfied) && !topic_is_ignored(p.mapping_name_)) {
+                is_satisfied = false;
+            }
         }
         return is_satisfied;
     }

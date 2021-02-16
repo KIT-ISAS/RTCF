@@ -93,6 +93,14 @@ void RTRunnerNode::loadROSParameters(){
         rt_runner_->setWhitelistRosMapping(whitelist_ros_mapping);
     }
 
+    std::string topics_ignore_for_graph;
+    if( node_handle_.getParam("topics_ignore_for_graph", topics_ignore_for_graph)) {
+        ROS_INFO_STREAM(
+            "RTRunner got list for topics in graph to ignore: " << whitelist_ros_mapping);
+        rt_runner_->setTopicsIgnoreForGraph(topics_ignore_for_graph);
+
+    }
+
     float frequency;
     if (node_handle_.getParam("frequency", frequency)) {
         ROS_INFO_STREAM(
@@ -117,6 +125,7 @@ bool RTRunnerNode::loadOrocosComponentCallback(
     const std::string name = req.component_name.data;
     const std::string rt_type = req.component_type.data;
     const std::string ns = req.ns.data;
+    const std::string topics_ignore_for_graph = req.topics_ignore_for_graph.data;
     const bool is_start = req.is_start.data;
     const bool is_sync = req.is_sync.data;
     std::vector<mapping> mappings;
@@ -137,13 +146,14 @@ bool RTRunnerNode::loadOrocosComponentCallback(
     ROS_DEBUG_STREAM("got is_sync: " << (req.is_sync.data == true)
                                      << std::endl);
     ROS_DEBUG_STREAM("got namespace name: " << ns << std::endl);
+    ROS_DEBUG_STREAM("got topics to ignore for graph: " << topics_ignore_for_graph << std::endl);
     for (auto m : mappings) {
         ROS_DEBUG_STREAM("got topic mapping: from: ["
                          << m.from_topic << "] to: [" << m.to_topic << "]"
                          << std::endl);
     }
 
-    return rt_runner_->loadOrocosComponent(rt_type, name, ns, is_start, is_sync, mappings);
+    return rt_runner_->loadOrocosComponent(rt_type, name, ns, topics_ignore_for_graph, is_start, is_sync, mappings);
 };
 
 bool RTRunnerNode::unloadOrocosComponentCallback(

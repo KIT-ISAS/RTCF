@@ -18,8 +18,7 @@
         <rosparam param="is_first">true</rosparam>
         <rosparam param="rt_type">"sum"</rosparam>
         <rosparam param="is_sync">true</rosparam>
-
-        <rosparam param="some_int">4</rosparam>
+        <rosparam param="topics_ignore_for_graph" >".*n-1.*"</rosparam>
     </node>
 
     <node name="foobar_2" pkg="rtcf" type="rt_dummy" args="rt_type=foobar is_first=false" output="screen">
@@ -29,8 +28,7 @@
         <rosparam param="is_first">false</rosparam>
         <rosparam param="rt_type">"sum"</rosparam>
         <rosparam param="is_sync">true</rosparam>
-
-        <rosparam param="some_int">8</rosparam>
+        <rosparam param="topics_ignore_for_graph" >".*n-1.*"</rosparam>
     </node>
 
 </launch>

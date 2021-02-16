@@ -18,6 +18,7 @@ struct dummy_attributes {
     std::vector<mapping> mappings;
     std::string name;
     std::string rt_type;
+    std::string topics_ignore_for_graph;
     bool is_start = false;
     bool is_sync = false;
 };

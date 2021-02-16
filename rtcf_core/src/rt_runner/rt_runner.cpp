@@ -41,6 +41,7 @@ void RTRunner::deactivateRTLoop() {
 
 bool RTRunner::loadOrocosComponent(std::string componentType,
                                    std::string componentName, std::string ns,
+                                   std::string topics_ignore_for_graph,
                                    bool is_start, bool is_sync,
                                    std::vector<mapping> mappings) {
     main_context_.stop();
@@ -57,7 +58,7 @@ bool RTRunner::loadOrocosComponent(std::string componentType,
     task->configure();
     task->start();
 
-    OrocosContainer orocos_container(componentType, componentName, ns, is_start, is_sync, mappings, task, slave_activity);
+    OrocosContainer orocos_container(componentType, componentName, ns, topics_ignore_for_graph, is_start, is_sync, mappings, task, slave_activity);
 
     orocosContainer_.push_back(orocos_container);
 
@@ -407,6 +408,9 @@ void RTRunner::setNumComponentsExpected(int num) {
 };
 void RTRunner::setWhitelistRosMapping(std::string whitelist) {
     whitelist_ros_mapping_ = whitelist;
+};
+void RTRunner::setTopicsIgnoreForGraph(std::string topics_ignore_for_graph) {
+    topics_ignore_for_graph_ = topics_ignore_for_graph;
 };
 void RTRunner::setFrequency(float frequency) { period_ = 1.0 / frequency; };
 void RTRunner::setPeriod(float period) { period_ = period; };

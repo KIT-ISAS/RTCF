@@ -44,8 +44,8 @@ class RTRunner {
 
     bool loadOrocosComponent(std::string componentType,
                              std::string componentName, std::string ns,
-                             bool is_start, bool is_sync,
-                             std::vector<mapping> mappings);
+                             std::string topics_ignore_for_graph, bool is_start,
+                             bool is_sync, std::vector<mapping> mappings);
     bool unloadOrocosComponent(std::string componentName, std::string ns);
 
     void activateRTLoop();
@@ -56,6 +56,7 @@ class RTRunner {
     void setMode(std::string mode);
     void setNumComponentsExpected(int num);
     void setWhitelistRosMapping(std::string whitelist);
+    void setTopicsIgnoreForGraph(std::string topics_ignore_for_graph);
 
 
     RTT::Activity* main_activity_;
@@ -70,6 +71,7 @@ class RTRunner {
     std::string mode_ = "inactive";
     int num_components_expected_ = 0;
     std::string whitelist_ros_mapping_ = "";
+    std::string topics_ignore_for_graph_ = "";
 };
 
 

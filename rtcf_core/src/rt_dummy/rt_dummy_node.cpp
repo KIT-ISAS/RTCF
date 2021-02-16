@@ -63,6 +63,7 @@ rtcf::LoadOrocosComponent RTDummyNode::genLoadMsg() {
     srv.request.component_type.data = dummy_attributes_.rt_type;
     srv.request.is_start.data = dummy_attributes_.is_start;
     srv.request.is_sync.data = dummy_attributes_.is_sync;
+    srv.request.topics_ignore_for_graph.data = dummy_attributes_.topics_ignore_for_graph;
 
     std::stringstream ss;
     ss << node_handle_.getNamespace();
@@ -99,6 +100,11 @@ void RTDummyNode::loadROSParameters() {
     bool is_sync = false;
     if (node_handle_.getParam("is_sync", is_sync)) {
         dummy_attributes_.is_sync = is_sync;
+    }
+
+    std::string topics_ignore_for_graph;
+    if( node_handle_.getParam("topics_ignore_for_graph", topics_ignore_for_graph)) {
+        dummy_attributes_.topics_ignore_for_graph =topics_ignore_for_graph;
     }
 }
 

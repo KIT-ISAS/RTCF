@@ -1,5 +1,6 @@
 std_msgs/String component_name
 std_msgs/String component_type
+std_msgs/String topics_ignore_for_graph
 std_msgs/String ns
 mapping[] mappings
 std_msgs/String[] whitelist
