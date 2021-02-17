@@ -325,22 +325,38 @@ void RTRunner::connectPortsToRos() {
     auto whitelist = std::regex(whitelist_ros_mapping_);
     for (GraphOrocosContainer orocos_container : RTOrder) {
         for (GraphOutportContainer outport : orocos_container.output_ports_) {
-            if ( std::regex_match(outport.mapping_name_, whitelist)) {
-                outport.port_->createStream(rtt_roscomm::topic(outport.mapping_name_));
-                ROS_INFO_STREAM("connected orocos outport: " << outport.mapping_name_ << " with ros topic: " << outport.mapping_name_);
+            if (std::regex_match(outport.mapping_name_, whitelist)) {
+                outport.port_->createStream(
+                    rtt_roscomm::topic(outport.mapping_name_));
+                ROS_INFO_STREAM("connected orocos outport: "
+                                << outport.mapping_name_ << " with ros topic: "
+                                << outport.mapping_name_);
             }
         }
 
         for (GraphInportContainer inport : orocos_container.input_ports_) {
-            if ( std::regex_match(inport.mapping_name_, whitelist)) {
-                inport.port_->createStream(rtt_roscomm::topic(inport.mapping_name_));
-                ROS_INFO_STREAM("connected orocos inport: " << inport.mapping_name_ << " with ros topic: " << inport.mapping_name_);
+            if (std::regex_match(inport.mapping_name_, whitelist)) {
+                if (!inport.is_connected) {
+                    inport.port_->createStream(
+                        rtt_roscomm::topic(inport.mapping_name_));
+                    ROS_INFO_STREAM("connected orocos inport: "
+                                    << inport.mapping_name_
+                                    << " with ros topic: "
+                                    << inport.mapping_name_);
+                } else {
+                    ROS_WARN_STREAM(
+                        "did not connected orocos inport: "
+                        << inport.mapping_name_
+                        << " with ros topic: " << inport.mapping_name_
+                        << "because a output port is already connected "
+                           "to ros with the same topic. This would cause a "
+                           "unexpected connection between orocos ports through "
+                           "ros");
+                }
             }
         }
     }
-
 }
-
 
 void RTRunner::disconnectAllPorts() {
   for (GraphOrocosContainer orocos_container : RTOrder) {
