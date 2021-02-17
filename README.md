@@ -78,8 +78,8 @@ On development RTCF was tested on the following system. Other configuration migh
   ```
 3. install RTCF
 ```sh
-    mkdir -p ~/ws/underlay/src
-    cd ~/ws/underlay
+    mkdir -p ~/ws/src
+    cd ~/ws
     git clone https://github.com/KIT-ISAS/RTCF src/RTCF
     catkin_make
     source devel/setup.sh
@@ -91,6 +91,7 @@ if you want the framework to stay enabled.
 
 To check if your installation works run in the RTCF workspace:
 ``` sh
+cd ~/ws
 catkin_make run_tests
 ```
 
@@ -101,6 +102,9 @@ Use this space to show useful examples of how a project can be used. Additional 
 
 _For more examples, please refer to the [Documentation](https://example.com)_
 
+#### Parameter
+##### RTRunner
+##### RTDummy
 
 #### Create Orocos Messages from ROS Messages
 
