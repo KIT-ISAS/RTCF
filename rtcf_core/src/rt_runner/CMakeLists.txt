@@ -23,6 +23,7 @@ include( ${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake )
 orocos_executable(rt_runner src/rt_runner/rt_runner_node.cpp
     src/rt_runner/rt_runner.cpp
     src/rt_runner/main_context.cpp)
+add_dependencies(rt_runner ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(rt_runner ${catkin_LIBRARIES})
 
