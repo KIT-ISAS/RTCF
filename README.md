@@ -59,19 +59,33 @@ On development RTCF was tested on the following system. Other configuration migh
 
 ### Installation
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/KIT-ISAS/RTCF
-   ```
-* install orocos
+1. install orocos
+```sh
+    export OROCOS_TARGET=gnulinux
+    mkdir -p ~/ws/underlay_isolated/src/orocos
+    cd ~/ws/underlay_isolated
+    git clone --recursive https://github.com/orocos-toolchain/orocos_toolchain.git src/orocos/orocos_toolchain
+    catkin_make_isolated --install
+    source install_isolated/setup.sh
+```
+2. install rtt_ros_integration
   ```sh
-  npm install npm@latest -g
+    mkdir -p ~/ws/underlay/src
+    cd ~/ws/underlay
+    git clone https://github.com/orocos/rtt_ros_integration.git src/rtt_ros_integration
+    catkin_make
+    source devel/setup.sh
   ```
-* install rtt_ros_integration
-  ```sh
-  npm install npm@latest -g
-  ```
-* install RTCF
+3. install RTCF
+```sh
+    mkdir -p ~/ws/underlay/src
+    cd ~/ws/underlay
+    git clone https://github.com/KIT-ISAS/RTCF src/RTCF
+    catkin_make
+    source devel/setup.sh
+```
+Add the source commands to your .bashrc or other comparable file in the same order
+if you want the framework to stay enabled. 
 
 #### Run Tests
 
