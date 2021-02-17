@@ -42,17 +42,6 @@
 ## About The Project
 
 Here's a blank template to get started:
-**To avoid retyping too much info. Do a search and replace with your text editor for the following:**
-`caplett`, `RTCF`, `git@caplett.com`, `RTCF`, `project_description`
-
-
-### Built With
-
-* []()
-* []()
-* []()
-
-
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -62,10 +51,11 @@ To get a local copy up and running follow these simple steps.
 ### Prerequisites
 
 This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+On development RTCF was tested on the following system. Other configuration might still work.
+
+* Ros Melodic
+* Ubuntu 18.04
+* RTPreempt Realtime Patch
 
 ### Installation
 
@@ -73,13 +63,22 @@ This is an example of how to list things you need to use the software and how to
    ```sh
    git clone https://github.com/KIT-ISAS/RTCF
    ```
-2. Install NPM packages
-   ```sh
-   npm install
-   ```
+* install orocos
+  ```sh
+  npm install npm@latest -g
+  ```
+* install rtt_ros_integration
+  ```sh
+  npm install npm@latest -g
+  ```
+* install RTCF
 
-### Run Tests
+#### Run Tests
 
+To check if your installation works run in the RTCF workspace:
+``` sh
+catkin_make run_tests
+```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -89,8 +88,9 @@ Use this space to show useful examples of how a project can be used. Additional 
 _For more examples, please refer to the [Documentation](https://example.com)_
 
 
-### Create Orocos Messages from ROS Messages
+#### Create Orocos Messages from ROS Messages
 
+#### More examples
 
 
 <!-- CONTRIBUTING -->
@@ -111,7 +111,6 @@ Contributions are what make the open source community such an amazing place to b
 Distributed under the MIT License. See `LICENSE` for more information.
 
 
-
 <!-- CONTACT -->
 ## Contact
 
@@ -124,6 +123,6 @@ Project Link: [https://github.com/KIT-ISAS/RTCF](https://github.com/KIT-ISAS/RTC
 <!-- ACKNOWLEDGEMENTS -->
 ## Acknowledgements
 
-* The Readme Template is from: [https://github.com/othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template)
+* Readme Template: [https://github.com/othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template)
 
 
