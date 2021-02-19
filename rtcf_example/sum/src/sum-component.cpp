@@ -2,8 +2,12 @@
 #include <rtt/Component.hpp>
 #include <iostream>
 
-Sum::Sum(std::string const& name) : TaskContext(name), outPort("out_Port"), inPort_1("in_Port_1"), inPort_2("in_Port_2"), inPort_3("in_Port_3"), inPort_4("in_Port_4") {
-  std::cout << "Sum constructed !" <<std::endl;
+Sum::Sum(std::string const& name)
+    : TaskContext(name),
+      outPort("out_Port"),
+      inPort_1("in_Port_1"),
+      inPort_2("in_Port_2") {
+    std::cout << "Sum constructed !" << std::endl;
 }
 
 bool Sum::configureHook(){
@@ -13,8 +17,6 @@ bool Sum::configureHook(){
 
     this->ports()->addPort(inPort_1);
     this->ports()->addPort(inPort_2);
-    this->ports()->addPort(inPort_3);
-    this->ports()->addPort(inPort_4);
     return true;
 }
 
@@ -24,30 +26,26 @@ bool Sum::startHook(){
 }
 
 void Sum::updateHook() {
+
+    std::cout <<  node_handle_ptr_->getNamespace() << std::endl;
+
     out_msg.data = 0.0;
+    //std::cout << node_handle_ptr_->getNamespace() << std::endl;
 
     new_msg_1 = (inPort_1.read(in_msg_1) == RTT::NewData);
     new_msg_2 = (inPort_2.read(in_msg_2) == RTT::NewData);
-    new_msg_3 = (inPort_3.read(in_msg_3) == RTT::NewData);
-    new_msg_4 = (inPort_4.read(in_msg_4) == RTT::NewData);
 
     if (new_msg_1) {
         out_msg.data += in_msg_1.data;
+        inPort_1.clear();
     }
 
     if (new_msg_2) {
         out_msg.data += in_msg_2.data;
+        inPort_2.clear();
     }
 
-    if (new_msg_3) {
-        out_msg.data += in_msg_3.data;
-    }
-
-    if (new_msg_4) {
-        out_msg.data += in_msg_4.data;
-    }
-
-    if (new_msg_1 || new_msg_2 || new_msg_3 || new_msg_4) {
+    if (new_msg_1 || new_msg_2) {
         outPort.write(out_msg);
     }
 }

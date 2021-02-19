@@ -20,19 +20,13 @@ class Sum : public RTT::TaskContext, public RtcfExtension {
 
     RTT::InputPort<std_msgs::Float64> inPort_1;
     RTT::InputPort<std_msgs::Float64> inPort_2;
-    RTT::InputPort<std_msgs::Float64> inPort_3;
-    RTT::InputPort<std_msgs::Float64> inPort_4;
 
     std_msgs::Float64 in_msg_1;
     std_msgs::Float64 in_msg_2;
-    std_msgs::Float64 in_msg_3;
-    std_msgs::Float64 in_msg_4;
 
     std_msgs::Float64 out_msg;
 
     bool new_msg_1;
     bool new_msg_2;
-    bool new_msg_3;
-    bool new_msg_4;
 };
 #endif
