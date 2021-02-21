@@ -113,7 +113,7 @@ orocreate-catkin-pkg my_node component
 
 #### Create Orocos Messages from ROS Messages
 
-From: [Source][https://github.com/orocos/rtt_ros_integration/tree/toolchain-2.9/rtt_roscomm#making-a-packages-ros-msg-and-srv-types-available]
+From: [Source](https://github.com/orocos/rtt_ros_integration/tree/toolchain-2.9/rtt_roscomm#making-a-packages-ros-msg-and-srv-types-available)
 
 ```sh
 rosrun rtt_roscomm create_rtt_msgs my_msgs
