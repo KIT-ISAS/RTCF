@@ -104,16 +104,42 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 #### Simple Orocos Node
 
-#### Simple Launch file
+A empty orocos Node can be created with:
 
-#### Parameter
-##### RTRunner
-##### RTDummy
+``` sh
+orocreate-catkin-pkg my_node component
+```
+
 
 #### Create Orocos Messages from ROS Messages
 
+From: [Source][https://github.com/orocos/rtt_ros_integration/tree/toolchain-2.9/rtt_roscomm#making-a-packages-ros-msg-and-srv-types-available]
+
+```sh
+rosrun rtt_roscomm create_rtt_msgs my_msgs
+```
+
+This should create a package with a CMakeLists.txt and the following content:
+
+```
+project(rtt_my_msgs)
+find_package(catkin REQUIRED COMPONENTS rtt_roscomm)
+
+# Generate typekits for ros .msg files
+ros_generate_rtt_typekit(my_msgs)
+# Generate the plugin which makes the services in my_msgs available
+ros_generate_rtt_service_proxies(my_msgs)
+
+# Call orocos_generate_package() after the above to export the proper targets
+orocos_generate_package(
+  DEPENDS my_msgs
+  DEPENDS_TARGETS rtt_roscomm
+)
+```
+
 #### More examples
 
+More examples are in the rtcf_example folder.
 
 <!-- CONTRIBUTING -->
 ## Contributing
