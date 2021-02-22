@@ -1,4 +1,3 @@
-<!-- KITcar launch script for preprocessing as a node -->
 <launch>
 
     <!--<env if="$(arg debug_mode)" name="ROSCONSOLE_CONFIG_FILE" value="$(find perception)/rosconsole/perception.conf"/>-->
