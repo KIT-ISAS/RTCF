@@ -6,7 +6,7 @@
         <rosparam param="frequency">10</rosparam>
     </node>
 
-    <node name="sum_1" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="sum_1" pkg="rtcf" type="rt_launcher" output="screen">
         <remap from="out_Port" to="/mapped/1"/>
         <remap from="in_Port_1" to="/mapped/in_from_ros"/>
 
@@ -15,7 +15,7 @@
         <rosparam param="is_sync">true</rosparam>
     </node>
 
-    <node name="sum_2" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="sum_2" pkg="rtcf" type="rt_launcher" output="screen">
         <remap from="out_Port" to="/mapped/to_ros"/>
         <remap from="in_Port_1" to="/mapped/1"/>
         <remap from="in_Port_2" to="/mapped/1"/>

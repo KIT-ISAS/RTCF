@@ -107,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg message_gen
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  #LIBRARIES rt_runner rt_dummy
+  #LIBRARIES rt_runner rt_launcher
   CATKIN_DEPENDS message_runtime rtt_ros rtt_roscomm
 #  DEPENDS system_lib
 )
@@ -201,7 +201,7 @@ include_directories(
 #############################################################################
 
 INCLUDE(src/rt_runner/CMakeLists.txt)
-INCLUDE(src/rt_dummy/CMakeLists.txt)
+INCLUDE(src/rt_launcher/CMakeLists.txt)
 #############################################################################
 
 #############

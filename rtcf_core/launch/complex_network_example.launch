@@ -10,7 +10,7 @@
     </node>
 
 
-    <node name="node_1" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="node_1" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="is_first">true</rosparam>
         <rosparam param="rt_type">"foobar"</rosparam>
 
@@ -18,7 +18,7 @@
         <remap from="out_Port" to="/stream2"/>
     </node>
 
-    <node name="node_2" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="node_2" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream2"/>
@@ -27,18 +27,18 @@
 
 
 
-    <node name="node_5" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="node_5" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="rt_type">"foobar"</rosparam>
-        <rosparam param="topics_ignore_for_graph" >".*4_4"</rosparam>
+        <rosparam param="topics_ignore_for_graph">".*4_4"</rosparam>
 
         <remap from="in_Port_1" to="/stream3"/>
         <remap from="in_Port_2" to="/stream4_4"/>
         <remap from="out_Port" to="/stream4_1"/>
     </node>
 
-    <node name="node_6" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="node_6" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="rt_type">"foobar"</rosparam>
-        <rosparam param="topics_ignore_for_graph" >".*4_3"</rosparam>
+        <rosparam param="topics_ignore_for_graph">".*4_3"</rosparam>
 
         <remap from="in_Port_1" to="/stream4_1"/>
         <remap from="in_Port_2" to="/stream4_3"/>
@@ -46,14 +46,14 @@
     </node>
 
 
-    <node name="node_7" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="node_7" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream4_2"/>
         <remap from="out_Port" to="/stream4_3"/>
     </node>
 
-    <node name="node_8" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="node_8" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream4_3"/>
@@ -61,8 +61,8 @@
     </node>
 
 
-        
-    <node name="node_3" pkg="rtcf" type="rt_dummy" output="screen">
+
+    <node name="node_3" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream3"/>
@@ -70,7 +70,7 @@
     </node>
 
 
-    <node name="node_9" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="node_9" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream4_4"/>
@@ -79,7 +79,7 @@
     </node>
 
 
-    <node name="node_4" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="node_4" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream3"/>
@@ -87,7 +87,7 @@
     </node>
 
 
-    <node name="node_10" pkg="rtcf" type="rt_dummy" output="screen">
+    <node name="node_10" pkg="rtcf" type="rt_launcher" output="screen">
         <rosparam param="rt_type">"foobar"</rosparam>
 
         <remap from="in_Port_1" to="/stream5"/>

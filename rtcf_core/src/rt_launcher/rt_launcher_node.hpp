@@ -1,8 +1,7 @@
-#ifndef RT_DUMMY_NODE_H
-#define RT_DUMMY_NODE_H
+#ifndef RT_LAUNCHER_NODE_H
+#define RT_LAUNCHER_NODE_H
 
 #include "ros/ros.h"
-
 #include "ros/service_client.h"
 #include "rtcf/ActivateRTLoop.h"
 #include "rtcf/DeactivateRTLoop.h"
@@ -14,26 +13,26 @@ struct mapping {
     std::string to_topic;
 };
 
-struct dummy_attributes {
+struct launcher_attributes {
     std::vector<mapping> mappings;
     std::string name;
     std::string rt_type;
     std::string topics_ignore_for_graph;
     bool is_start = false;
-    bool is_sync = false;
+    bool is_sync  = false;
 };
 
-class RTDummyNode {
-   private:
+class RTLauncherNode {
+  private:
     ros::NodeHandle node_handle_;
 
-    dummy_attributes dummy_attributes_;
+    launcher_attributes launcher_attributes_;
 
     rtcf::LoadOrocosComponent genLoadMsg();
     rtcf::UnloadOrocosComponent genUnloadMsg();
 
-   public:
-    RTDummyNode(const ros::NodeHandle &node_handle);
+  public:
+    RTLauncherNode(const ros::NodeHandle &node_handle);
 
     void configure();
     void shutdown();
@@ -50,9 +49,8 @@ class RTDummyNode {
 
     ros::ServiceClient loadInRTRunnerClient;
     ros::ServiceClient unloadInRTRunnerClient;
-
 };
 
-static std::unique_ptr<RTDummyNode> node_ptr;
+static std::unique_ptr<RTLauncherNode> node_ptr;
 
-#endif /* RT_DUMMY_NODE_H */
+#endif /* RT_LAUNCHER_NODE_H */

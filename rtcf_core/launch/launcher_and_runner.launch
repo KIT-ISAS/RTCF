@@ -10,24 +10,24 @@
         <rosparam param="frequency">100.0</rosparam>
     </node>
 
-    <node name="foobar_1" pkg="rtcf" type="rt_dummy" args="rt_type=foobar is_first=true" output="screen">
+    <node name="foobar_1" pkg="rtcf" type="rt_launcher" args="rt_type=foobar is_first=true" output="screen">
         <remap from="out_Port" to="/mapped/out_Port_1"/>
         <remap from="in_Port_1" to="/mapped/to_ros_in_Port"/>
 
         <rosparam param="is_first">true</rosparam>
         <rosparam param="rt_type">"sum"</rosparam>
         <rosparam param="is_sync">true</rosparam>
-        <rosparam param="topics_ignore_for_graph" >".*n-1.*"</rosparam>
+        <rosparam param="topics_ignore_for_graph">".*n-1.*"</rosparam>
     </node>
 
-    <node name="foobar_2" pkg="rtcf" type="rt_dummy" args="rt_type=foobar is_first=false" output="screen">
+    <node name="foobar_2" pkg="rtcf" type="rt_launcher" args="rt_type=foobar is_first=false" output="screen">
         <remap from="out_Port" to="/mapped/out_Port_2_to_ros"/>
         <remap from="in_Port_1" to="/mapped/out_Port_1"/>
 
         <rosparam param="is_first">false</rosparam>
         <rosparam param="rt_type">"sum"</rosparam>
         <rosparam param="is_sync">true</rosparam>
-        <rosparam param="topics_ignore_for_graph" >".*n-1.*"</rosparam>
+        <rosparam param="topics_ignore_for_graph">".*n-1.*"</rosparam>
     </node>
 
 </launch>

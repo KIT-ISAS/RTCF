@@ -1,6 +1,5 @@
-#include "rt_dummy_node.hpp"
-
 #include <signal.h>
+
 #include <regex>
 #include <sstream>
 #include <string>
@@ -8,44 +7,40 @@
 
 #include "ros/duration.h"
 #include "ros/service.h"
+#include "rt_launcher_node.hpp"
 #include "rtcf/LoadOrocosComponent.h"
 #include "rtcf/mapping.h"
 
-RTDummyNode::RTDummyNode(const ros::NodeHandle &node_handle) : node_handle_(node_handle) {};
+RTLauncherNode::RTLauncherNode(const ros::NodeHandle &node_handle) : node_handle_(node_handle){};
 
-int RTDummyNode::loop() {
+int RTLauncherNode::loop() {
     loadInRTRunner();
     ros::spin();
     return 0;
 };
 
-void RTDummyNode::configure() { setupROS(); };
+void RTLauncherNode::configure() { setupROS(); };
 
-void RTDummyNode::shutdown() { shutdownROS(); };
+void RTLauncherNode::shutdown() { shutdownROS(); };
 
-void RTDummyNode::setupROS() {
-    ros::service::waitForService("/rt_runner/load_orocos_component",
-                                 ros::Duration(-1));
-    loadInRTRunnerClient =
-        node_handle_.serviceClient<rtcf::LoadOrocosComponent>(
-            "/rt_runner/load_orocos_component");
+void RTLauncherNode::setupROS() {
+    ros::service::waitForService("/rt_runner/load_orocos_component", ros::Duration(-1));
+    loadInRTRunnerClient = node_handle_.serviceClient<rtcf::LoadOrocosComponent>("/rt_runner/load_orocos_component");
 
-    ros::service::waitForService("/rt_runner/unload_orocos_component",
-                                 ros::Duration(-1));
+    ros::service::waitForService("/rt_runner/unload_orocos_component", ros::Duration(-1));
     unloadInRTRunnerClient =
-        node_handle_.serviceClient<rtcf::UnloadOrocosComponent>(
-            "/rt_runner/unload_orocos_component");
+        node_handle_.serviceClient<rtcf::UnloadOrocosComponent>("/rt_runner/unload_orocos_component");
 };
 
-void RTDummyNode::shutdownROS() {
+void RTLauncherNode::shutdownROS() {
     loadInRTRunnerClient.shutdown();
     unloadInRTRunnerClient.shutdown();
 };
 
-rtcf::LoadOrocosComponent RTDummyNode::genLoadMsg() {
+rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
     rtcf::LoadOrocosComponent srv;
 
-    for (auto mapping : dummy_attributes_.mappings) {
+    for (auto mapping : launcher_attributes_.mappings) {
         rtcf::mapping m;
 
         std::stringstream ss_from;
@@ -59,11 +54,11 @@ rtcf::LoadOrocosComponent RTDummyNode::genLoadMsg() {
         srv.request.mappings.push_back(m);
     }
 
-    srv.request.component_name.data = dummy_attributes_.name;
-    srv.request.component_type.data = dummy_attributes_.rt_type;
-    srv.request.is_start.data = dummy_attributes_.is_start;
-    srv.request.is_sync.data = dummy_attributes_.is_sync;
-    srv.request.topics_ignore_for_graph.data = dummy_attributes_.topics_ignore_for_graph;
+    srv.request.component_name.data          = launcher_attributes_.name;
+    srv.request.component_type.data          = launcher_attributes_.rt_type;
+    srv.request.is_start.data                = launcher_attributes_.is_start;
+    srv.request.is_sync.data                 = launcher_attributes_.is_sync;
+    srv.request.topics_ignore_for_graph.data = launcher_attributes_.topics_ignore_for_graph;
 
     std::stringstream ss;
     ss << node_handle_.getNamespace();
@@ -72,10 +67,10 @@ rtcf::LoadOrocosComponent RTDummyNode::genLoadMsg() {
     return srv;
 };
 
-rtcf::UnloadOrocosComponent RTDummyNode::genUnloadMsg() {
+rtcf::UnloadOrocosComponent RTLauncherNode::genUnloadMsg() {
     rtcf::UnloadOrocosComponent srv;
 
-    srv.request.component_name.data = dummy_attributes_.name;
+    srv.request.component_name.data = launcher_attributes_.name;
 
     std::stringstream ss;
     ss << node_handle_.getNamespace();
@@ -84,31 +79,31 @@ rtcf::UnloadOrocosComponent RTDummyNode::genUnloadMsg() {
     return srv;
 };
 
-void RTDummyNode::loadROSParameters() {
+void RTLauncherNode::loadROSParameters() {
     bool is_first = false;
     if (node_handle_.getParam("is_first", is_first)) {
-        dummy_attributes_.is_start = is_first;
+        launcher_attributes_.is_start = is_first;
     }
 
     std::string rt_type;
     if (node_handle_.getParam("rt_type", rt_type)) {
-        dummy_attributes_.rt_type = rt_type;
+        launcher_attributes_.rt_type = rt_type;
     } else {
-        ROS_ERROR_STREAM("No rt_type for rt dummy given");
+        ROS_ERROR_STREAM("No rt_type for rt launcher given");
     }
 
     bool is_sync = false;
     if (node_handle_.getParam("is_sync", is_sync)) {
-        dummy_attributes_.is_sync = is_sync;
+        launcher_attributes_.is_sync = is_sync;
     }
 
     std::string topics_ignore_for_graph;
-    if( node_handle_.getParam("topics_ignore_for_graph", topics_ignore_for_graph)) {
-        dummy_attributes_.topics_ignore_for_graph =topics_ignore_for_graph;
+    if (node_handle_.getParam("topics_ignore_for_graph", topics_ignore_for_graph)) {
+        launcher_attributes_.topics_ignore_for_graph = topics_ignore_for_graph;
     }
 }
 
-void RTDummyNode::loadInRTRunner() {
+void RTLauncherNode::loadInRTRunner() {
     rtcf::LoadOrocosComponent srv = genLoadMsg();
 
     if (loadInRTRunnerClient.call(srv)) {
@@ -118,7 +113,7 @@ void RTDummyNode::loadInRTRunner() {
     }
 };
 
-void RTDummyNode::unloadInRTRunner() {
+void RTLauncherNode::unloadInRTRunner() {
     rtcf::UnloadOrocosComponent srv = genUnloadMsg();
 
     if (unloadInRTRunnerClient.call(srv)) {
@@ -128,7 +123,7 @@ void RTDummyNode::unloadInRTRunner() {
     }
 };
 
-void RTDummyNode::handleArgs(std::vector<std::string> argv) {
+void RTLauncherNode::handleArgs(std::vector<std::string> argv) {
     /*****************************
      *  Handle Topic Remappings  *
      *****************************/
@@ -144,19 +139,17 @@ void RTDummyNode::handleArgs(std::vector<std::string> argv) {
         bool to_match_found;
 
         from_match_found = std::regex_match(s, from_regex_match, from_regex);
-        to_match_found = std::regex_match(s, to_regex_match, to_regex);
+        to_match_found   = std::regex_match(s, to_regex_match, to_regex);
 
         if (from_match_found && to_match_found) {
             mapping mapping;
 
             mapping.from_topic = from_regex_match[1];
-            mapping.to_topic = to_regex_match[1];
+            mapping.to_topic   = to_regex_match[1];
 
-            dummy_attributes_.mappings.push_back(mapping);
+            launcher_attributes_.mappings.push_back(mapping);
 
-            ROS_INFO_STREAM("got remapping from: [" << mapping.from_topic
-                                                    << "] to: ["
-                                                    << mapping.to_topic << "]");
+            ROS_INFO_STREAM("got remapping from: [" << mapping.from_topic << "] to: [" << mapping.to_topic << "]");
         }
     }
 
@@ -169,12 +162,10 @@ void RTDummyNode::handleArgs(std::vector<std::string> argv) {
     for (const auto s : argv) {
         std::smatch regex_match;
         if (std::regex_match(s, regex_match, name_regex)) {
-            dummy_attributes_.name = regex_match[1];
-            ROS_INFO_STREAM("got node name: " << dummy_attributes_.name);
+            launcher_attributes_.name = regex_match[1];
+            ROS_INFO_STREAM("got node name: " << launcher_attributes_.name);
         }
     }
-
-
 };
 
 void sigintHandler(int sig) {
@@ -184,17 +175,16 @@ void sigintHandler(int sig) {
 }
 
 int main(int argc, char **argv) {
-
     // necessary because ros::init is absorging argv
     std::vector<std::string> args;
     for (int i = 0; i < argc; i++) {
         args.push_back(argv[i]);
     }
 
-    ros::init(argc, argv, "RTDummy", ros::init_options::NoSigintHandler);
+    ros::init(argc, argv, "RTLauncher", ros::init_options::NoSigintHandler);
     ros::NodeHandle nh("~");
 
-    node_ptr = std::make_unique<RTDummyNode>(nh);
+    node_ptr = std::make_unique<RTLauncherNode>(nh);
     signal(SIGINT, sigintHandler);
 
     node_ptr->handleArgs(args);
@@ -206,4 +196,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }  // end main()
-
