@@ -1,3 +1,5 @@
+#include "rt_launcher_node.hpp"
+
 #include <signal.h>
 
 #include <regex>
@@ -7,23 +9,21 @@
 
 #include "ros/duration.h"
 #include "ros/service.h"
-#include "rt_launcher_node.hpp"
 #include "rtcf/LoadOrocosComponent.h"
 #include "rtcf/mapping.h"
 
 RTLauncherNode::RTLauncherNode(const ros::NodeHandle &node_handle) : node_handle_(node_handle){};
 
 int RTLauncherNode::loop() {
-    loadInRTRunner();
     ros::spin();
     return 0;
 };
 
-void RTLauncherNode::configure() { setupROS(); };
+void RTLauncherNode::configure() { setupServiceClients(); };
 
-void RTLauncherNode::shutdown() { shutdownROS(); };
+void RTLauncherNode::shutdown() { shutdownServiceClients(); };
 
-void RTLauncherNode::setupROS() {
+void RTLauncherNode::setupServiceClients() {
     ros::service::waitForService("/rt_runner/load_orocos_component", ros::Duration(-1));
     loadInRTRunnerClient = node_handle_.serviceClient<rtcf::LoadOrocosComponent>("/rt_runner/load_orocos_component");
 
@@ -32,7 +32,7 @@ void RTLauncherNode::setupROS() {
         node_handle_.serviceClient<rtcf::UnloadOrocosComponent>("/rt_runner/unload_orocos_component");
 };
 
-void RTLauncherNode::shutdownROS() {
+void RTLauncherNode::shutdownServiceClients() {
     loadInRTRunnerClient.shutdown();
     unloadInRTRunnerClient.shutdown();
 };
@@ -43,13 +43,8 @@ rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
     for (auto mapping : launcher_attributes_.mappings) {
         rtcf::mapping m;
 
-        std::stringstream ss_from;
-        ss_from << mapping.from_topic;
-        m.from_topic.data = ss_from.str();
-
-        std::stringstream ss_to;
-        ss_to << mapping.to_topic;
-        m.to_topic.data = ss_to.str();
+        m.from_topic.data = mapping.from_topic;
+        m.to_topic.data   = mapping.to_topic;
 
         srv.request.mappings.push_back(m);
     }
@@ -60,9 +55,7 @@ rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
     srv.request.is_sync.data                 = launcher_attributes_.is_sync;
     srv.request.topics_ignore_for_graph.data = launcher_attributes_.topics_ignore_for_graph;
 
-    std::stringstream ss;
-    ss << node_handle_.getNamespace();
-    srv.request.ns.data = ss.str();
+    srv.request.ns.data = node_handle_.getNamespace();
 
     return srv;
 };
@@ -89,7 +82,7 @@ void RTLauncherNode::loadROSParameters() {
     if (node_handle_.getParam("rt_type", rt_type)) {
         launcher_attributes_.rt_type = rt_type;
     } else {
-        ROS_ERROR_STREAM("No rt_type for rt launcher given");
+        ROS_ERROR_STREAM("No rt_type for RT launcher given");
     }
 
     bool is_sync = false;
@@ -107,9 +100,9 @@ void RTLauncherNode::loadInRTRunner() {
     rtcf::LoadOrocosComponent srv = genLoadMsg();
 
     if (loadInRTRunnerClient.call(srv)) {
-        ROS_INFO("client called successfully");
+        ROS_DEBUG("RT Runner load called successfully");
     } else {
-        ROS_ERROR("Failed to call service load in RT Runner");
+        ROS_ERROR("Failed to call load service in RT Runner");
     }
 };
 
@@ -117,19 +110,22 @@ void RTLauncherNode::unloadInRTRunner() {
     rtcf::UnloadOrocosComponent srv = genUnloadMsg();
 
     if (unloadInRTRunnerClient.call(srv)) {
-        ROS_INFO("client called successfully");
+        ROS_DEBUG("RT Runner unload called successfully");
     } else {
-        ROS_INFO("Failed to call service unload in RT Runner");
+        ROS_ERROR("Failed to call unload service in RT Runner");
     }
 };
 
 void RTLauncherNode::handleArgs(std::vector<std::string> argv) {
+    // Alternative to using regexes is boost::program_options
+    // but for now it works :-)
+
     /*****************************
      *  Handle Topic Remappings  *
      *****************************/
 
-    std::regex from_regex("(^[a-zA-Z0-9/].+):=[a-zA-Z0-9/].+$");
-    std::regex to_regex("^[a-zA-Z0-9/].+:=([a-zA-Z0-9/].+$)");
+    std::regex from_regex("(^[a-zA-Z0-9\\/].+):=[a-zA-Z0-9\\/].+$");
+    std::regex to_regex("^[a-zA-Z0-9\\/].+:=([a-zA-Z0-9\\/].+$)");
 
     for (const auto s : argv) {
         std::smatch from_regex_match;
@@ -142,14 +138,14 @@ void RTLauncherNode::handleArgs(std::vector<std::string> argv) {
         to_match_found   = std::regex_match(s, to_regex_match, to_regex);
 
         if (from_match_found && to_match_found) {
-            mapping mapping;
+            Mapping mapping;
 
             mapping.from_topic = from_regex_match[1];
             mapping.to_topic   = to_regex_match[1];
 
             launcher_attributes_.mappings.push_back(mapping);
 
-            ROS_INFO_STREAM("got remapping from: [" << mapping.from_topic << "] to: [" << mapping.to_topic << "]");
+            ROS_DEBUG_STREAM("Got remapping from: [" << mapping.from_topic << "] to: [" << mapping.to_topic << "]");
         }
     }
 
@@ -163,19 +159,21 @@ void RTLauncherNode::handleArgs(std::vector<std::string> argv) {
         std::smatch regex_match;
         if (std::regex_match(s, regex_match, name_regex)) {
             launcher_attributes_.name = regex_match[1];
-            ROS_INFO_STREAM("got node name: " << launcher_attributes_.name);
+            ROS_DEBUG_STREAM("Got node name: " << launcher_attributes_.name);
         }
     }
 };
 
 void sigintHandler(int sig) {
-    ROS_DEBUG("sigint handler called");
+    ROS_DEBUG("SIGINT handler called");
     node_ptr->unloadInRTRunner();
+    node_ptr->shutdown();
+    // after ros::shutdown is called, ros::spin() will return
     ros::shutdown();
 }
 
 int main(int argc, char **argv) {
-    // necessary because ros::init is absorging argv
+    // necessary because ros::init is absorbing argv
     std::vector<std::string> args;
     for (int i = 0; i < argc; i++) {
         args.push_back(argv[i]);
@@ -191,8 +189,8 @@ int main(int argc, char **argv) {
 
     node_ptr->configure();
     node_ptr->loadROSParameters();
+    node_ptr->loadInRTRunner();
     node_ptr->loop();
-    node_ptr->shutdown();
 
     return 0;
 }  // end main()

@@ -8,13 +8,13 @@
 #include "rtcf/LoadOrocosComponent.h"
 #include "rtcf/UnloadOrocosComponent.h"
 
-struct mapping {
+struct Mapping {
     std::string from_topic;
     std::string to_topic;
 };
 
-struct launcher_attributes {
-    std::vector<mapping> mappings;
+struct LauncherAttributes {
+    std::vector<Mapping> mappings;
     std::string name;
     std::string rt_type;
     std::string topics_ignore_for_graph;
@@ -26,7 +26,7 @@ class RTLauncherNode {
   private:
     ros::NodeHandle node_handle_;
 
-    launcher_attributes launcher_attributes_;
+    LauncherAttributes launcher_attributes_;
 
     rtcf::LoadOrocosComponent genLoadMsg();
     rtcf::UnloadOrocosComponent genUnloadMsg();
@@ -38,8 +38,8 @@ class RTLauncherNode {
     void shutdown();
     int loop();
 
-    void setupROS();
-    void shutdownROS();
+    void setupServiceClients();
+    void shutdownServiceClients();
     void loadROSParameters();
 
     void loadInRTRunner();
