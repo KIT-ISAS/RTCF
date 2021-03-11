@@ -10,7 +10,7 @@
 #include "ros/duration.h"
 #include "ros/service.h"
 #include "rtcf/LoadOrocosComponent.h"
-#include "rtcf/mapping.h"
+#include "rtcf/Mapping.h"
 
 RTLauncherNode::RTLauncherNode(const ros::NodeHandle &node_handle) : node_handle_(node_handle){};
 
@@ -41,7 +41,7 @@ rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
     rtcf::LoadOrocosComponent srv;
 
     for (auto mapping : launcher_attributes_.mappings) {
-        rtcf::mapping m;
+        rtcf::Mapping m;
 
         m.from_topic.data = mapping.from_topic;
         m.to_topic.data   = mapping.to_topic;

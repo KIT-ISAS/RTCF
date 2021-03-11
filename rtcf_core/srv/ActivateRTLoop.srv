@@ -1,3 +1,2 @@
-std_msgs/Empty empty
 ---
 std_msgs/Bool success

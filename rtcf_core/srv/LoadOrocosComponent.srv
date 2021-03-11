@@ -1,11 +1,10 @@
-std_msgs/String component_name
-std_msgs/String component_type
-std_msgs/String topics_ignore_for_graph
-std_msgs/String ns
-mapping[] mappings
-std_msgs/String[] whitelist
-std_msgs/Bool is_start
-std_msgs/Bool is_sync
+std_msgs/String component_name # equivalent to a ROS node name
+std_msgs/String component_type # RTT component name (equivalent to node type)
+std_msgs/String topics_ignore_for_graph # topics which are not used during graph generation (can contain regex)
+std_msgs/String ns # ROS namespace of the real time component
+Mapping[] mappings # ROS remappings that apply to the real time component
+std_msgs/Bool is_start # Flag for real time components that are first in every iteration (e.g., hardware interface)
+std_msgs/Bool is_sync # Additional flag for the graph generation algorithm
 
 ---
 std_msgs/Bool success

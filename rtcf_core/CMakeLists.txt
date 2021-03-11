@@ -48,7 +48,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg message_gen
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   mapping.msg
+   Mapping.msg
 #   Message1.msg
 #   Message2.msg
  )
