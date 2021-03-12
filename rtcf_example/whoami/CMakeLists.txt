@@ -10,6 +10,9 @@ cmake_minimum_required(VERSION 2.8)
 #
 project(whoami)
 
+find_package(catkin REQUIRED rtcf)
+include_directories(${catkin_INCLUDE_DIRS})
+
 # Use 'source orocos_toolchain/env.sh' if the command below fails:
 find_package(OROCOS-RTT QUIET)
 if (NOT OROCOS-RTT_FOUND)

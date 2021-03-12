@@ -203,6 +203,7 @@ bool RTLauncherNode::handleArgs(int &argc, char **argv) {
 }
 
 void sigintHandler(int sig) {
+    (void)sig;
     ROS_DEBUG("SIGINT handler called");
     node_ptr->unloadInRTRunner();
     node_ptr->shutdown();
