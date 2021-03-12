@@ -2,6 +2,7 @@
 
 #include <signal.h>
 
+#include <boost/program_options.hpp>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -49,14 +50,15 @@ rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
         srv.request.mappings.push_back(m);
     }
 
-    srv.request.component_name.data          = launcher_attributes_.name;
+    srv.request.ns.data             = launcher_attributes_.ns;
+    srv.request.component_name.data = launcher_attributes_.name;
+
     srv.request.component_type.data          = launcher_attributes_.rt_type;
-    srv.request.is_start.data                = launcher_attributes_.is_start;
+    srv.request.is_first.data                = launcher_attributes_.is_first;
     srv.request.is_sync.data                 = launcher_attributes_.is_sync;
     srv.request.topics_ignore_for_graph.data = launcher_attributes_.topics_ignore_for_graph;
 
-    srv.request.ns.data = node_handle_.getNamespace();
-
+    // ROS_INFO_STREAM("LOAD CALL:" << std::endl << srv.request);
     return srv;
 };
 
@@ -64,43 +66,61 @@ rtcf::UnloadOrocosComponent RTLauncherNode::genUnloadMsg() {
     rtcf::UnloadOrocosComponent srv;
 
     srv.request.component_name.data = launcher_attributes_.name;
+    srv.request.ns.data             = launcher_attributes_.ns;
 
-    std::stringstream ss;
-    ss << node_handle_.getNamespace();
-    srv.request.ns.data = ss.str();
-
+    // ROS_INFO_STREAM("UNLOAD CALL:" << std::endl << srv.request);
     return srv;
 };
 
-void RTLauncherNode::loadROSParameters() {
-    bool is_first = false;
-    if (node_handle_.getParam("is_first", is_first)) {
-        launcher_attributes_.is_start = is_first;
+bool RTLauncherNode::loadROSParameters() {
+    // load parameters from ROS server
+    // check if parameters are not overriden
+    if (node_handle_.hasParam("is_first")) {
+        if (launcher_attributes_.is_first) {
+            ROS_ERROR("Conflicting configuration for parameter is_first");
+            return false;
+        } else {
+            node_handle_.getParam("is_first", launcher_attributes_.is_first);
+        }
+    }
+    if (node_handle_.hasParam("is_sync")) {
+        if (launcher_attributes_.is_sync) {
+            ROS_ERROR("Conflicting configuration for parameter is_sync");
+            return false;
+        } else {
+            node_handle_.getParam("is_sync", launcher_attributes_.is_sync);
+        }
     }
 
-    std::string rt_type;
-    if (node_handle_.getParam("rt_type", rt_type)) {
-        launcher_attributes_.rt_type = rt_type;
-    } else {
-        ROS_ERROR_STREAM("No rt_type for RT launcher given");
+    if (node_handle_.hasParam("rt_type")) {
+        if (!launcher_attributes_.rt_type.empty()) {
+            ROS_ERROR("Conflicting configuration for parameter rt_type");
+            return false;
+        } else {
+            node_handle_.getParam("rt_type", launcher_attributes_.rt_type);
+        }
     }
 
-    bool is_sync = false;
-    if (node_handle_.getParam("is_sync", is_sync)) {
-        launcher_attributes_.is_sync = is_sync;
+    // check for RT type
+    if (launcher_attributes_.rt_type.empty()) {
+        ROS_ERROR("No RT type was specified!");
+        return false;
     }
 
+    // TODO: move this into RT Runner
     std::string topics_ignore_for_graph;
     if (node_handle_.getParam("topics_ignore_for_graph", topics_ignore_for_graph)) {
         launcher_attributes_.topics_ignore_for_graph = topics_ignore_for_graph;
     }
+
+    return true;
 }
 
 bool RTLauncherNode::loadInRTRunner() {
     rtcf::LoadOrocosComponent srv = genLoadMsg();
 
     bool service_ok = loadInRTRunnerClient.call(srv);
-    if (service_ok && srv.res.success) {
+    if (service_ok && srv.response.success.data) {
         ROS_DEBUG("RT Runner load called successfully");
         return true;
     } else {
@@ -113,7 +133,7 @@ bool RTLauncherNode::unloadInRTRunner() {
     rtcf::UnloadOrocosComponent srv = genUnloadMsg();
 
     bool service_ok = unloadInRTRunnerClient.call(srv);
-    if (service_ok && srv.res.success) {
+    if (service_ok && srv.response.success.data) {
         ROS_DEBUG("RT Runner unload called successfully");
         return true;
     } else {
@@ -122,53 +142,65 @@ bool RTLauncherNode::unloadInRTRunner() {
     }
 };
 
-void RTLauncherNode::handleArgs(std::vector<std::string> argv) {
-    // Alternative to using regexes is boost::program_options
-    // but for now it works :-)
+void RTLauncherNode::loadNodeConfiguration() {
+    std::string full_name     = ros::this_node::getName();
+    launcher_attributes_.name = full_name.substr(full_name.rfind("/") + 1);
+    launcher_attributes_.ns   = ros::this_node::getNamespace();
+    ROS_DEBUG_STREAM("Got node name: " << launcher_attributes_.name);
+    ROS_DEBUG_STREAM("Got node namespace: " << launcher_attributes_.ns);
 
-    /*****************************
-     *  Handle Topic Remappings  *
-     *****************************/
+    // get remaps
+    const auto remappings = ros::names::getUnresolvedRemappings();
+    for (const auto &pair : remappings) {
+        Mapping mapping;
+        mapping.from_topic = pair.first;
+        mapping.to_topic   = pair.second;
+        launcher_attributes_.mappings.push_back(mapping);
+        ROS_DEBUG_STREAM("Got remapping from: [" << mapping.from_topic << "] to: [" << mapping.to_topic << "]");
+    }
+}
 
-    std::regex from_regex("(^[a-zA-Z0-9\\/].+):=[a-zA-Z0-9\\/].+$");
-    std::regex to_regex("^[a-zA-Z0-9\\/].+:=([a-zA-Z0-9\\/].+$)");
+bool RTLauncherNode::handleArgs(int &argc, char **argv) {
+    namespace po = boost::program_options;
+    // handle options
+    po::options_description desc("Allowed options");
+    // clang-format off
+    desc.add_options()
+        ("help", "help message")
+        ("is_first,f", "mark RT component as start component")
+        ("is_sync,s", "mark RT component as sync component")
+        ("rt_type", po::value<std::string>(), "name of the RT component to load");
+    // clang-format on
+    // rt_type can be given as positional argument
+    po::positional_options_description p;
+    p.add("rt_type", 1);
 
-    for (const auto s : argv) {
-        std::smatch from_regex_match;
-        std::smatch to_regex_match;
-
-        bool from_match_found;
-        bool to_match_found;
-
-        from_match_found = std::regex_match(s, from_regex_match, from_regex);
-        to_match_found   = std::regex_match(s, to_regex_match, to_regex);
-
-        if (from_match_found && to_match_found) {
-            Mapping mapping;
-
-            mapping.from_topic = from_regex_match[1];
-            mapping.to_topic   = to_regex_match[1];
-
-            launcher_attributes_.mappings.push_back(mapping);
-
-            ROS_DEBUG_STREAM("Got remapping from: [" << mapping.from_topic << "] to: [" << mapping.to_topic << "]");
-        }
+    // now parse the options
+    po::variables_map vm;
+    try {
+        po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+        po::notify(vm);
+    } catch (po::error e) {
+        std::cout << e.what() << std::endl;
+        return false;
     }
 
-    /**********************
-     *  Handle Node Name  *
-     **********************/
-
-    std::regex name_regex("^__name:=(.+$)");
-
-    for (const auto s : argv) {
-        std::smatch regex_match;
-        if (std::regex_match(s, regex_match, name_regex)) {
-            launcher_attributes_.name = regex_match[1];
-            ROS_DEBUG_STREAM("Got node name: " << launcher_attributes_.name);
-        }
+    // react appropriately
+    if (vm.count("help")) {
+        std::cout << desc << std::endl;
+        return false;
     }
-};
+    if (vm.count("is_first")) {
+        launcher_attributes_.is_first = true;
+    }
+    if (vm.count("is_sync")) {
+        launcher_attributes_.is_sync = true;
+    }
+    if (vm.count("rt_type")) {
+        launcher_attributes_.rt_type = vm["rt_type"].as<std::string>();
+    }
+    return true;
+}
 
 void sigintHandler(int sig) {
     ROS_DEBUG("SIGINT handler called");
@@ -179,23 +211,23 @@ void sigintHandler(int sig) {
 }
 
 int main(int argc, char **argv) {
-    // necessary because ros::init is absorbing argv
-    std::vector<std::string> args;
-    for (int i = 0; i < argc; i++) {
-        args.push_back(argv[i]);
-    }
-
-    ros::init(argc, argv, "RTLauncher", ros::init_options::NoSigintHandler);
+    ros::init(argc, argv, "rt_launcher", ros::init_options::NoSigintHandler);
     ros::NodeHandle nh("~");
 
     node_ptr = std::make_unique<RTLauncherNode>(nh);
     signal(SIGINT, sigintHandler);
 
-    node_ptr->handleArgs(args);
-
+    if (!node_ptr->handleArgs(argc, argv)) {
+        return EXIT_SUCCESS;
+    }
+    node_ptr->loadNodeConfiguration();
+    if (!node_ptr->loadROSParameters()) {
+        return EXIT_FAILURE;
+    }
     node_ptr->configure();
-    node_ptr->loadROSParameters();
-    node_ptr->loadInRTRunner();
+    if (!node_ptr->loadInRTRunner()) {
+        return EXIT_FAILURE;
+    }
     node_ptr->loop();
 
     return 0;

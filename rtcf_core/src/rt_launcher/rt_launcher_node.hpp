@@ -14,12 +14,15 @@ struct Mapping {
 };
 
 struct LauncherAttributes {
+    // things that exist in a normal ROS node
     std::vector<Mapping> mappings;
     std::string name;
-    std::string rt_type;
+    std::string ns;
+    // RTCF specific stuff
     std::string topics_ignore_for_graph;
-    bool is_start = false;
-    bool is_sync  = false;
+    std::string rt_type = "";
+    bool is_first       = false;
+    bool is_sync        = false;
 };
 
 class RTLauncherNode {
@@ -40,12 +43,13 @@ class RTLauncherNode {
 
     void setupServiceClients();
     void shutdownServiceClients();
-    void loadROSParameters();
 
-    void loadInRTRunner();
-    void unloadInRTRunner();
+    bool loadInRTRunner();
+    bool unloadInRTRunner();
 
-    void handleArgs(std::vector<std::string> argv);
+    bool handleArgs(int &argc, char **argv);
+    void loadNodeConfiguration();
+    bool loadROSParameters();
 
     ros::ServiceClient loadInRTRunnerClient;
     ros::ServiceClient unloadInRTRunnerClient;
