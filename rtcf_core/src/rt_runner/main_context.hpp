@@ -5,14 +5,12 @@
 #include <rtt/extras/SlaveActivity.hpp>
 #include <rtt/os/TimeService.hpp>
 #include <vector>
+
 #include "ros/ros.h"
 
-class MainContext : public RTT::TaskContext
-{
-private:
-    
-
-public:
+class MainContext : public RTT::TaskContext {
+  private:
+  public:
     MainContext(std::string const& name);
     bool configureHook();
     bool startHook();
@@ -26,8 +24,6 @@ public:
     std::vector<RTT::extras::SlaveActivity*> slaves_;
 
     RTT::os::TimeService* time_service_ptr;
-    RTT::os::TimeService::ticks current_time;
-
 };
 
 #endif /* MAIN_CONTEXT_H */
