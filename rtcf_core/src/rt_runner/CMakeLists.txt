@@ -1,38 +1,17 @@
-# Use 'source orocos_toolchain/env.sh' if the command below fails:
-find_package(OROCOS-RTT QUIET)
-if (NOT OROCOS-RTT_FOUND)
-  message (FATAL_ERROR "\nCould not find Orocos. Please use the shell command\n 'source orocos_toolchain/env.sh' and then run cmake again.")
-endif()
+# find OROCOS RTT
+find_package(OROCOS-RTT REQUIRED)
+include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 
-# Defines the orocos_* cmake macros. See that file for additional
-# documentation.
-include( ${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake )
+# this will make the executable
+add_executable(rt_runner 
+  rt_runner_node.cpp
+  rt_runner.cpp
+  main_context.cpp)
+# We could also use orocos_add_executable. However, this will add an ugly gnulinux-suffix
+# So, we have to do some manual work 
+# (see UseOROCOS-RTT.cmake and https://orocos.org/wiki/orocos/toolchain/getting-started/cmake-and-building.html)
+orocos_add_include_directories(rt_runner ${OROCOS-RTT_INCLUDE_DIRS})
+target_link_libraries(rt_runner ${OROCOS-RTT_LIBRARIES})
 
-#
-# Components, types and plugins.
-#
-# The CMake 'target' names are identical to the first argument of the
-# macros below, except for orocos_typegen_headers, where the target is fully
-# controlled by generated code of 'typegen'.
-#
-
-
-# Creates a commponent executable
-# and installs in the directory lib/orocos/slave_activity_non_rt/
-#
-orocos_executable(rt_runner src/rt_runner/rt_runner_node.cpp
-    src/rt_runner/rt_runner.cpp
-    src/rt_runner/main_context.cpp)
 add_dependencies(rt_runner ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-
 target_link_libraries(rt_runner ${catkin_LIBRARIES})
-
-orocos_install_headers(src/rt_runner/rt_runner_node.hpp include/rtcf/rtcf_extension.hpp) # ...you may add multiple header files
-
-#
-# Generates and installs our package. Must be the last statement such
-# that it can pick up all above settings.
-#
-orocos_generate_package(
-  INCLUDE_DIRS include
-    )

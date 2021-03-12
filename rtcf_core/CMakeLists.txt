@@ -65,7 +65,13 @@ include_directories(
 )
 
 add_subdirectory(src/rt_launcher)
-#add_subdirectory(src/rt_runner)
+add_subdirectory(src/rt_runner)
+
+# in addition to a catkin package, create an OROCOS package 
+# (this will make OROCOS find the dependencies automatically by reading the package.xml)
+orocos_generate_package(
+  INCLUDE_DIRS include
+)
 
 #############
 ## Testing ##
