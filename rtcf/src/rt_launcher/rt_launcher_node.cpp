@@ -54,6 +54,7 @@ rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
     srv.request.component_name.data = launcher_attributes_.name;
 
     srv.request.component_type.data          = launcher_attributes_.rt_type;
+    srv.request.component_pkg.data           = launcher_attributes_.rt_package;
     srv.request.is_first.data                = launcher_attributes_.is_first;
     srv.request.is_sync.data                 = launcher_attributes_.is_sync;
     srv.request.topics_ignore_for_graph.data = launcher_attributes_.topics_ignore_for_graph;
@@ -92,26 +93,24 @@ bool RTLauncherNode::loadROSParameters() {
         }
     }
 
-    if (node_handle_.hasParam("rt_type")) {
-        if (!launcher_attributes_.rt_type.empty()) {
-            ROS_ERROR("Conflicting configuration for parameter rt_type");
+    if (node_handle_.hasParam("rt_type") || node_handle_.hasParam("rt_pkg")) {
+        if (!launcher_attributes_.rt_type.empty() || !launcher_attributes_.rt_package.empty()) {
+            ROS_ERROR("Conflicting configuration for parameter RT package and type");
             return false;
         } else {
             node_handle_.getParam("rt_type", launcher_attributes_.rt_type);
+            node_handle_.getParam("rt_package", launcher_attributes_.rt_package);
         }
     }
 
     // check for RT type
-    if (launcher_attributes_.rt_type.empty()) {
-        ROS_ERROR("No RT type was specified!");
+    if (launcher_attributes_.rt_type.empty() || launcher_attributes_.rt_package.empty()) {
+        ROS_ERROR("No RT package/type was specified!");
         return false;
     }
 
-    // TODO: move this into RT Runner
-    std::string topics_ignore_for_graph;
-    if (node_handle_.getParam("topics_ignore_for_graph", topics_ignore_for_graph)) {
-        launcher_attributes_.topics_ignore_for_graph = topics_ignore_for_graph;
-    }
+    // whitelisting is always a parameter as regex in shell is ugly to escape
+    node_handle_.param("topics_ignore_for_graph", launcher_attributes_.topics_ignore_for_graph, std::string(""));
 
     return true;
 }
@@ -169,11 +168,11 @@ bool RTLauncherNode::handleArgs(int &argc, char **argv) {
         ("help", "help message")
         ("is_first,f", "mark RT component as start component")
         ("is_sync,s", "mark RT component as sync component")
-        ("rt_type", po::value<std::string>(), "name of the RT component to load");
+        ("component_info,c", po::value<std::vector<std::string>>(), "ROS package followed by RTT component name");
     // clang-format on
-    // rt_type can be given as positional argument
+    // component_info is a positional argument
     po::positional_options_description p;
-    p.add("rt_type", 1);
+    p.add("component_info", 2);
 
     // now parse the options
     po::variables_map vm;
@@ -196,8 +195,14 @@ bool RTLauncherNode::handleArgs(int &argc, char **argv) {
     if (vm.count("is_sync")) {
         launcher_attributes_.is_sync = true;
     }
-    if (vm.count("rt_type")) {
-        launcher_attributes_.rt_type = vm["rt_type"].as<std::string>();
+    if (vm.count("component_info")) {
+        std::vector<std::string> component_info = vm["component_info"].as<std::vector<std::string>>();
+        if (component_info.size() != 2) {
+            ROS_ERROR("Both, package and component name are required if given via command-line.");
+            return false;
+        }
+        launcher_attributes_.rt_package = component_info[0];
+        launcher_attributes_.rt_type    = component_info[1];
     }
     return true;
 }

@@ -18,11 +18,13 @@ struct LauncherAttributes {
     std::vector<Mapping> mappings;
     std::string name;
     std::string ns;
+    // component specification (equal to ROS package and node-type)
+    std::string rt_package = "";
+    std::string rt_type    = "";
     // RTCF specific stuff
     std::string topics_ignore_for_graph;
-    std::string rt_type = "";
-    bool is_first       = false;
-    bool is_sync        = false;
+    bool is_first = false;
+    bool is_sync  = false;
 };
 
 class RTLauncherNode {
