@@ -96,23 +96,29 @@ void RTLauncherNode::loadROSParameters() {
     }
 }
 
-void RTLauncherNode::loadInRTRunner() {
+bool RTLauncherNode::loadInRTRunner() {
     rtcf::LoadOrocosComponent srv = genLoadMsg();
 
-    if (loadInRTRunnerClient.call(srv)) {
+    bool service_ok = loadInRTRunnerClient.call(srv);
+    if (service_ok && srv.res.success) {
         ROS_DEBUG("RT Runner load called successfully");
+        return true;
     } else {
         ROS_ERROR("Failed to call load service in RT Runner");
+        return false;
     }
 };
 
-void RTLauncherNode::unloadInRTRunner() {
+bool RTLauncherNode::unloadInRTRunner() {
     rtcf::UnloadOrocosComponent srv = genUnloadMsg();
 
-    if (unloadInRTRunnerClient.call(srv)) {
+    bool service_ok = unloadInRTRunnerClient.call(srv);
+    if (service_ok && srv.res.success) {
         ROS_DEBUG("RT Runner unload called successfully");
+        return true;
     } else {
         ROS_ERROR("Failed to call unload service in RT Runner");
+        return false;
     }
 };
 
