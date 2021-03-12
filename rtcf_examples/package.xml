@@ -1,0 +1,19 @@
+<package>
+  <name>rtcf_examples</name>
+  <version>0.0.1</version>
+  <description>Examples for the RTCF</description>
+
+  <maintainer email="michael.fennel@kit.edu">Michael Fennel</maintainer>
+
+  <license>MIT</license>
+
+  <build_depend>rtt</build_depend>
+  <build_depend>orogen</build_depend>
+  <build_depend>rtcf</build_depend>
+
+  <run_depend>rtt</run_depend>
+
+  <export>
+
+  </export>
+</package>
