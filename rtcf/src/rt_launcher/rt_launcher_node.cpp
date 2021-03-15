@@ -15,10 +15,7 @@
 
 RTLauncherNode::RTLauncherNode(const ros::NodeHandle &node_handle) : node_handle_(node_handle){};
 
-int RTLauncherNode::loop() {
-    ros::spin();
-    return 0;
-};
+void RTLauncherNode::loop() { ros::spin(); };
 
 void RTLauncherNode::configure() { setupServiceClients(); };
 
@@ -236,5 +233,5 @@ int main(int argc, char **argv) {
     }
     node_ptr->loop();
 
-    return 0;
+    return EXIT_SUCCESS;
 }  // end main()

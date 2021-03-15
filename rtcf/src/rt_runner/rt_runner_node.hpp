@@ -1,60 +1,49 @@
 #ifndef RT_RUNNER_NODE_H
 #define RT_RUNNER_NODE_H
-#include "rt_runner.hpp"
+#include <ros/callback_queue.h>
+#include <ros/callback_queue_interface.h>
+#include <rtcf/LoadOrocosComponent.h>
+#include <rtcf/UnloadOrocosComponent.h>
+#include <std_srvs/Trigger.h>
+
 #include <memory>
 
 #include "ros/ros.h"
-#include <ros/callback_queue.h>
-#include <ros/callback_queue_interface.h>
+#include "rt_runner.hpp"
 
-#include "rtcf/LoadOrocosComponent.h"
-#include "rtcf/UnloadOrocosComponent.h"
-#include "rtcf/ActivateRTLoop.h"
-#include "rtcf/DeactivateRTLoop.h"
+class RTRunnerNode {
+  private:
+    ros::NodeHandle node_handle_;
+    std::shared_ptr<RTRunner> rt_runner_;
+    RTRunner::Settings settings_;
+    bool is_shutdown_;
 
-class RTRunnerNode
-{
-private:
-    ros::NodeHandle n;
+    ros::ServiceServer loadOrocosComponentService_;
+    ros::ServiceServer unloadOrocosComponentService_;
+    ros::ServiceServer activateRTLoopService_;
+    ros::ServiceServer deactivateRTLoopService_;
 
-public:
- RTRunnerNode( const ros::NodeHandle &node_handle, const ros::NodeHandle &node_handle_services, std::shared_ptr<ros::CallbackQueue> queue_services_ptr);
- virtual ~RTRunnerNode();
+    bool loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Request &req, rtcf::LoadOrocosComponent::Response &res);
+    bool unloadOrocosComponentCallback(rtcf::UnloadOrocosComponent::Request &req,
+                                       rtcf::UnloadOrocosComponent::Response &res);
 
- void configure();
- void shutdown();
- int loop();
+    bool activateRTLoopCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    bool deactivateRTLoopCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
- void setupROSServices();
- void shutdownROSServices();
- void loadROSParameters();
- void stopComponents();
+    void setupROSServices();
+    void shutdownROSServices();
 
- bool loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Request &req,
-                                  rtcf::LoadOrocosComponent::Response &res);
+    bool loadROSParameters();
 
- bool unloadOrocosComponentCallback(rtcf::UnloadOrocosComponent::Request &req,
-                                    rtcf::UnloadOrocosComponent::Response &res);
+  public:
+    RTRunnerNode(const ros::NodeHandle &node_handle);
+    virtual ~RTRunnerNode();
 
- bool activateRTLoopCallback(rtcf::ActivateRTLoop::Request &req,
-                             rtcf::ActivateRTLoop::Response &res);
-
- bool deactivateRTLoopCallback(rtcf::DeactivateRTLoop::Request &req,
-                               rtcf::DeactivateRTLoop::Response &res);
-
- ros::NodeHandle node_handle_services_;
- std::shared_ptr<ros::CallbackQueue> queue_services_ptr_;
-
- ros::NodeHandle node_handle_;
- std::shared_ptr<RTRunner> rt_runner_;
-
- ros::ServiceServer loadOrocosComponentService;
- ros::ServiceServer unloadOrocosComponentService;
- ros::ServiceServer activateRTLoopService;
- ros::ServiceServer deactivateRTLoopService;
-
+    bool configure();
+    void shutdown();
+    void loop();
 };
 
 static std::unique_ptr<RTRunnerNode> node_ptr;
 
-#endif /* RT_RUNNER_NODE_H */   
+#endif /* RT_RUNNER_NODE_H */

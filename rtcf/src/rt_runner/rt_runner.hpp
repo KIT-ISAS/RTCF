@@ -1,6 +1,7 @@
 #ifndef RT_RUNNER_H
 #define RT_RUNNER_H
 
+#include <map>
 #include <rtt/Activity.hpp>
 #include <rtt/TaskContext.hpp>
 #include <typeinfo>
@@ -14,7 +15,38 @@
 #include "rtt/extras/SlaveActivity.hpp"
 
 class RTRunner {
+  public:
+    enum class Mode {
+        WAIT_FOR_COMPONENTS,
+        WAIT_FOR_TRIGGER,
+        NO_WAIT,
+        UNKNOWN,
+    };
+    static Mode string2Mode(const std::string& s) {
+        // clang-format off
+        std::map<std::string, Mode> map{std::make_pair("wait_for_components", Mode::WAIT_FOR_COMPONENTS),
+                                        std::make_pair("wait_for_trigger", Mode::WAIT_FOR_TRIGGER),
+                                        std::make_pair("no_wait", Mode::NO_WAIT), 
+                                        std::make_pair("", Mode::UNKNOWN)};
+        // clang-format on
+        const auto it = map.find(s);
+        if (it == map.end()) {
+            return RTRunner::Mode::UNKNOWN;
+        }
+        return map[s];
+    }
+
+    struct Settings {
+        Mode mode;
+        size_t expected_num_components;
+        std::string ros_mapping_whitelist;
+        std::string ros_mapping_blacklist;
+        double frequency;
+    };
+
   private:
+    Settings settings;
+
     void generateRTOrder();
 
     void connectPorts();
@@ -33,7 +65,7 @@ class RTRunner {
   public:
     RTRunner();
 
-    void configure();
+    void configure(Settings settings);
     void shutdown();
     void stopComponents();
 

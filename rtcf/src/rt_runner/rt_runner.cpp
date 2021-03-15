@@ -17,7 +17,7 @@
 
 RTRunner::RTRunner() : main_context_("main_context"){};
 
-void RTRunner::configure() {
+void RTRunner::configure(Settings settings) {
     if (mode_ == "active") {
         isActive = true;
     }

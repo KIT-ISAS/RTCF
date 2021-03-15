@@ -35,8 +35,6 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    LoadOrocosComponent.srv
    UnloadOrocosComponent.srv
-   ActivateRTLoop.srv
-   DeactivateRTLoop.srv
  )
 
 

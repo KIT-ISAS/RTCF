@@ -3,35 +3,15 @@
 
 #include "ros/ros.h"
 #include "ros/service_client.h"
-#include "rtcf/ActivateRTLoop.h"
-#include "rtcf/DeactivateRTLoop.h"
 #include "rtcf/LoadOrocosComponent.h"
 #include "rtcf/UnloadOrocosComponent.h"
-
-struct Mapping {
-    std::string from_topic;
-    std::string to_topic;
-};
-
-struct LauncherAttributes {
-    // things that exist in a normal ROS node
-    std::vector<Mapping> mappings;
-    std::string name;
-    std::string ns;
-    // component specification (equal to ROS package and node-type)
-    std::string rt_package = "";
-    std::string rt_type    = "";
-    // RTCF specific stuff
-    std::string topics_ignore_for_graph;
-    bool is_first = false;
-    bool is_sync  = false;
-};
+#include "rtcf/rtcf_types.hpp"
 
 class RTLauncherNode {
   private:
     ros::NodeHandle node_handle_;
 
-    LauncherAttributes launcher_attributes_;
+    LoadAttributes launcher_attributes_;
 
     rtcf::LoadOrocosComponent genLoadMsg();
     rtcf::UnloadOrocosComponent genUnloadMsg();
@@ -41,7 +21,7 @@ class RTLauncherNode {
 
     void configure();
     void shutdown();
-    int loop();
+    void loop();
 
     void setupServiceClients();
     void shutdownServiceClients();
