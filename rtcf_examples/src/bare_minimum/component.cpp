@@ -23,16 +23,4 @@ void BareMinimum::stopHook() { std::cout << "BareMinimum executes stopping !" <<
 
 void BareMinimum::cleanupHook() { std::cout << "BareMinimum cleaning up !" << std::endl; }
 
-/*
- * Using this macro, only one component may live
- * in one library *and* you may *not* link this library
- * with another component library. Use
- * ORO_CREATE_COMPONENT_TYPE()
- * ORO_LIST_COMPONENT_TYPE(BareMinimum)
- * In case you want to link with another library that
- * already contains components.
- *
- * If you have put your component class
- * in a namespace, don't forget to add it here too:
- */
 ORO_CREATE_COMPONENT(BareMinimum)
