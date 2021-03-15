@@ -26,8 +26,7 @@ class RTRunner {
         // clang-format off
         std::map<std::string, Mode> map{std::make_pair("wait_for_components", Mode::WAIT_FOR_COMPONENTS),
                                         std::make_pair("wait_for_trigger", Mode::WAIT_FOR_TRIGGER),
-                                        std::make_pair("no_wait", Mode::NO_WAIT), 
-                                        std::make_pair("", Mode::UNKNOWN)};
+                                        std::make_pair("no_wait", Mode::NO_WAIT)};
         // clang-format on
         const auto it = map.find(s);
         if (it == map.end()) {

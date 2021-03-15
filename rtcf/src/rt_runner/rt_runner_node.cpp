@@ -4,6 +4,7 @@
 #include <rtt/os/main.h>
 #include <signal.h>
 
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -67,13 +68,19 @@ void RTRunnerNode::shutdownROSServices() {
 bool RTRunnerNode::loadROSParameters() {
     // get mode
     std::string mode_str = node_handle_.param("mode", std::string(""));
-    RTRunner::Mode mode  = RTRunner::string2Mode(mode_str);
-    if (mode == RTRunner::Mode::UNKNOWN) {
-        ROS_ERROR("Unknown mode specified");
-        return false;
+    boost::algorithm::to_lower(mode_str);
+    RTRunner::Mode mode;
+    if (mode_str == "") {
+        ROS_WARN("Using default mode (NO_WAIT)");
+        mode = RTRunner::Mode::NO_WAIT;
     } else {
-        settings_.mode = mode;
+        mode = RTRunner::string2Mode(mode_str);
+        if (mode == RTRunner::Mode::UNKNOWN) {
+            ROS_ERROR("Unknown mode specified");
+            return false;
+        }
     }
+    settings_.mode = mode;
 
     // get number of expected components if mode is WAIT_FOR_COMPONENT
     if (settings_.mode == RTRunner::Mode::WAIT_FOR_COMPONENTS) {
@@ -81,12 +88,12 @@ bool RTRunnerNode::loadROSParameters() {
             int num_components_expected;
             node_handle_.getParam("num_components_expected", num_components_expected);
             if (num_components_expected <= 0) {
-                ROS_ERROR("Expected number of components too small.");
+                ROS_ERROR("Expected number of components too small");
                 return false;
             }
             settings_.expected_num_components = (size_t)num_components_expected;
         } else {
-            ROS_ERROR("Expected number of components not given");
+            ROS_ERROR("Expected number of components not given, but required");
             return false;
         }
     }
@@ -133,7 +140,7 @@ bool RTRunnerNode::loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Reques
     attr.is_first                = req.is_first.data;
     attr.is_sync                 = req.is_sync.data;
 
-    ROS_DEBUG_STREAM("Load service got called with following information:" << attr);
+    ROS_DEBUG_STREAM("Load service got called with following information:" << std::endl << attr);
 
     res.success.data = true;  // rt_runner_->loadOrocosComponent(rt_type, name, ns, topics_ignore_for_graph, is_first,
                               // is_sync, mappings);
@@ -146,7 +153,7 @@ bool RTRunnerNode::unloadOrocosComponentCallback(rtcf::UnloadOrocosComponent::Re
     attr.name = req.component_name.data;
     attr.ns   = req.ns.data;
 
-    ROS_DEBUG_STREAM("Unload service got called with following information:" << attr);
+    ROS_DEBUG_STREAM("Unload service got called with following information:" << std::endl << attr);
 
     res.success.data = true;  // rt_runner_->unloadOrocosComponent(name, ns);
     return true;
