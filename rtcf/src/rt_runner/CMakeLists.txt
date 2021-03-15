@@ -1,7 +1,3 @@
-# find OROCOS RTT
-find_package(OROCOS-RTT REQUIRED)
-include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
-
 # this will make the executable
 add_executable(rt_runner 
   rt_runner_node.cpp
