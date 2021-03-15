@@ -19,8 +19,8 @@ void Identity::updateHook() {
     std::cout << "Identity executes updateHook !" << std::endl;
 
     // just forward the message
-    if (port_in_.read(msg) == RTT::NewData) {
-        port_out_.write(msg);
+    if (port_in_.read(msg_) == RTT::NewData) {
+        port_out_.write(msg_);
         port_in_.clear();
     }
 }

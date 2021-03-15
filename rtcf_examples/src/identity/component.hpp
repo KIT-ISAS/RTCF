@@ -3,7 +3,11 @@
 
 #include <rtcf_example_msgs/Custom.h>
 
+// This header is causing many warnings, so we disable them temporarily
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <rtt/Port.hpp>
+#pragma GCC diagnostic pop
 #include <rtt/RTT.hpp>
 
 class Identity : public RTT::TaskContext {
@@ -18,6 +22,6 @@ class Identity : public RTT::TaskContext {
   private:
     RTT::OutputPort<rtcf_example_msgs::Custom> port_out_;
     RTT::InputPort<rtcf_example_msgs::Custom> port_in_;
-    rtcf_example_msgs::Custom msg;
+    rtcf_example_msgs::Custom msg_;
 };
 #endif
