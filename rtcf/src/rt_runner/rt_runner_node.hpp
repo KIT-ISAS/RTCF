@@ -1,14 +1,13 @@
 #ifndef RT_RUNNER_NODE_H
 #define RT_RUNNER_NODE_H
-#include <ros/callback_queue.h>
-#include <ros/callback_queue_interface.h>
+
+#include <ros/ros.h>
 #include <rtcf/LoadOrocosComponent.h>
 #include <rtcf/UnloadOrocosComponent.h>
 #include <std_srvs/Trigger.h>
 
 #include <memory>
 
-#include "ros/ros.h"
 #include "rt_runner.hpp"
 
 class RTRunnerNode {
