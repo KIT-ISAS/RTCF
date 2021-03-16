@@ -15,8 +15,8 @@
 RTRunner::RTRunner() : is_active_(false), main_context_("main_context"){};
 
 void RTRunner::configure(const Settings& settings) {
-    settings_ = settings; 
-    
+    settings_ = settings;
+
     // TODO: add CPU affinity and similar stuff here
     main_activity_ = new RTT::Activity(ORO_SCHED_RT, 98);
     main_activity_->setPeriod(period_);
@@ -76,7 +76,7 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
     component_containers.push_back(component_container);
 
     // do the magic (connecting nodes, graph resolution, etc.)
-    disconnectAllPorts();
+    disconnectPorts();
     generateRTOrder();
     connectPorts();
     setSlavesOnMainContext();
@@ -95,11 +95,44 @@ RTT::TaskContext* RTRunner::createInstance(const std::string& component_type, co
     return tc;
 }
 
+bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
+    deactivateRTLoop();
+
+    // stop all connections
+    disconnectPorts();
+
+    // find the component to remove
+    auto result = std::find_if(component_containers.begin(), component_containers.end(),
+                               [&info](const auto& container) { return container.attributes.name == info.name; });
+    if (result == component_containers.end()) {
+        return false;
+    }
+    // tear down the component
+    RTT::TaskContext* task = (*result).task_context;
+    task->stop();
+    task->cleanup();
+    delete task;
+    delete (*result).activity;
+
+    // update the remaining components
+    generateRTOrder();
+    connectPorts();
+    setSlavesOnMainContext();
+
+    // if allowed, restart automatically
+    if (settings_.mode == Mode::NO_WAIT) {
+        activateRTLoop();
+    }
+
+    // this always succeeds, if the component the remove was found
+    return true;
+};
+
 /*
 void RTRunner::setSlavesOnMainContext() {
     main_context_.stop();
 
-    // TODO: this has to be replaced <23-01-21, Stefan Geyer> 
+    // TODO: this has to be replaced <23-01-21, Stefan Geyer>
 
 std::vector<RTT::extras::SlaveActivity*> slaves;
 
@@ -112,35 +145,11 @@ main_context_.setSlaves(slaves);
 }
 ;
 
-bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
-    // TODO:  <01-02-21, Stefan Geyer> 
-    main_context_.stop();
-
-    disconnectAllPorts();
-
-    auto it = std::begin(component_containers);
-    for (; it != std::end(component_containers); it++) {
-        if (it->componentName_ == info.name) {
-            component_containers.erase(it);
-        }
-    }
-
-    generateRTOrder();
-    connectPorts();
-
-    setSlavesOnMainContext();
-
-    if (is_active_) {
-        main_context_.start();
-    }
-
-    return true;
-};
 
 void RTRunner::generateRTOrder() {
     rt_order.clear();
     active_graph_.clear();
-    active_graph_ = buildGraph();
+    active_graph_ = analyzeDependencies();
 
     if (active_graph_.empty()) {
         return;
@@ -258,107 +267,118 @@ void RTRunner::generateRTOrder() {
         ROS_INFO_STREAM("rt_order is: " << node.componentName_);
     }
 };
+*/
 
 void RTRunner::connectPorts() {
     connectOrocosPorts();
     connectPortsToRos();
 }
-void RTRunner::connectOrocosPorts() {
-    for (GraphOrocosContainer orocos_container : rt_order) {
-        for (GraphOutportContainer outport : orocos_container.output_ports_) {
-            if (outport.is_connected) {
-                for (GraphPortMatch inport_match : outport.inport_matches) {
-                    bool worked = outport.port->connectTo(inport_match.corr_port_ptr_->port_);
-                    ROS_INFO_STREAM(worked << " connected ports: " << orocos_container.attributes.name << " / "
-                                           << outport.port->getName()
-                                           << " and: " << inport_match.corr_orocos_ptr_->componentName_ << " / "
-                                           << inport_match.corr_port_ptr_->port->getName());
-                }
-            }
+
+void RTRunner::disconnectPorts() {
+    // simply disconnect all input and output ports
+    // this also stops ROS connections created by createStream()
+    for (const auto& container : component_containers) {
+        for (const auto& output_port : container.output_ports) {
+            output_port.port->disconnect();
         }
+        for (const auto& input_port : container.input_ports) {
+            input_port.port->disconnect();
+        }
+    }
+}
+
+void RTRunner::connectOrocosPorts() {
+    for (const auto& connection : internal_connections) {
+        const auto& to_port   = connection.first;
+        const auto& from_port = connection.second;
+        to_port->port->connectTo(from_port->port);
     }
 }
 
 void RTRunner::connectPortsToRos() {
-    auto whitelist = std::regex(whitelist_ros_mapping_);
-    for (GraphOrocosContainer orocos_container : rt_order) {
-        for (GraphOutportContainer outport : orocos_container.output_ports_) {
-            if (std::regex_match(outport.mapped_name, whitelist)) {
-                outport.port->createStream(rtt_roscomm::topic(outport.mapped_name));
-                ROS_INFO_STREAM("connected orocos outport: " << outport.mapped_name
-                                                             << " with ros topic: " << outport.mapped_name);
+    auto whitelist = std::regex(settings_.ros_mapping_whitelist);
+    auto blacklist = std::regex(settings_.ros_mapping_blacklist);
+
+    auto check_name = [&whitelist, &blacklist](const std::string& name) {
+        // elements that match whitelist
+        if (std::regex_match(name, whitelist)) {
+            // but not blacklist are passed through
+            // (empty blacklist means that it never matches)
+            if (!std::regex_match(name, blacklist)) {
+                return true;
             }
         }
+        return false;
+    };
 
-        for (GraphInportContainer inport : orocos_container.input_ports_) {
-            if (std::regex_match(inport.mapped_name, whitelist)) {
-                if (!inport.is_connected) {
-                    inport.port->createStream(rtt_roscomm::topic(inport.mapped_name));
-                    ROS_INFO_STREAM("connected orocos inport: " << inport.mapped_name
-                                                                << " with ros topic: " << inport.mapped_name);
+    // all output ports that meet whitelist/blacklist are always linked to ROS
+    for (const auto& container : component_containers) {
+        for (const auto& output_port : container.output_ports) {
+            if (check_name(output_port.mapped_name)) {
+                output_port.port->createStream(rtt_roscomm::topic(output_port.mapped_name));
+                ROS_INFO_STREAM("Connected " << container.attributes.name << " (output " << output_port.original_name
+                                             << ") to ROS topic " << output_port.mapped_name << ".");
+            }
+        }
+    }
+    // all input ports that meet whitelist/blacklist
+    // AND that do not have an internal connection to an output port are linked to ROS
+    // this is required to avoid side-channels through ROS
+    for (const auto& container : component_containers) {
+        for (const auto& input_port : container.input_ports) {
+            if (check_name(input_port.mapped_name)) {
+                // check for internal connection
+                if (internal_connections.count(&input_port) == 0) {
+                    input_port.port->createStream(rtt_roscomm::topic(input_port.mapped_name));
+                    ROS_INFO_STREAM("Connected " << container.attributes.name << " (input " << input_port.original_name
+                                                 << ") to ROS topic " << input_port.mapped_name << ".");
                 } else {
-                    ROS_WARN_STREAM("did not connected orocos inport: "
-                                    << inport.mapped_name << " with ros topic: " << inport.mapped_name
-                                    << "because a output port is already connected "
-                                       "to ros with the same topic. This would cause a "
-                                       "unexpected connection between orocos ports through "
-                                       "ros");
+                    ROS_INFO_STREAM("Skipped connecting " << container.attributes.name << " (input "
+                                                          << input_port.original_name << ") to ROS topic "
+                                                          << input_port.mapped_name << " due to internal connection.");
                 }
             }
         }
     }
 }
 
-void RTRunner::disconnectAllPorts() {
-    for (GraphOrocosContainer orocos_container : rt_order) {
-        for (GraphOutportContainer outport : orocos_container.output_ports_) {
-            if (outport.is_connected) {
-                outport.port->disconnect();
-            }
-        }
-    }
-}
-
-GraphOrocosContainers RTRunner::buildGraph() {
-    GraphOrocosContainers graph;
-    for (auto& container : component_containers) {
-        graph.push_back(GraphOrocosContainer(container));
-    }
-
-    // Mandatory sorting for determenism.
-    std::sort(graph.begin(), graph.end(),
+void RTRunner::analyzeDependencies() {
+    // sort all components according to name to ensure determinism
+    std::sort(component_containers.begin(), component_containers.end(),
               [](const auto& a, const auto& b) { return (a.attributes.name > b.attributes.name); });
 
-    // Try to connect each outport with each inport.
-    // To many for loops. There should be a solution with
-    // standard algorithms.
-    for (GraphOrocosContainer& start_node : graph) {
-        for (GraphOutportContainer& out_port : start_node.output_ports_) {
-            for (GraphOrocosContainer& end_node : graph) {
-                for (GraphInportContainer& in_port : end_node.input_ports_) {
-                    if (out_port.mapped_name == in_port.mapped_name) {
-                        ROS_INFO_STREAM("connecte: " << start_node.attributes.name << " | " << out_port.original_name
-                                                     << " with: " << end_node.attributes.name << " | "
-                                                     << in_port.original_name);
+    // iterate over all output ports
+    for (const auto& c_from : component_containers) {
+        for (const auto& p_output : c_from.output_ports) {
+            // iterate over all input ports
+            for (const auto& c_to : component_containers) {
+                for (const auto& p_input : c_to.input_ports) {
+                    // check if the ports are connected
+                    if (p_output.mapped_name == p_input.mapped_name) {
+                        // check whether the current input is supplied by a single source
+                        if (internal_connections.find(&p_input) != internal_connections.end()) {
+                            ROS_WARN_STREAM(
+                                "Found multiple connections to input port "
+                                << p_input.mapped_name << " of component " << c_to.attributes.name << ". "
+                                << "Therefore, the this connection will be ignored. Check your launchfile!");
+                            continue;
+                        }
+                        // extract relevant information
+                        // 1. input ports that are supplied by an output port (aka internal connections)
+                        internal_connections[&p_input] = &p_output;
+                        // 2. predecessor components (aka input dependencies)
+                        component_dependencies[&c_to].insert(&c_from);
 
-                        start_node.connected_container_.push_back(&end_node);
-                        in_port.is_connected  = true;
-                        out_port.is_connected = true;
-
-                        in_port.outport_match.corr_orocos_ptr_ = &start_node;
-                        in_port.outport_match.corr_port_ptr_   = &out_port;
-
-                        GraphPortMatch port_match(&end_node, &in_port);
-                        out_port.inport_matches.push_back(port_match);
+                        ROS_INFO_STREAM("Connected " << c_from.attributes.name << " (" << p_output.original_name
+                                                     << ") with " << c_to.attributes.name << " ("
+                                                     << p_output.original_name << ") via " << p_input.mapped_name);
                     }
                 }
             }
         }
     }
-
-    return graph;
 }
-
+/*
 void RTRunner::stopComponents() {
     main_context_.stop();
     for (auto& component : rt_order) {

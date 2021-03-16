@@ -103,10 +103,35 @@ struct ComponentContainer {
     }
 };
 
+using ComponentContainerVector = std::vector<ComponentContainer>;
 
-/* TODO: This whole block beneth should be done better <03-02-21, Stefan Geyer> */
-/**
-struct GraphOrocosContainer;
+// Type used to store whether a component is satisfied or not.
+// The key is the the component information, the value is states whether all dependencies are satisfied.
+using ComponentSatisfactionMap = std::map<const ComponentContainer*, bool>;
+
+// Type used to store the dependencies of a component.
+// They key is the component information, the value is a set of dependencies.
+using ComponentDependenciesMap = std::map<const ComponentContainer*, std::set<const ComponentContainer*>>;
+
+// Type used for storing internal connections
+// This exploits the fact, that an input is only supplied by one output in a control system
+// For this reason, the key is the input port information and the value the output port information
+using InternalConnectionsMap = std::map<const PortContainer*, const PortContainer*>;
+
+
+
+
+
+    // struct GraphComponentContainer : ComponentContainer{
+    //     GraphOrocosContainer(const ComponentContainer& container)
+    //      : ComponentContainer(orocos_container){}
+
+    // };
+
+    /* TODO: This whole block beneth should be done better <03-02-21, Stefan Geyer> */
+
+/*
+    struct GraphOrocosContainer;
 
 struct GraphPortContainer : PortContainer {
     GraphPortContainer(const PortContainer port_container) : PortContainer(port_container) {}

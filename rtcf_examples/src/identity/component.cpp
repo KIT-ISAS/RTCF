@@ -3,10 +3,16 @@
 #include <iostream>
 #include <rtt/Component.hpp>
 
-Identity::Identity(std::string const& name) : TaskContext(name) { std::cout << "Identity constructed !" << std::endl; }
+Identity::Identity(std::string const& name) : TaskContext(name), port_out_("out_port"), port_in_("in_port"){
+    std::cout << "Identity constructed !" << std::endl;
+}
 
 bool Identity::configureHook() {
     std::cout << "Identity configured !" << std::endl;
+
+    this->ports()->addPort(port_in_);
+    this->ports()->addPort(port_out_);
+
     return true;
 }
 

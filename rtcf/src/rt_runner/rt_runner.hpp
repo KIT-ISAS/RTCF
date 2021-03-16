@@ -48,18 +48,18 @@ class RTRunner {
   private:
     Settings settings_;
 
-    void generateRTOrder(){}
+    void analyzeDependencies();
+    void generateRTOrder() {}
 
-    void connectPorts(){}
-    void connectOrocosPorts(){}
-    void connectPortsToRos(){}
-    void disconnectAllPorts(){}
+    void connectPorts();
+    void disconnectPorts();
 
-    // GraphOrocosContainers buildGraph();
+    void connectOrocosPorts();
+    void connectPortsToRos();
 
     RTT::TaskContext* createInstance(const std::string& component_type, const std::string& component_name);
 
-    void setSlavesOnMainContext(){}
+    void setSlavesOnMainContext() {}
 
     bool is_active_ = false;
 
@@ -77,7 +77,9 @@ class RTRunner {
     void deactivateRTLoop();
 
     RTT::Activity* main_activity_;
-    std::vector<ComponentContainer> component_containers;
+    ComponentContainerVector component_containers;
+    InternalConnectionsMap internal_connections;
+    ComponentDependenciesMap component_dependencies;
 
     // GraphOrocosContainers rt_order;
     std::vector<int> rt_order;
