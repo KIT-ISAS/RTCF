@@ -1,6 +1,6 @@
 #include "rt_runner.hpp"
 
-#include <dlfcn.h>
+#include <ros/ros.h>
 #include <rtt_ros/rtt_ros.h>
 #include <rtt_roscomm/rostopic.h>
 
@@ -9,18 +9,15 @@
 #include <rtt/Activity.hpp>
 #include <rtt/OperationCaller.hpp>
 #include <rtt/TaskContext.hpp>
+#include <rtt/extras/SlaveActivity.hpp>
 #include <vector>
 
-#include "ros/ros.h"
 #include "rtcf_types.hpp"
-#include "rtt/extras/SlaveActivity.hpp"
 
 RTRunner::RTRunner() : main_context_("main_context"){};
 
-void RTRunner::configure(Settings settings) {
-    if (mode_ == "active") {
-        isActive = true;
-    }
+void RTRunner::configure(const Settings& settings) : settings_(settings), is_active_(false) {
+    // TODO: add CPU affinity and similar stuff here
     main_activity_ = new RTT::Activity(ORO_SCHED_RT, 98);
     main_activity_->setPeriod(period_);
     main_context_.setActivity(main_activity_);
@@ -29,50 +26,74 @@ void RTRunner::configure(Settings settings) {
 void RTRunner::shutdown() { deactivateRTLoop(); };
 
 void RTRunner::activateRTLoop() {
-    main_activity_->setPeriod(period_);
-    main_context_.start();
-    isActive = true;
+    if (!is_active_) {
+        main_activity_->set(1.0 / settings_.frequency);
+        main_context_.start();
+    }
+    is_active_ = true;
 };
 
 void RTRunner::deactivateRTLoop() {
-    main_context_.stop();
-    isActive = false;
+    if (is_active_) {
+        main_context_.stop();
+    }
+    is_active_ = false;
 };
 
-bool RTRunner::loadOrocosComponent(std::string componentType, std::string componentName, std::string ns,
-                                   std::string topics_ignore_for_graph, bool is_first, bool is_sync,
-                                   std::vector<mapping> mappings) {
-    main_context_.stop();
+bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
+    if (settings_ == Mode::WAIT_FOR_COMPONENTS && rt_order.size() >= settings_.expected_num_components) {
+        ROS_ERROR("More components were loaded than expected. Additional components will not be active.");
+        return false;
+    }
 
-    rtt_ros::import(componentType);
+    // load package
+    if (!rtt_ros::import(info.rt_package)) {
+        ROS_ERROR("Could not load ROS package " << info.rt_package << " into OROCOS.");
+        return false;
+    }
+    // create component instance
+    RTT::TaskContext* task = createInstance(info.rt_type, info.name);
+    if (!task) {
+        ROS_ERROR_STREAM("Could not instantiate component of type " << info.rt_type << " with name " << info.name);
+        return false;
+    }
 
-    RTT::TaskContext* task;
-    bool error = createFromLibrary(componentType, componentName, task);
-
+    // prepare sequential execution
     RTT::extras::SlaveActivity* slave_activity = new RTT::extras::SlaveActivity(main_activity_);
-
     task->setActivity(slave_activity);
-    task->configure();
-    task->start();
+    ComponentContainer component_container(info, task, slave_activity);
 
-    OrocosContainer orocos_container(componentType, componentName, ns, topics_ignore_for_graph, is_first, is_sync,
-                                     mappings, task, slave_activity);
+    // try to configure the component
+    if (!component_container.task_context->configure()) {
+        ROS_ERROR("configuration() call to component " << component_container.attributes.name << " failed")
+        return false;
+    }
+    // component_container.task_context->start() should not be called here as this would trigger the updateHook()
 
-    orocosContainer_.push_back(orocos_container);
+    // stop the execution now (if not already stopped)
+    // it is not necessary to stop the loop earlier because the component does not get triggered
+    deactivateRTLoop();
+    component_containers.push_back(component_container);
 
+    // do the magic (connecting nodes, graph resolution, etc.)
     disconnectAllPorts();
     generateRTOrder();
     connectPorts();
-
     setSlavesOnMainContext();
 
-    if (isActive || ((RTOrder.size() == num_components_expected_) && (mode_ == "wait_for_components"))) {
-        isActive = true;
-        main_context_.start();
+    if ((settings_.mode == Mode::NO_WAIT) ||
+        (settings_.mode == Mode::WAIT_FOR_COMPONENTS && rt_order.size() == settings_.expected_num_components)) {
+        activateRTLoop();
     }
 
-    return error;
+    return true;
 };
+
+TaskContext* createInstance(const std::string component_type, const std::string& component_name) {
+    TaskContext* tc = nullptr;
+    tc              = RTT::ComponentLoader::Instance()->loadComponent(component_name, component_type);
+    return tc;
+}
 
 void RTRunner::setSlavesOnMainContext() {
     main_context_.stop();
@@ -81,59 +102,12 @@ void RTRunner::setSlavesOnMainContext() {
 
     std::vector<RTT::extras::SlaveActivity*> slaves;
 
-    for (auto orocos_container : RTOrder) {
+    for (auto orocos_container : rt_order) {
         slaves.push_back(orocos_container.activity_);
     }
 
     main_context_.clearSlaves();
     main_context_.setSlaves(slaves);
-};
-
-bool RTRunner::createFromLibrary(std::string componentType, std::string componentName, RTT::TaskContext*& task) {
-    // Try all paths in LD_LIBRARY_PATH to load the orocos component
-    const std::string LD_LIBRARY_PATH = getenv("LD_LIBRARY_PATH");
-    std::stringstream ss(LD_LIBRARY_PATH);
-    std::string item;
-    std::vector<std::string> paths;
-    while (std::getline(ss, item, ':')) {
-        paths.push_back(item);
-    }
-
-    ROS_INFO_STREAM("Opening " + componentName + "...\n");
-
-    void* handle;
-    for (const auto base_path : paths) {
-        std::string path = base_path + "/orocos/gnulinux/" + componentType + "/lib" + componentType + "-gnulinux.so";
-        ROS_INFO_STREAM("trying path to load orcos component: " << path);
-        handle = dlopen(path.c_str(), RTLD_NOW);
-        if (handle) {
-            break;
-        }
-    }
-
-    if (!handle) {
-        std::cerr << "Cannot open library: " << dlerror() << '\n';
-        return false;
-    }
-
-    typedef RTT::TaskContext* create_t(std::string);
-
-    // load the symbol
-    ROS_INFO_STREAM("Loading symbol " + componentName + " ...\n");
-    // reset errors
-    dlerror();
-
-    create_t* creat_task = (create_t*)dlsym(handle, "createComponent");
-
-    const char* dlsym_error = dlerror();
-    if (dlsym_error) {
-        ROS_ERROR_STREAM("Cannot load symbol 'hello': " << dlsym_error << '\n');
-        dlclose(handle);
-        return false;
-    }
-
-    task = creat_task(componentName.c_str());
-    return true;
 };
 
 bool RTRunner::unloadOrocosComponent(std::string componentName, std::string ns) {
@@ -142,10 +116,10 @@ bool RTRunner::unloadOrocosComponent(std::string componentName, std::string ns) 
 
     disconnectAllPorts();
 
-    auto it = std::begin(orocosContainer_);
-    for (; it != std::end(orocosContainer_); it++) {
+    auto it = std::begin(component_containers);
+    for (; it != std::end(component_containers); it++) {
         if (it->componentName_ == componentName) {
-            orocosContainer_.erase(it);
+            component_containers.erase(it);
         }
     }
 
@@ -154,7 +128,7 @@ bool RTRunner::unloadOrocosComponent(std::string componentName, std::string ns) 
 
     setSlavesOnMainContext();
 
-    if (isActive) {
+    if (is_active_) {
         main_context_.start();
     }
 
@@ -162,7 +136,7 @@ bool RTRunner::unloadOrocosComponent(std::string componentName, std::string ns) 
 };
 
 void RTRunner::generateRTOrder() {
-    RTOrder.clear();
+    rt_order.clear();
     active_graph_.clear();
     active_graph_ = buildGraph();
 
@@ -186,7 +160,7 @@ void RTRunner::generateRTOrder() {
         queue.push_back(start_container);
     }
 
-    while (active_graph_.size() != RTOrder.size()) {
+    while (active_graph_.size() != rt_order.size()) {
         ROS_INFO_STREAM("----");
         for (const auto& node : queue) {
             ROS_INFO_STREAM("queue is: " << node->componentName_);
@@ -206,7 +180,7 @@ void RTRunner::generateRTOrder() {
                 std::vector<GraphOrocosContainer*> to_enque = active_node->enqueue_and_satisfy_nodes();
                 // TODO: check if erase works as expected <03-02-21, Stefan
                 // Geyer>
-                RTOrder.push_back(*active_node);
+                rt_order.push_back(*active_node);
                 queue.erase(it_outer);
                 for (GraphOrocosContainer* new_queue_element : to_enque) {
                     queue.push_back(new_queue_element);
@@ -228,7 +202,7 @@ void RTRunner::generateRTOrder() {
                     // TODO: check if erase works as expected <03-02-21, Stefan
                     // Geyer>
                     active_node.is_queued = true;
-                    RTOrder.push_back(active_node);
+                    rt_order.push_back(active_node);
                     for (GraphOrocosContainer* new_queue_element : to_enque) {
                         queue.push_back(new_queue_element);
                     }
@@ -247,7 +221,7 @@ void RTRunner::generateRTOrder() {
 
                         if (!active_node->is_sync_) {
                             std::vector<GraphOrocosContainer*> to_enque = active_node->enqueue_and_satisfy_nodes();
-                            RTOrder.push_back(*active_node);
+                            rt_order.push_back(*active_node);
                             queue.erase(it_innerst);
                             for (GraphOrocosContainer* new_queue_element : to_enque) {
                                 queue.push_back(new_queue_element);
@@ -266,7 +240,7 @@ void RTRunner::generateRTOrder() {
                         if (!active_node.is_queued) {
                             std::vector<GraphOrocosContainer*> to_enque = active_node.enqueue_and_satisfy_nodes();
                             active_node.is_queued                       = true;
-                            RTOrder.push_back(active_node);
+                            rt_order.push_back(active_node);
                             for (GraphOrocosContainer* new_queue_element : to_enque) {
                                 queue.push_back(new_queue_element);
                             }
@@ -278,8 +252,8 @@ void RTRunner::generateRTOrder() {
         }
     }
 
-    for (const auto& node : RTOrder) {
-        ROS_INFO_STREAM("RTOrder is: " << node.componentName_);
+    for (const auto& node : rt_order) {
+        ROS_INFO_STREAM("rt_order is: " << node.componentName_);
     }
 };
 
@@ -288,7 +262,7 @@ void RTRunner::connectPorts() {
     connectPortsToRos();
 }
 void RTRunner::connectOrocosPorts() {
-    for (GraphOrocosContainer orocos_container : RTOrder) {
+    for (GraphOrocosContainer orocos_container : rt_order) {
         for (GraphOutportContainer outport : orocos_container.output_ports_) {
             if (outport.is_connected) {
                 for (GraphPortMatch inport_match : outport.inport_matches) {
@@ -305,7 +279,7 @@ void RTRunner::connectOrocosPorts() {
 
 void RTRunner::connectPortsToRos() {
     auto whitelist = std::regex(whitelist_ros_mapping_);
-    for (GraphOrocosContainer orocos_container : RTOrder) {
+    for (GraphOrocosContainer orocos_container : rt_order) {
         for (GraphOutportContainer outport : orocos_container.output_ports_) {
             if (std::regex_match(outport.mapping_name_, whitelist)) {
                 outport.port_->createStream(rtt_roscomm::topic(outport.mapping_name_));
@@ -334,7 +308,7 @@ void RTRunner::connectPortsToRos() {
 }
 
 void RTRunner::disconnectAllPorts() {
-    for (GraphOrocosContainer orocos_container : RTOrder) {
+    for (GraphOrocosContainer orocos_container : rt_order) {
         for (GraphOutportContainer outport : orocos_container.output_ports_) {
             if (outport.is_connected) {
                 outport.port_->disconnect();
@@ -345,7 +319,7 @@ void RTRunner::disconnectAllPorts() {
 
 GraphOrocosContainers RTRunner::buildGraph() {
     GraphOrocosContainers graph;
-    for (auto& container : orocosContainer_) {
+    for (auto& container : component_containers) {
         graph.push_back(GraphOrocosContainer(container));
     }
 
@@ -385,16 +359,7 @@ GraphOrocosContainers RTRunner::buildGraph() {
 
 void RTRunner::stopComponents() {
     main_context_.stop();
-    for (auto& component : RTOrder) {
+    for (auto& component : rt_order) {
         component.taskContext_->stop();
     }
 };
-
-void RTRunner::setMode(std::string mode) { mode_ = mode; }
-void RTRunner::setNumComponentsExpected(int num) { num_components_expected_ = num; };
-void RTRunner::setWhitelistRosMapping(std::string whitelist) { whitelist_ros_mapping_ = whitelist; };
-void RTRunner::setTopicsIgnoreForGraph(std::string topics_ignore_for_graph) {
-    topics_ignore_for_graph_ = topics_ignore_for_graph;
-};
-void RTRunner::setFrequency(float frequency) { period_ = 1.0 / frequency; };
-void RTRunner::setPeriod(float period) { period_ = period; };

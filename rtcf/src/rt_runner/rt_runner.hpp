@@ -3,16 +3,18 @@
 
 #include <map>
 #include <rtt/Activity.hpp>
+#include <rtt/DataFlowInterface.hpp>
 #include <rtt/TaskContext.hpp>
+#include <rtt/base/InputPortInterface.hpp>
+#include <rtt/base/OutputPortInterface.hpp>
+#include <rtt/deployment/ComponentLoader.hpp>
+#include <rtt/extras/SlaveActivity.hpp>
 #include <typeinfo>
 #include <vector>
 
 #include "main_context.hpp"
-#include "rtcf_types.hpp"
-#include "rtt/DataFlowInterface.hpp"
-#include "rtt/base/InputPortInterface.hpp"
-#include "rtt/base/OutputPortInterface.hpp"
-#include "rtt/extras/SlaveActivity.hpp"
+#include "rt_runner_types.hpp"
+#include "rtcf/rtcf_types.hpp"
 
 class RTRunner {
   public:
@@ -44,7 +46,7 @@ class RTRunner {
     };
 
   private:
-    Settings settings;
+    Settings settings_;
 
     void generateRTOrder();
 
@@ -55,38 +57,29 @@ class RTRunner {
 
     GraphOrocosContainers buildGraph();
 
-    bool createFromLibrary(std::string componentType, std::string componentName, RTT::TaskContext*& task);
+    TaskContext* createInstance(const std::string component_type, const std::string& component_name);
 
     void setSlavesOnMainContext();
 
-    bool isActive = false;
+    bool is_active_ = false;
 
   public:
     RTRunner();
 
-    void configure(Settings settings);
+    void configure(const Settings& settings);
     void shutdown();
     void stopComponents();
 
-    bool loadOrocosComponent(std::string componentType, std::string componentName, std::string ns,
-                             std::string topics_ignore_for_graph, bool is_first, bool is_sync,
-                             std::vector<mapping> mappings);
-    bool unloadOrocosComponent(std::string componentName, std::string ns);
+    bool loadOrocosComponent(const LoadAttributes& info);
+    bool unloadOrocosComponent(const UnloadAttributes& info);
 
     void activateRTLoop();
     void deactivateRTLoop();
 
-    void setFrequency(float frequency);
-    void setPeriod(float period);
-    void setMode(std::string mode);
-    void setNumComponentsExpected(int num);
-    void setWhitelistRosMapping(std::string whitelist);
-    void setTopicsIgnoreForGraph(std::string topics_ignore_for_graph);
-
     RTT::Activity* main_activity_;
-    std::vector<OrocosContainer> orocosContainer_;
+    std::vector<ComponentContainer> component_containers;
 
-    GraphOrocosContainers RTOrder;
+    GraphOrocosContainers rt_order;
     GraphOrocosContainers active_graph_;
 
     float period_ = 1.0;

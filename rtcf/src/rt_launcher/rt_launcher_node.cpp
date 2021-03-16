@@ -140,7 +140,7 @@ bool RTLauncherNode::unloadInRTRunner() {
 
 void RTLauncherNode::loadNodeConfiguration() {
     std::string full_name     = ros::this_node::getName();
-    launcher_attributes_.name = full_name.substr(full_name.rfind("/") + 1);
+    launcher_attributes_.name = full_name;
     launcher_attributes_.ns   = ros::this_node::getNamespace();
     ROS_DEBUG_STREAM("Got node name: " << launcher_attributes_.name);
     ROS_DEBUG_STREAM("Got node namespace: " << launcher_attributes_.ns);

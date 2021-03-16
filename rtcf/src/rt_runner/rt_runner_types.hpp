@@ -1,5 +1,5 @@
-#ifndef RTCF_TYPES_H
-#define RTCF_TYPES_H
+#ifndef RT_RUNNER_TYPES_H
+#define RT_RUNNER_TYPES_H
 
 #include <boost/functional/forward_adapter.hpp>
 #include <memory>
@@ -13,88 +13,73 @@
 #include "ros/node_handle.h"
 #include "ros/ros.h"
 #include "rtcf/rtcf_extension.hpp"
+#include "rtcf/rtcf_types.hpp"
 #include "rtt/DataFlowInterface.hpp"
 #include "rtt/InputPort.hpp"
 #include "rtt/base/InputPortInterface.hpp"
 #include "rtt/base/PortInterface.hpp"
 #include "rtt/extras/SlaveActivity.hpp"
 
-struct mapping {
-    std::string from_topic;
-    std::string to_topic;
-};
-
 struct PortContainer {
-    PortContainer(RTT::base::PortInterface* port) : port_(port) {
+    PortContainer(RTT::base::PortInterface* port) : port(port) {
         getName();
         setDefaultMapping();
     }
-    RTT::base::PortInterface* port_;
-    std::string original_name_;
-    std::string mapping_name_;
+    RTT::base::PortInterface* port;
+    std::string original_name;
+    std::string mapping_name;
 
-    void getName() { original_name_ = port_->getName(); }
-    void setDefaultMapping() { mapping_name_ = original_name_; }
+    void getName() { original_name = port->getName(); }
+    void setDefaultMapping() { mapping_name = original_name; }
 };
 
-struct OrocosContainer {
-    OrocosContainer(std::string componentType, std::string componentName, std::string ns,
-                    std::string topics_ignore_for_graph, bool is_first, bool is_sync, std::vector<mapping> mappings,
-                    RTT::TaskContext* taskContext, RTT::extras::SlaveActivity* activity)
-        : componentType_(componentType),
-          componentName_(componentName),
-          ns_(ns),
-          topics_ignore_for_graph_(topics_ignore_for_graph),
-          is_first_(is_first),
-          is_sync_(is_sync),
-          mappings_(mappings),
-          taskContext_(taskContext),
-          activity_(activity) {
+struct ComponentContainer {
+    ComponentContainer(const LoadAttributes& attributes, RTT::TaskContext* task_context,
+                       RTT::extras::SlaveActivity* activity)
+        : attributes(attributes), task_context(task_context), activity(activity) {
         handleNodeHandle();
         handlePorts();
         handleMappings();
     }
 
-    std::string componentType_;
-    std::string componentName_;
-    std::string ns_;
-    std::string topics_ignore_for_graph_;
-    bool is_first_;
-    bool is_sync_;
-    std::vector<mapping> mappings_;
+    // externally provided information
+    LoadAttributes attributes;
+    RTT::TaskContext* task_context;
+    RTT::extras::SlaveActivity* activity;
 
-    RTT::TaskContext* taskContext_;
-    RTT::extras::SlaveActivity* activity_;
-
-    std::vector<PortContainer> input_ports_;
-    std::vector<PortContainer> output_ports_;
-
-    std::shared_ptr<ros::NodeHandle> node_handle_;
+    // internally constructed information
+    std::vector<PortContainer> input_ports;
+    std::vector<PortContainer> output_ports;
+    std::shared_ptr<ros::NodeHandle> node_handle;
 
     void handleNodeHandle() {
-        node_handle_ = std::make_shared<ros::NodeHandle>(ns_);
+        // create a node handle in the components namespace
+        // TODO: include remappings, don't use pointers
+        node_handle_ = std::make_shared<ros::NodeHandle>(attributes.ns);
 
-        if (auto taskHandle = dynamic_cast<RtcfExtension*>(taskContext_)) {
-            taskHandle->node_handle_ptr_ = node_handle_.get();
+        if (auto task_handle = dynamic_cast<RtcfExtension*>(task_context)) {
+            task_handle->node_handle_ptr_ = node_handle_.get();
         }
     };
 
     void handlePorts() {
-        for (RTT::base::PortInterface* port : taskContext_->ports()->getPorts()) {
-            PortContainer portContainer(port);
-            ROS_DEBUG_STREAM("port of component found: " << portContainer.original_name_);
+        for (RTT::base::PortInterface* port : task_context->ports()->getPorts()) {
+            PortContainer port_container(port);
+            std::stringstream ss;
+            ss << "Port of component found: " << port_container.original_name_ << " ";
 
             if (dynamic_cast<RTT::base::InputPortInterface*>(port)) {
-                input_ports_.push_back(portContainer);
-                ROS_DEBUG_STREAM(" Port is input" << std::endl);
+                input_ports_.push_back(port_container);
+                ss << "(input)";
 
             } else if (dynamic_cast<RTT::base::OutputPortInterface*>(port)) {
-                output_ports_.push_back(portContainer);
-                ROS_DEBUG_STREAM(" Port is output" << std::endl);
+                output_ports_.push_back(port_container);
+                ss << "(outpout)";
 
             } else {
-                ROS_DEBUG_STREAM(" Port is neighter Input or Output Port" << std::endl);
+                ss << "(neither input nor output)";
             }
+            ROS_INFO_STREAM(ss.str());
         }
     }
 
@@ -153,8 +138,8 @@ struct GraphOutportContainer : GraphPortContainer {
 
 typedef std::vector<GraphOrocosContainer> GraphOrocosContainers;
 
-struct GraphOrocosContainer : OrocosContainer {
-    GraphOrocosContainer(const OrocosContainer orocos_container) : OrocosContainer(orocos_container) {
+struct GraphOrocosContainer : ComponentContainer {
+    GraphOrocosContainer(const ComponentContainer orocos_container) : ComponentContainer(orocos_container) {
         for (const auto& p : orocos_container.input_ports_) {
             input_ports_.push_back(GraphInportContainer(p));
         }
@@ -203,4 +188,4 @@ struct GraphOrocosContainer : OrocosContainer {
     }
 };
 
-#endif /* RTCF_TYPES_H */
+#endif /* RT_RUNNER_TYPES_H */
