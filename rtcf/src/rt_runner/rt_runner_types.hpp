@@ -27,10 +27,10 @@ struct PortContainer {
     }
     RTT::base::PortInterface* port;
     std::string original_name;
-    std::string mapping_name;
+    std::string mapped_name;
 
     void getName() { original_name = port->getName(); }
-    void setDefaultMapping() { mapping_name = original_name; }
+    void setDefaultMapping() { mapped_name = original_name; }
 };
 
 struct ComponentContainer {
@@ -50,15 +50,19 @@ struct ComponentContainer {
     // internally constructed information
     std::vector<PortContainer> input_ports;
     std::vector<PortContainer> output_ports;
-    std::shared_ptr<ros::NodeHandle> node_handle;
+    ros::NodeHandle node_handle;
 
     void handleNodeHandle() {
         // create a node handle in the components namespace
-        // TODO: include remappings, don't use pointers
-        node_handle_ = std::make_shared<ros::NodeHandle>(attributes.ns);
+        ros::M_string remaps_ros;
+        for (const auto& m : attributes.mappings) {
+            remaps_ros[m.from_topic] = m.to_topic;
+        }
+        node_handle = ros::NodeHandle(attributes.ns, remaps_ros);
 
+        // TODO: don't use pointers and think how private parameters can be resolved
         if (auto task_handle = dynamic_cast<RtcfExtension*>(task_context)) {
-            task_handle->node_handle_ptr_ = node_handle_.get();
+            task_handle->node_handle_ptr_ = &node_handle;
         }
     };
 
@@ -66,14 +70,14 @@ struct ComponentContainer {
         for (RTT::base::PortInterface* port : task_context->ports()->getPorts()) {
             PortContainer port_container(port);
             std::stringstream ss;
-            ss << "Port of component found: " << port_container.original_name_ << " ";
+            ss << "Port of component " << attributes.name << " found: " << port_container.original_name << " ";
 
             if (dynamic_cast<RTT::base::InputPortInterface*>(port)) {
-                input_ports_.push_back(port_container);
+                input_ports.push_back(port_container);
                 ss << "(input)";
 
             } else if (dynamic_cast<RTT::base::OutputPortInterface*>(port)) {
-                output_ports_.push_back(port_container);
+                output_ports.push_back(port_container);
                 ss << "(outpout)";
 
             } else {
@@ -84,27 +88,24 @@ struct ComponentContainer {
     }
 
     void handleMappings() {
-        for (const auto& m : mappings_) {
-            for (auto& p : input_ports_) {
-                if (m.from_topic == p.original_name_) {
-                    const auto resolved_mapping = node_handle_->resolveName(m.to_topic);
-                    p.mapping_name_             = resolved_mapping;
-                    ROS_INFO_STREAM("connection input port: " << m.from_topic << " with mapping: " << m.to_topic);
-                }
-            }
-            for (auto& p : output_ports_) {
-                if (m.from_topic == p.original_name_) {
-                    const auto resolved_mapping = node_handle_->resolveName(m.to_topic);
-                    p.mapping_name_             = resolved_mapping;
-                    ROS_INFO_STREAM("connection output port: " << m.from_topic << " with mapping: " << m.to_topic);
-                }
-            }
+        for (auto& p : input_ports) {
+            // resolveName takes into accounts remaps added to this nodehandle
+            // TODO: private names are not handled correctly
+            const auto resolved_name = node_handle.resolveName(p.original_name, true);
+            p.mapped_name            = resolved_name;
+            ROS_INFO_STREAM("Input port " << p.original_name << " mapped to " << p.mapped_name);
+        }
+        for (auto& p : output_ports) {
+            const auto resolved_name = node_handle.resolveName(p.original_name, true);
+            p.mapped_name            = resolved_name;
+            ROS_INFO_STREAM("Input port " << p.original_name << " mapped to " << p.mapped_name);
         }
     }
 };
 
-/* TODO: This whole block beneth should be done better <03-02-21, Stefan Geyer> */
 
+/* TODO: This whole block beneth should be done better <03-02-21, Stefan Geyer> */
+/**
 struct GraphOrocosContainer;
 
 struct GraphPortContainer : PortContainer {
@@ -140,10 +141,10 @@ typedef std::vector<GraphOrocosContainer> GraphOrocosContainers;
 
 struct GraphOrocosContainer : ComponentContainer {
     GraphOrocosContainer(const ComponentContainer orocos_container) : ComponentContainer(orocos_container) {
-        for (const auto& p : orocos_container.input_ports_) {
+        for (const auto& p : orocos_container.input_ports) {
             input_ports_.push_back(GraphInportContainer(p));
         }
-        for (const auto& p : orocos_container.output_ports_) {
+        for (const auto& p : orocos_container.output_ports) {
             output_ports_.push_back(GraphOutportContainer(p));
         }
     }
@@ -156,7 +157,7 @@ struct GraphOrocosContainer : ComponentContainer {
     std::vector<GraphOrocosContainer*> connected_container_;
 
     bool topic_is_ignored(const std::string topic) {
-        auto topic_is_ignored_regex = std::regex(topics_ignore_for_graph_);
+        auto topic_is_ignored_regex = std::regex(connected_container_.topics_ignore_for_graph);
         return std::regex_match(topic, topic_is_ignored_regex);
     }
 
@@ -187,5 +188,6 @@ struct GraphOrocosContainer : ComponentContainer {
         return to_enqueue;
     }
 };
+*/
 
 #endif /* RT_RUNNER_TYPES_H */

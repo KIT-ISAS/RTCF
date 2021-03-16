@@ -12,11 +12,11 @@
 #include <rtt/extras/SlaveActivity.hpp>
 #include <vector>
 
-#include "rtcf_types.hpp"
+RTRunner::RTRunner() : is_active_(false), main_context_("main_context"){};
 
-RTRunner::RTRunner() : main_context_("main_context"){};
-
-void RTRunner::configure(const Settings& settings) : settings_(settings), is_active_(false) {
+void RTRunner::configure(const Settings& settings) {
+    settings_ = settings; 
+    
     // TODO: add CPU affinity and similar stuff here
     main_activity_ = new RTT::Activity(ORO_SCHED_RT, 98);
     main_activity_->setPeriod(period_);
@@ -27,7 +27,7 @@ void RTRunner::shutdown() { deactivateRTLoop(); };
 
 void RTRunner::activateRTLoop() {
     if (!is_active_) {
-        main_activity_->set(1.0 / settings_.frequency);
+        main_activity_->setPeriod(1.0 / settings_.frequency);
         main_context_.start();
     }
     is_active_ = true;
@@ -41,14 +41,14 @@ void RTRunner::deactivateRTLoop() {
 };
 
 bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
-    if (settings_ == Mode::WAIT_FOR_COMPONENTS && rt_order.size() >= settings_.expected_num_components) {
-        ROS_ERROR("More components were loaded than expected. Additional components will not be active.");
+    if (settings_.mode == Mode::WAIT_FOR_COMPONENTS && rt_order.size() >= settings_.expected_num_components) {
+        ROS_ERROR_STREAM("More components were loaded than expected. Additional components will not be active.");
         return false;
     }
 
     // load package
     if (!rtt_ros::import(info.rt_package)) {
-        ROS_ERROR("Could not load ROS package " << info.rt_package << " into OROCOS.");
+        ROS_ERROR_STREAM("Could not load ROS package " << info.rt_package << " into OROCOS.");
         return false;
     }
     // create component instance
@@ -65,7 +65,7 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
 
     // try to configure the component
     if (!component_container.task_context->configure()) {
-        ROS_ERROR("configuration() call to component " << component_container.attributes.name << " failed")
+        ROS_ERROR_STREAM("configuration() call to component " << component_container.attributes.name << " failed");
         return false;
     }
     // component_container.task_context->start() should not be called here as this would trigger the updateHook()
@@ -89,36 +89,38 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
     return true;
 };
 
-TaskContext* createInstance(const std::string component_type, const std::string& component_name) {
-    TaskContext* tc = nullptr;
-    tc              = RTT::ComponentLoader::Instance()->loadComponent(component_name, component_type);
+RTT::TaskContext* RTRunner::createInstance(const std::string& component_type, const std::string& component_name) {
+    RTT::TaskContext* tc = nullptr;
+    tc                   = RTT::ComponentLoader::Instance()->loadComponent(component_name, component_type);
     return tc;
 }
 
+/*
 void RTRunner::setSlavesOnMainContext() {
     main_context_.stop();
 
-    /* TODO: this has to be replaced <23-01-21, Stefan Geyer> */
+    // TODO: this has to be replaced <23-01-21, Stefan Geyer> 
 
-    std::vector<RTT::extras::SlaveActivity*> slaves;
+std::vector<RTT::extras::SlaveActivity*> slaves;
 
-    for (auto orocos_container : rt_order) {
-        slaves.push_back(orocos_container.activity_);
-    }
+for (auto orocos_container : rt_order) {
+    slaves.push_back(orocos_container.activity);
+}
 
-    main_context_.clearSlaves();
-    main_context_.setSlaves(slaves);
-};
+main_context_.clearSlaves();
+main_context_.setSlaves(slaves);
+}
+;
 
-bool RTRunner::unloadOrocosComponent(std::string componentName, std::string ns) {
-    /* TODO:  <01-02-21, Stefan Geyer> */
+bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
+    // TODO:  <01-02-21, Stefan Geyer> 
     main_context_.stop();
 
     disconnectAllPorts();
 
     auto it = std::begin(component_containers);
     for (; it != std::end(component_containers); it++) {
-        if (it->componentName_ == componentName) {
+        if (it->componentName_ == info.name) {
             component_containers.erase(it);
         }
     }
@@ -266,11 +268,11 @@ void RTRunner::connectOrocosPorts() {
         for (GraphOutportContainer outport : orocos_container.output_ports_) {
             if (outport.is_connected) {
                 for (GraphPortMatch inport_match : outport.inport_matches) {
-                    bool worked = outport.port_->connectTo(inport_match.corr_port_ptr_->port_);
-                    ROS_INFO_STREAM(worked << " connected ports: " << orocos_container.componentName_ << " / "
-                                           << outport.port_->getName()
+                    bool worked = outport.port->connectTo(inport_match.corr_port_ptr_->port_);
+                    ROS_INFO_STREAM(worked << " connected ports: " << orocos_container.attributes.name << " / "
+                                           << outport.port->getName()
                                            << " and: " << inport_match.corr_orocos_ptr_->componentName_ << " / "
-                                           << inport_match.corr_port_ptr_->port_->getName());
+                                           << inport_match.corr_port_ptr_->port->getName());
                 }
             }
         }
@@ -281,22 +283,22 @@ void RTRunner::connectPortsToRos() {
     auto whitelist = std::regex(whitelist_ros_mapping_);
     for (GraphOrocosContainer orocos_container : rt_order) {
         for (GraphOutportContainer outport : orocos_container.output_ports_) {
-            if (std::regex_match(outport.mapping_name_, whitelist)) {
-                outport.port_->createStream(rtt_roscomm::topic(outport.mapping_name_));
-                ROS_INFO_STREAM("connected orocos outport: " << outport.mapping_name_
-                                                             << " with ros topic: " << outport.mapping_name_);
+            if (std::regex_match(outport.mapped_name, whitelist)) {
+                outport.port->createStream(rtt_roscomm::topic(outport.mapped_name));
+                ROS_INFO_STREAM("connected orocos outport: " << outport.mapped_name
+                                                             << " with ros topic: " << outport.mapped_name);
             }
         }
 
         for (GraphInportContainer inport : orocos_container.input_ports_) {
-            if (std::regex_match(inport.mapping_name_, whitelist)) {
+            if (std::regex_match(inport.mapped_name, whitelist)) {
                 if (!inport.is_connected) {
-                    inport.port_->createStream(rtt_roscomm::topic(inport.mapping_name_));
-                    ROS_INFO_STREAM("connected orocos inport: " << inport.mapping_name_
-                                                                << " with ros topic: " << inport.mapping_name_);
+                    inport.port->createStream(rtt_roscomm::topic(inport.mapped_name));
+                    ROS_INFO_STREAM("connected orocos inport: " << inport.mapped_name
+                                                                << " with ros topic: " << inport.mapped_name);
                 } else {
                     ROS_WARN_STREAM("did not connected orocos inport: "
-                                    << inport.mapping_name_ << " with ros topic: " << inport.mapping_name_
+                                    << inport.mapped_name << " with ros topic: " << inport.mapped_name
                                     << "because a output port is already connected "
                                        "to ros with the same topic. This would cause a "
                                        "unexpected connection between orocos ports through "
@@ -311,7 +313,7 @@ void RTRunner::disconnectAllPorts() {
     for (GraphOrocosContainer orocos_container : rt_order) {
         for (GraphOutportContainer outport : orocos_container.output_ports_) {
             if (outport.is_connected) {
-                outport.port_->disconnect();
+                outport.port->disconnect();
             }
         }
     }
@@ -325,7 +327,7 @@ GraphOrocosContainers RTRunner::buildGraph() {
 
     // Mandatory sorting for determenism.
     std::sort(graph.begin(), graph.end(),
-              [](const auto& a, const auto& b) { return (a.componentName_ > b.componentName_); });
+              [](const auto& a, const auto& b) { return (a.attributes.name > b.attributes.name); });
 
     // Try to connect each outport with each inport.
     // To many for loops. There should be a solution with
@@ -334,10 +336,10 @@ GraphOrocosContainers RTRunner::buildGraph() {
         for (GraphOutportContainer& out_port : start_node.output_ports_) {
             for (GraphOrocosContainer& end_node : graph) {
                 for (GraphInportContainer& in_port : end_node.input_ports_) {
-                    if (out_port.mapping_name_ == in_port.mapping_name_) {
-                        ROS_INFO_STREAM("connecte: " << start_node.componentName_ << " | " << out_port.original_name_
-                                                     << " with: " << end_node.componentName_ << " | "
-                                                     << in_port.original_name_);
+                    if (out_port.mapped_name == in_port.mapped_name) {
+                        ROS_INFO_STREAM("connecte: " << start_node.attributes.name << " | " << out_port.original_name
+                                                     << " with: " << end_node.attributes.name << " | "
+                                                     << in_port.original_name);
 
                         start_node.connected_container_.push_back(&end_node);
                         in_port.is_connected  = true;
@@ -360,6 +362,7 @@ GraphOrocosContainers RTRunner::buildGraph() {
 void RTRunner::stopComponents() {
     main_context_.stop();
     for (auto& component : rt_order) {
-        component.taskContext_->stop();
+        component.task_context->stop();
     }
 };
+*/

@@ -48,18 +48,18 @@ class RTRunner {
   private:
     Settings settings_;
 
-    void generateRTOrder();
+    void generateRTOrder(){}
 
-    void connectPorts();
-    void connectOrocosPorts();
-    void connectPortsToRos();
-    void disconnectAllPorts();
+    void connectPorts(){}
+    void connectOrocosPorts(){}
+    void connectPortsToRos(){}
+    void disconnectAllPorts(){}
 
-    GraphOrocosContainers buildGraph();
+    // GraphOrocosContainers buildGraph();
 
-    TaskContext* createInstance(const std::string component_type, const std::string& component_name);
+    RTT::TaskContext* createInstance(const std::string& component_type, const std::string& component_name);
 
-    void setSlavesOnMainContext();
+    void setSlavesOnMainContext(){}
 
     bool is_active_ = false;
 
@@ -79,8 +79,9 @@ class RTRunner {
     RTT::Activity* main_activity_;
     std::vector<ComponentContainer> component_containers;
 
-    GraphOrocosContainers rt_order;
-    GraphOrocosContainers active_graph_;
+    // GraphOrocosContainers rt_order;
+    std::vector<int> rt_order;
+    // GraphOrocosContainers active_graph_;
 
     float period_ = 1.0;
     MainContext main_context_;

@@ -10,7 +10,7 @@ struct Mapping {
     std::string to_topic;
 };
 
-std::ostream& operator<<(std::ostream& os, const Mapping& m) {
+inline std::ostream& operator<<(std::ostream& os, const Mapping& m) {
     os << " from: " << m.from_topic << ", to: " << m.to_topic << std::endl;
     return os;
 }
@@ -29,7 +29,7 @@ struct LoadAttributes {
     bool is_sync  = false;
 };
 
-std::ostream& operator<<(std::ostream& os, const LoadAttributes& a) {
+inline std::ostream& operator<<(std::ostream& os, const LoadAttributes& a) {
     os << "Name: " << a.name << std::endl;
     os << "Namespace: " << a.ns << std::endl;
     os << "RT-Package: " << a.rt_package << std::endl;
@@ -49,7 +49,7 @@ struct UnloadAttributes {
     std::string ns;
 };
 
-std::ostream& operator<<(std::ostream& os, const UnloadAttributes& a) {
+inline std::ostream& operator<<(std::ostream& os, const UnloadAttributes& a) {
     os << "Name: " << a.name << std::endl;
     os << "Namespace: " << a.ns << std::endl;
     return os;
