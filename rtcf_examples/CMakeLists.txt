@@ -16,12 +16,10 @@ endif()
 ## Dependencies ##
 ##################
 find_package(catkin REQUIRED COMPONENTS 
-  rtt_ros
   rtt_rtcf_example_msgs
   rtcf)
 
 catkin_package(CATKIN_DEPENDS 
-  rtt_ros 
   rtt_rtcf_example_msgs
   rtcf
 )

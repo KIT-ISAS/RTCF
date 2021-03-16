@@ -7,6 +7,7 @@
 #include <std_srvs/Trigger.h>
 
 #include <memory>
+#include <mutex>
 
 #include "rt_runner.hpp"
 
@@ -41,6 +42,8 @@ class RTRunnerNode {
     bool configure();
     void shutdown();
     void loop();
+
+    std::mutex mtx_;
 };
 
 static std::unique_ptr<RTRunnerNode> node_ptr;

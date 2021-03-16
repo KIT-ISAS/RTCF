@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include <rtt/os/main.h>
+#include <rtt_ros/rtt_ros.h>
 #include <signal.h>
 
 #include <boost/algorithm/string.hpp>
@@ -23,6 +24,7 @@ RTRunnerNode::~RTRunnerNode() {
 };
 
 bool RTRunnerNode::configure() {
+    const std::lock_guard<std::mutex> lock(mtx_);
     if (!loadROSParameters()) {
         ROS_ERROR("Error while getting parameters");
         return false;
@@ -33,13 +35,26 @@ bool RTRunnerNode::configure() {
 };
 
 void RTRunnerNode::shutdown() {
-    // NOTE: This should only be called after all components were taken down by the unload service calls
+    const std::lock_guard<std::mutex> lock(mtx_);
+
+    // TODO: wait for all components to stop so that we can exit gracefully
+    ROS_WARN("WAIT WOULD BE PLACED HERE!");
+
     shutdownROSServices();
     rt_runner_->shutdown();
     is_shutdown_ = true;
 };
 
-void RTRunnerNode::loop() { ros::spin(); };
+void RTRunnerNode::loop() {
+    // NOTE: This is somewhat special due to OROCOS design!
+    // When a component a RTT component living in a ROS package depends on any ROS messages that have been converted to
+    // an OROCOS typekit, rtt_roscomm and rtt_rosnode will be loaded automatically as dependency. This will cause the
+    // instatiation of a ros::AsyncSpinner that will get into conflict with the single threaded ros::spin(). For this
+    // reason, we preemptively import the rtt_roscomm component and use its spinner here for doing the ROS service
+    // calls. Hence, we do not need to spin separately, but just need to wait. To ensure thread safety, a mutex is used
+    // in critical sections of this class.
+    ros::waitForShutdown();
+};
 
 void RTRunnerNode::setupROSServices() {
     // load and unload services are always there
@@ -122,6 +137,8 @@ bool RTRunnerNode::loadROSParameters() {
 
 bool RTRunnerNode::loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Request &req,
                                                rtcf::LoadOrocosComponent::Response &res) {
+    const std::lock_guard<std::mutex> lock(mtx_);
+
     LoadAttributes attr;
 
     attr.name = req.component_name.data;
@@ -142,13 +159,15 @@ bool RTRunnerNode::loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Reques
 
     ROS_DEBUG_STREAM("Load service got called with following information:" << std::endl << attr);
 
-    res.success.data = true;  // rt_runner_->loadOrocosComponent(rt_type, name, ns, topics_ignore_for_graph, is_first,
-                              // is_sync, mappings);
+    res.success.data = true;  // rt_runner_->loadOrocosComponent(rt_type, name, ns, topics_ignore_for_graph,
+                              // is_first, is_sync, mappings);
     return true;
 };
 
 bool RTRunnerNode::unloadOrocosComponentCallback(rtcf::UnloadOrocosComponent::Request &req,
                                                  rtcf::UnloadOrocosComponent::Response &res) {
+    const std::lock_guard<std::mutex> lock(mtx_);
+
     UnloadAttributes attr;
     attr.name = req.component_name.data;
     attr.ns   = req.ns.data;
@@ -162,6 +181,7 @@ bool RTRunnerNode::unloadOrocosComponentCallback(rtcf::UnloadOrocosComponent::Re
 bool RTRunnerNode::activateRTLoopCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
     (void)req;
 
+    const std::lock_guard<std::mutex> lock(mtx_);
     rt_runner_->activateRTLoop();
 
     res.success = true;
@@ -171,6 +191,7 @@ bool RTRunnerNode::activateRTLoopCallback(std_srvs::Trigger::Request &req, std_s
 bool RTRunnerNode::deactivateRTLoopCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
     (void)req;
 
+    const std::lock_guard<std::mutex> lock(mtx_);
     rt_runner_->deactivateRTLoop();
 
     res.success = true;
@@ -180,9 +201,6 @@ bool RTRunnerNode::deactivateRTLoopCallback(std_srvs::Trigger::Request &req, std
 void sigintHandler(int sig) {
     (void)sig;
     ROS_DEBUG("SIGINT handler called");
-    // TODO: wait for all components to stop so that we can exit gracefully
-    ROS_WARN("WAIT WOULD BE PLACED HERE!");
-
     node_ptr->shutdown();
     ros::shutdown();
 }
@@ -198,6 +216,11 @@ int ORO_main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
+    // this will indirectly provide an asyncronous spinner
+    if (!rtt_ros::import("rtt_roscomm")) {
+        ROS_ERROR("Could not load rtt_roscomm component");
+        return EXIT_FAILURE;
+    }
     node_ptr->loop();
 
     return EXIT_SUCCESS;

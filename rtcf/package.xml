@@ -27,7 +27,7 @@
 
   <export>
     <rtt_ros>
-      <plugin_depend>rtt_roscomm</plugin_depend>
+      <!--<plugin_depend>rtt_roscomm</plugin_depend>-->
     </rtt_ros>
 
   </export>
