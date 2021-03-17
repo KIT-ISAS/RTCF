@@ -5,6 +5,7 @@
 #include <rtt_roscomm/rostopic.h>
 
 #include <regex>
+#include <rtt/Activity.hpp>
 #include <rtt/deployment/ComponentLoader.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
 
@@ -15,19 +16,22 @@ void RTRunner::configure(const Settings& settings) {
     settings_ = settings;
 
     // configure thread for realtimeness
-    main_activity_ = new RTT::Activity(ORO_SCHED_RT, 98);
-    main_activity_->setCpuAffinity(0x01);  // thread runs on first CPU
+    RTT::Activity* main_activity = new RTT::Activity(ORO_SCHED_RT, 98);
+    main_activity->setCpuAffinity(0x01);  // thread runs on first CPU
     // TODO: think about memory locking and pre-faulting of stack/heap
 
     // add thread to context
-    main_context_.setActivity(main_activity_);
+    main_context_.setActivity(main_activity);
+    // according to OROCOS doc, main activity is now owned by the main_context and shall only be reference through
+    // getActivity().
+    main_context_.getActivity()->stop();  // set activity will autostart the activity
     main_context_.configure();
 };
 
 void RTRunner::shutdown() {
     is_shutdown_ = true;
     stopExecution();
-};
+}
 
 size_t RTRunner::getNumLoadedComponents() { return num_loaded_components_; }
 
@@ -57,7 +61,8 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
     if (is_shutdown_) {
         return false;
     }
-    if (settings_.mode == Mode::WAIT_FOR_COMPONENTS && rt_order_.size() >= settings_.expected_num_components) {
+    if (settings_.mode == Mode::WAIT_FOR_COMPONENTS &&
+        component_containers_.size() >= settings_.expected_num_components) {
         ROS_ERROR_STREAM("More components were loaded than expected. Additional components will not be active.");
         return false;
     }
@@ -75,16 +80,17 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
     }
 
     // prepare sequential execution
-    RTT::extras::SlaveActivity* slave_activity = new RTT::extras::SlaveActivity(main_activity_);
+    RTT::extras::SlaveActivity* slave_activity = new RTT::extras::SlaveActivity();
     task->setActivity(slave_activity);
-    ComponentContainer component_container(info, task, slave_activity);
-
     // try to configure the component
-    if (!component_container.task_context->configure()) {
-        ROS_ERROR_STREAM("configuration() call to component " << component_container.attributes.name << " failed");
+    if (!task->configure()) {
+        ROS_ERROR_STREAM("configuration() call to component " << info.name << " failed");
+        delete task;
         return false;
     }
-    // component_container.task_context->start() should not be called here as this would trigger the updateHook()
+    ComponentContainer component_container(info, task, slave_activity);
+
+    // task->start() should not be called here as this would trigger the updateHook() prematurely
 
     // stop the execution now (if not already stopped)
     // it is not necessary to stop the loop earlier because the component does not get triggered
@@ -95,7 +101,7 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
     tryStartExecution();
 
     return true;
-};
+}
 
 RTT::TaskContext* RTRunner::createInstance(const std::string& component_type, const std::string& component_name) {
     RTT::TaskContext* tc = nullptr;
@@ -126,10 +132,10 @@ bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
 
     // this always succeeds, if the component the remove was found
     return true;
-};
+}
 
 void RTRunner::activateRTLoop() {
-    if (!main_activity_->isActive()) {
+    if (!main_context_.getActivity()->isActive()) {
         // first start all the components that are not already started
         for (const auto& component : component_containers_) {
             auto* tc = component.task_context;
@@ -141,20 +147,20 @@ void RTRunner::activateRTLoop() {
         }
 
         // then go to cyclic operation
-        main_activity_->setPeriod(1.0 / settings_.frequency);
+        main_context_.getActivity()->setPeriod(1.0 / settings_.frequency);
         main_context_.start();
     }
-};
+}
 
 void RTRunner::deactivateRTLoop() {
-    if (main_activity_->isActive()) {
+    if (main_context_.getActivity()->isActive()) {
         // stop cyclic operation
         main_context_.stop();
     }
-};
+}
 
 void RTRunner::tryStartExecution() {
-    if (main_activity_->isActive()) {
+    if (main_context_.getActivity()->isActive()) {
         // if main activity is active, there is nothing to do
         return;
     }
@@ -163,7 +169,8 @@ void RTRunner::tryStartExecution() {
     }
     // if allowed, (re)start automatically
     if ((settings_.mode == Mode::NO_WAIT) ||
-        (settings_.mode == Mode::WAIT_FOR_COMPONENTS && rt_order_.size() == settings_.expected_num_components) ||
+        (settings_.mode == Mode::WAIT_FOR_COMPONENTS &&
+         component_containers_.size() == settings_.expected_num_components) ||
         (settings_.mode == Mode::WAIT_FOR_TRIGGER && is_active_external_)) {
         analyzeDependencies();
         connectPorts();
@@ -174,7 +181,7 @@ void RTRunner::tryStartExecution() {
 }
 
 void RTRunner::stopExecution() {
-    if (!main_activity_->isActive()) {
+    if (!main_context_.getActivity()->isActive()) {
         // if main activity is not active, there is nothing to do
         return;
     }
@@ -280,6 +287,15 @@ bool RTRunner::generateRTOrder() {
         }
     }
 
+    rt_order_ = L;
+    // debug print of RT order
+    std::stringstream ss;
+    ss << "RT order is determined as: ";
+    for (const auto& item : rt_order_) {
+        ss << item->attributes.name << ", ";
+    }
+    ROS_INFO_STREAM(ss.str());
+
     // check if all dependencies are met
     if (L.size() != component_containers_.size()) {
         // error information for debugging
@@ -296,7 +312,6 @@ bool RTRunner::generateRTOrder() {
         }
         return false;
     } else {
-        rt_order_ = L;
         return true;
     }
 }
@@ -349,7 +364,7 @@ void RTRunner::connectPortsToRos() {
             if (check_name(output_port.mapped_name)) {
                 output_port.port->createStream(rtt_roscomm::topic(output_port.mapped_name));
                 ROS_INFO_STREAM("Connected " << container.attributes.name << " (output " << output_port.original_name
-                                             << ") to ROS topic " << output_port.mapped_name << ".");
+                                             << ") to ROS topic " << output_port.mapped_name << "");
             }
         }
     }
@@ -363,11 +378,11 @@ void RTRunner::connectPortsToRos() {
                 if (internal_connections_.count(&input_port) == 0) {
                     input_port.port->createStream(rtt_roscomm::topic(input_port.mapped_name));
                     ROS_INFO_STREAM("Connected " << container.attributes.name << " (input " << input_port.original_name
-                                                 << ") to ROS topic " << input_port.mapped_name << ".");
+                                                 << ") to ROS topic " << input_port.mapped_name << "");
                 } else {
                     ROS_INFO_STREAM("Skipped connecting " << container.attributes.name << " (input "
                                                           << input_port.original_name << ") to ROS topic "
-                                                          << input_port.mapped_name << " due to internal connection.");
+                                                          << input_port.mapped_name << " due to internal connection");
                 }
             }
         }

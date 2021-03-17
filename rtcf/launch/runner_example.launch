@@ -3,8 +3,8 @@
     <node name="rt_runner" pkg="rtcf" type="rt_runner" output="screen">
         <rosparam param="mode">"wait_for_components"</rosparam>
         <rosparam param="ros_mapping_blacklist">"debug"</rosparam>
-        <rosparam param="ros_mapping_whitelist">".*ros.*"</rosparam>
-        <rosparam param="num_components_expected">2</rosparam>
+        <rosparam param="ros_mapping_whitelist">".*mapped.*"</rosparam>
+        <rosparam param="num_components_expected">1</rosparam>
         <rosparam param="frequency">100.0</rosparam>
     </node>
 

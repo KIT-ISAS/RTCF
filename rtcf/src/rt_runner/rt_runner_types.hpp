@@ -78,7 +78,7 @@ struct ComponentContainer {
 
             } else if (dynamic_cast<RTT::base::OutputPortInterface*>(port)) {
                 output_ports.push_back(port_container);
-                ss << "(outpout)";
+                ss << "(output)";
 
             } else {
                 ss << "(neither input nor output)";

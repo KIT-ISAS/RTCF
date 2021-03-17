@@ -2,7 +2,6 @@
 #define RT_RUNNER_H
 
 #include <atomic>
-#include <rtt/Activity.hpp>
 #include <rtt/TaskContext.hpp>
 
 #include "main_context.hpp"
@@ -62,7 +61,6 @@ class RTRunner {
     bool is_active_external_;
     bool is_shutdown_;
 
-    RTT::Activity* main_activity_;
     MainContext main_context_;
     RTOrder rt_order_;
 

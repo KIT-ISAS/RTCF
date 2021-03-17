@@ -1,0 +1,8 @@
+<launch>
+    <node name="example" pkg="rtcf" type="rt_launcher" args="rtcf_examples Identity" output="screen">
+        <remap from="out_port" to="/mapped/out_port"/>
+        <remap from="in_port" to="/mapped/in_port"/>
+        <rosparam param="is_first">True</rosparam>
+        <rosparam param="topics_ignore_for_graph">"*.in_port"</rosparam>
+    </node>
+</launch>

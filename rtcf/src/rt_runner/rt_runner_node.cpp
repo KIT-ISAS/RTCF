@@ -32,7 +32,7 @@ bool RTRunnerNode::configure() {
     rt_runner_->configure(settings_);
     setupROSServices();
     return true;
-};
+}
 
 void RTRunnerNode::shutdown() {
     {
@@ -159,10 +159,9 @@ bool RTRunnerNode::loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Reques
     attr.topics_ignore_for_graph = req.topics_ignore_for_graph.data;
     attr.is_first                = req.is_first.data;
 
-    ROS_DEBUG_STREAM("Load service got called with following information:" << std::endl << attr);
+    ROS_INFO_STREAM("Load service got called with following information:" << std::endl << attr);
 
-    res.success.data = true;  // rt_runner_->loadOrocosComponent(rt_type, name, ns, topics_ignore_for_graph,
-                              // is_first, is_sync, mappings);
+    res.success.data = rt_runner_->loadOrocosComponent(attr);
     return true;
 };
 
@@ -174,9 +173,9 @@ bool RTRunnerNode::unloadOrocosComponentCallback(rtcf::UnloadOrocosComponent::Re
     attr.name = req.component_name.data;
     attr.ns   = req.ns.data;
 
-    ROS_DEBUG_STREAM("Unload service got called with following information:" << std::endl << attr);
+    ROS_INFO_STREAM("Unload service got called with following information:" << std::endl << attr);
 
-    res.success.data = true;  // rt_runner_->unloadOrocosComponent(name, ns);
+    res.success.data = rt_runner_->unloadOrocosComponent(attr);
     return true;
 };
 
@@ -210,6 +209,7 @@ void sigintHandler(int sig) {
 int ORO_main(int argc, char **argv) {
     ros::init(argc, argv, "rt_runner", ros::init_options::NoSigintHandler);
     ros::NodeHandle nh("~");
+    // ros::Duration(8.0).sleep(); // for debugging
 
     node_ptr = std::make_unique<RTRunnerNode>(nh);
     signal(SIGINT, sigintHandler);

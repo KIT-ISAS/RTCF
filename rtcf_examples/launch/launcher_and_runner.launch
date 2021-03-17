@@ -1,14 +1,12 @@
 <launch>
 
-    <!--<env if="$(arg debug_mode)" name="ROSCONSOLE_CONFIG_FILE" value="$(find perception)/rosconsole/perception.conf"/>-->
-
-
-    <node name="runner" pkg="rtcf" type="rt_runner-gnulinux" output="screen">
+    <node name="rt_runner" pkg="rtcf" type="rt_runner" output="screen">
         <rosparam param="mode">"wait_for_components"</rosparam>
-        <!--<rosparam param="whitelist_ros_mapping">".*ros.*"</rosparam>-->
+        <rosparam param="ros_mapping_whitelist">".*ros.*"</rosparam>
         <rosparam param="num_components_expected">2</rosparam>
-        <rosparam param="frequency">100.0</rosparam>
+        <rosparam param="frequency">1000.0</rosparam>
     </node>
+
 
     <node name="foobar_1" pkg="rtcf" type="rt_launcher" args="rt_type=foobar is_first=true" output="screen">
         <remap from="out_Port" to="/mapped/out_Port_1"/>

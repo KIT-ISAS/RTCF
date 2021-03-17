@@ -55,7 +55,7 @@ rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
     srv.request.is_first.data                = launcher_attributes_.is_first;
     srv.request.topics_ignore_for_graph.data = launcher_attributes_.topics_ignore_for_graph;
 
-    // ROS_INFO_STREAM("LOAD CALL:" << std::endl << srv.request);
+    ROS_INFO_STREAM("LOAD CALL:" << std::endl << srv.request);
     return srv;
 };
 
@@ -65,7 +65,7 @@ rtcf::UnloadOrocosComponent RTLauncherNode::genUnloadMsg() {
     srv.request.component_name.data = launcher_attributes_.name;
     srv.request.ns.data             = launcher_attributes_.ns;
 
-    // ROS_INFO_STREAM("UNLOAD CALL:" << std::endl << srv.request);
+    ROS_INFO_STREAM("UNLOAD CALL:" << std::endl << srv.request);
     return srv;
 };
 
@@ -108,7 +108,7 @@ bool RTLauncherNode::loadInRTRunner() {
 
     bool service_ok = loadInRTRunnerClient.call(srv);
     if (service_ok && srv.response.success.data) {
-        ROS_DEBUG("RT Runner load called successfully");
+        ROS_INFO("RT Runner load called successfully");
         return true;
     } else {
         ROS_ERROR("Failed to call load service in RT Runner");
@@ -121,7 +121,7 @@ bool RTLauncherNode::unloadInRTRunner() {
 
     bool service_ok = unloadInRTRunnerClient.call(srv);
     if (service_ok && srv.response.success.data) {
-        ROS_DEBUG("RT Runner unload called successfully");
+        ROS_INFO("RT Runner unload called successfully");
         return true;
     } else {
         ROS_ERROR("Failed to call unload service in RT Runner");
