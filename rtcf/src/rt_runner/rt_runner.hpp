@@ -1,6 +1,7 @@
 #ifndef RT_RUNNER_H
 #define RT_RUNNER_H
 
+#include <atomic>
 #include <rtt/Activity.hpp>
 #include <rtt/TaskContext.hpp>
 
@@ -58,7 +59,8 @@ class RTRunner {
     void setSlavesOnMainContext();
 
     Settings settings_;
-    bool is_active_external_ = false;
+    bool is_active_external_;
+    bool is_shutdown_;
 
     RTT::Activity* main_activity_;
     MainContext main_context_;
@@ -70,6 +72,8 @@ class RTRunner {
     ComponentPredecessorMap component_predecessors_;
     ComponentSuccessorMap component_successors_;
 
+    std::atomic<size_t> num_loaded_components_;
+
   public:
     RTRunner();
 
@@ -78,6 +82,8 @@ class RTRunner {
 
     bool loadOrocosComponent(const LoadAttributes& info);
     bool unloadOrocosComponent(const UnloadAttributes& info);
+
+    size_t getNumLoadedComponents();  // this method is thread-safe
 
     // these methods are only available in WAIT_FOR_TRIGGER-mode
     void activateTrigger();

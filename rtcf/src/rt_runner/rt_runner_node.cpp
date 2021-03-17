@@ -35,14 +35,17 @@ bool RTRunnerNode::configure() {
 };
 
 void RTRunnerNode::shutdown() {
-    const std::lock_guard<std::mutex> lock(mtx_);
-
-    // TODO: wait for all components to stop so that we can exit gracefully
-    ROS_WARN("WAIT WOULD BE PLACED HERE!");
-
+    {
+        const std::lock_guard<std::mutex> lock(mtx_);
+        rt_runner_->shutdown();  // this stops the execution engine of all components
+    }
+    ROS_INFO("Waiting for components to be unloaded...");
+    // for simplicity, use polling here
+    // TODO: (optional) use conditional variable or something similar for waiting
+    while (rt_runner_->getNumLoadedComponents() > 0) {
+        ros::Duration(0.1).sleep();
+    }
     shutdownROSServices();
-    rt_runner_->shutdown();
-    is_shutdown_ = true;
 };
 
 void RTRunnerNode::loop() {

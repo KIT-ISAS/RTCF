@@ -8,7 +8,8 @@
 #include <rtt/deployment/ComponentLoader.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
 
-RTRunner::RTRunner() : is_active_external_(false), main_context_("main_context"){};
+RTRunner::RTRunner()
+    : is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0){};
 
 void RTRunner::configure(const Settings& settings) {
     settings_ = settings;
@@ -23,9 +24,17 @@ void RTRunner::configure(const Settings& settings) {
     main_context_.configure();
 };
 
-void RTRunner::shutdown() { stopExecution(); };
+void RTRunner::shutdown() {
+    is_shutdown_ = true;
+    stopExecution();
+};
+
+size_t RTRunner::getNumLoadedComponents() { return num_loaded_components_; }
 
 void RTRunner::activateTrigger() {
+    if (is_shutdown_) {
+        return;
+    }
     assert(settings_.mode == Mode::WAIT_FOR_TRIGGER);
     if (!is_active_external_) {
         is_active_external_ = true;
@@ -34,6 +43,9 @@ void RTRunner::activateTrigger() {
 }
 
 void RTRunner::deactivateTrigger() {
+    if (is_shutdown_) {
+        return;
+    }
     assert(settings_.mode == Mode::WAIT_FOR_TRIGGER);
     if (is_active_external_) {
         is_active_external_ = false;
@@ -42,6 +54,9 @@ void RTRunner::deactivateTrigger() {
 }
 
 bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
+    if (is_shutdown_) {
+        return false;
+    }
     if (settings_.mode == Mode::WAIT_FOR_COMPONENTS && rt_order_.size() >= settings_.expected_num_components) {
         ROS_ERROR_STREAM("More components were loaded than expected. Additional components will not be active.");
         return false;
@@ -75,6 +90,7 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
     // it is not necessary to stop the loop earlier because the component does not get triggered
     stopExecution();
     component_containers_.push_back(component_container);
+    num_loaded_components_ = component_containers_.size();
 
     tryStartExecution();
 
@@ -103,6 +119,8 @@ bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
     task->cleanup();
     delete task;
     delete (*result).activity;
+    component_containers_.erase(result);
+    num_loaded_components_ = component_containers_.size();
 
     tryStartExecution();
 
@@ -138,6 +156,9 @@ void RTRunner::deactivateRTLoop() {
 void RTRunner::tryStartExecution() {
     if (main_activity_->isActive()) {
         // if main activity is active, there is nothing to do
+        return;
+    }
+    if (is_shutdown_) {
         return;
     }
     // if allowed, (re)start automatically
