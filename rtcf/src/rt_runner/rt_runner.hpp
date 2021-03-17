@@ -2,6 +2,7 @@
 #define RT_RUNNER_H
 
 #include <atomic>
+#include <regex>
 #include <rtt/TaskContext.hpp>
 
 #include "main_context.hpp"
@@ -63,6 +64,9 @@ class RTRunner {
 
     MainContext main_context_;
     RTOrder rt_order_;
+
+    std::regex whitelist_;
+    std::regex blacklist_;
 
     ComponentContainerVector component_containers_;
 

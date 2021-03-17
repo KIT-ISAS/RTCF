@@ -10,7 +10,7 @@
 
 class MainContext : public RTT::TaskContext {
   private:
-    SlaveActivityVector slaves_;
+    RTOrder slaves_;
     RTT::os::TimeService* time_service_ptr_;
 
   public:
@@ -21,7 +21,7 @@ class MainContext : public RTT::TaskContext {
     void stopHook();
     void cleanupHook();
 
-    void setSlaves(std::vector<RTT::extras::SlaveActivity*>);
+    void setSlaves(const RTOrder& order);
     void clearSlaves();
 };
 

@@ -34,9 +34,9 @@ struct PortContainer {
 };
 
 struct ComponentContainer {
-    ComponentContainer(const LoadAttributes& attributes, RTT::TaskContext* task_context,
-                       RTT::extras::SlaveActivity* activity)
-        : attributes(attributes), task_context(task_context), activity(activity) {
+    ComponentContainer(const LoadAttributes& attributes, RTT::TaskContext* task_context)
+        : attributes(attributes), task_context(task_context) {
+        handleIgnoredTopicsRegex();
         handleNodeHandle();
         handlePorts();
         handleMappings();
@@ -45,12 +45,24 @@ struct ComponentContainer {
     // externally provided information
     LoadAttributes attributes;
     RTT::TaskContext* task_context;
-    RTT::extras::SlaveActivity* activity;
 
     // internally constructed information
     std::vector<PortContainer> input_ports;
     std::vector<PortContainer> output_ports;
     ros::NodeHandle node_handle;
+
+    // regex
+    std::regex topics_ignore_regex;
+
+    void handleIgnoredTopicsRegex() {
+        try {
+            topics_ignore_regex = std::regex(attributes.topics_ignore_for_graph);
+        } catch (std::regex_error e) {
+            ROS_ERROR_STREAM("Invalid regex in topics_ignore_for_graph for component "
+                             << attributes.name << " received. Falling back to default '.*'.");
+            topics_ignore_regex = std::regex(".*");
+        }
+    }
 
     void handleNodeHandle() {
         // create a node handle in the components namespace
@@ -115,7 +127,5 @@ using ComponentSuccessorMap   = std::map<const ComponentContainer*, std::set<con
 // This exploits the fact, that an input is only supplied by one output in a control system
 // For this reason, the key is the input port information and the value the output port information
 using InternalConnectionsMap = std::map<const PortContainer*, const PortContainer*>;
-
-using SlaveActivityVector = std::vector<RTT::extras::SlaveActivity*>;
 
 #endif /* RT_RUNNER_TYPES_H */

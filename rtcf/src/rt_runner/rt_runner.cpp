@@ -4,7 +4,6 @@
 #include <rtt_ros/rtt_ros.h>
 #include <rtt_roscomm/rostopic.h>
 
-#include <regex>
 #include <rtt/Activity.hpp>
 #include <rtt/deployment/ComponentLoader.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
@@ -24,8 +23,21 @@ void RTRunner::configure(const Settings& settings) {
     main_context_.setActivity(main_activity);
     // according to OROCOS doc, main activity is now owned by the main_context and shall only be reference through
     // getActivity().
-    main_context_.getActivity()->stop();  // set activity will autostart the activity
     main_context_.configure();
+
+    // whitelist/blacklist exceptions
+    try {
+        whitelist_ = std::regex(settings_.ros_mapping_whitelist);
+    } catch (std::regex_error e) {
+        ROS_ERROR_STREAM("Invalid regex in ros_mapping_whitelist. Falling back to default '.*'.");
+        whitelist_ = std::regex(".*");
+    }
+    try {
+        blacklist_ = std::regex(settings_.ros_mapping_blacklist);
+    } catch (std::regex_error e) {
+        ROS_ERROR_STREAM("Invalid regex in ros_mapping_blacklist. Falling back to default ''.");
+        blacklist_ = std::regex("");
+    }
 };
 
 void RTRunner::shutdown() {
@@ -88,7 +100,7 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
         delete task;
         return false;
     }
-    ComponentContainer component_container(info, task, slave_activity);
+    ComponentContainer component_container(info, task);
 
     // task->start() should not be called here as this would trigger the updateHook() prematurely
 
@@ -124,7 +136,6 @@ bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
     task->stop();
     task->cleanup();
     delete task;
-    delete (*result).activity;
     component_containers_.erase(result);
     num_loaded_components_ = component_containers_.size();
 
@@ -135,7 +146,7 @@ bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
 }
 
 void RTRunner::activateRTLoop() {
-    if (!main_context_.getActivity()->isActive()) {
+    if (!main_context_.isRunning()) {
         // first start all the components that are not already started
         for (const auto& component : component_containers_) {
             auto* tc = component.task_context;
@@ -147,21 +158,21 @@ void RTRunner::activateRTLoop() {
         }
 
         // then go to cyclic operation
-        main_context_.getActivity()->setPeriod(1.0 / settings_.frequency);
+        main_context_.setPeriod(1.0 / settings_.frequency);
         main_context_.start();
     }
 }
 
 void RTRunner::deactivateRTLoop() {
-    if (main_context_.getActivity()->isActive()) {
+    if (main_context_.isRunning()) {
         // stop cyclic operation
         main_context_.stop();
     }
 }
 
 void RTRunner::tryStartExecution() {
-    if (main_context_.getActivity()->isActive()) {
-        // if main activity is active, there is nothing to do
+    if (main_context_.isRunning()) {
+        // if main context is running, there is nothing to do
         return;
     }
     if (is_shutdown_) {
@@ -181,8 +192,8 @@ void RTRunner::tryStartExecution() {
 }
 
 void RTRunner::stopExecution() {
-    if (!main_context_.getActivity()->isActive()) {
-        // if main activity is not active, there is nothing to do
+    if (!main_context_.isRunning()) {
+        // if main context is not running, there is nothing to do
         return;
     }
     deactivateRTLoop();
@@ -191,14 +202,7 @@ void RTRunner::stopExecution() {
 
 void RTRunner::setSlavesOnMainContext() {
     // NOTE: main context needs to be stopped when calling this
-
-    // create list of slave activities to trigger
-    SlaveActivityVector slaves;
-    for (const auto& component : rt_order_) {
-        slaves.push_back(component->activity);
-    }
-    main_context_.clearSlaves();
-    main_context_.setSlaves(slaves);
+    main_context_.setSlaves(rt_order_);
 }
 
 void RTRunner::analyzeDependencies() {
@@ -231,11 +235,10 @@ void RTRunner::analyzeDependencies() {
                         internal_connections_[&p_input] = &p_output;
                         ROS_INFO_STREAM("Connected " << c_from.attributes.name << " (" << p_output.original_name
                                                      << ") with " << c_to.attributes.name << " ("
-                                                     << p_output.original_name << ") via " << p_input.mapped_name);
+                                                     << p_input.original_name << ") via " << p_input.mapped_name);
                         // 2. predecessor components (aka input dependencies)
                         //    exclude the ignored topics here
-                        auto regex = std::regex(c_to.attributes.topics_ignore_for_graph);
-                        if (!std::regex_match(p_input.mapped_name, regex)) {
+                        if (!std::regex_match(p_input.mapped_name, c_to.topics_ignore_regex)) {
                             if (component_predecessors_[&c_to].insert(&c_from).second) {
                                 ROS_INFO_STREAM("Added " << c_from.attributes.name
                                                          << " as predecessor (dependency) for " << c_to.attributes.name
@@ -343,15 +346,12 @@ void RTRunner::connectOrocosPorts() {
 }
 
 void RTRunner::connectPortsToRos() {
-    auto whitelist = std::regex(settings_.ros_mapping_whitelist);
-    auto blacklist = std::regex(settings_.ros_mapping_blacklist);
-
-    auto check_name = [&whitelist, &blacklist](const std::string& name) {
+    auto check_name = [this](const std::string& name) {
         // elements that match whitelist
-        if (std::regex_match(name, whitelist)) {
+        if (std::regex_match(name, whitelist_)) {
             // but not blacklist are passed through
             // (empty blacklist means that it never matches)
-            if (!std::regex_match(name, blacklist)) {
+            if (!std::regex_match(name, blacklist_)) {
                 return true;
             }
         }
