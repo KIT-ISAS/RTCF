@@ -76,6 +76,7 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
     component_containers.push_back(component_container);
 
     // do the magic (connecting nodes, graph resolution, etc.)
+    // TODO: only call this when necessary, since this is quite expensive
     disconnectPorts();
     generateRTOrder();
     connectPorts();
@@ -357,21 +358,29 @@ void RTRunner::analyzeDependencies() {
                     if (p_output.mapped_name == p_input.mapped_name) {
                         // check whether the current input is supplied by a single source
                         if (internal_connections.find(&p_input) != internal_connections.end()) {
-                            ROS_WARN_STREAM(
-                                "Found multiple connections to input port "
-                                << p_input.mapped_name << " of component " << c_to.attributes.name << ". "
-                                << "Therefore, the this connection will be ignored. Check your launchfile!");
+                            ROS_WARN_STREAM("Found multiple connections to input port "
+                                            << p_input.mapped_name << " of component " << c_to.attributes.name << ". "
+                                            << "Therefore, this connection will be ignored. Check your launchfile!");
                             continue;
                         }
                         // extract relevant information
                         // 1. input ports that are supplied by an output port (aka internal connections)
                         internal_connections[&p_input] = &p_output;
-                        // 2. predecessor components (aka input dependencies)
-                        component_dependencies[&c_to].insert(&c_from);
-
                         ROS_INFO_STREAM("Connected " << c_from.attributes.name << " (" << p_output.original_name
                                                      << ") with " << c_to.attributes.name << " ("
                                                      << p_output.original_name << ") via " << p_input.mapped_name);
+                        // 2. predecessor components (aka input dependencies)
+                        //    exclude the ignored topics here
+                        auto regex = std::regex(c_to.attributes.topics_ignore_for_graph);
+                        if (!std::regex_match(p_input.mapped_name, regex)) {
+                            if (component_dependencies[&c_to].insert(&c_from).second) {
+                                ROS_INFO_STREAM("Added " << c_from.attributes.name << " as dependency for "
+                                                         << c_to.attributes.name << ".");
+                            }
+                        } else {
+                            ROS_INFO_STREAM("Ignored " << c_from.attributes.name << " as dependency for "
+                                                       << c_to.attributes.name << " due to explicit exclusion.");
+                        }
                     }
                 }
             }
