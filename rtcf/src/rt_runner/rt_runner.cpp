@@ -4,13 +4,9 @@
 #include <rtt_ros/rtt_ros.h>
 #include <rtt_roscomm/rostopic.h>
 
-#include <iostream>
 #include <regex>
-#include <rtt/Activity.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/TaskContext.hpp>
+#include <rtt/deployment/ComponentLoader.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
-#include <vector>
 
 RTRunner::RTRunner() : is_active_(false), main_context_("main_context"){};
 
@@ -38,6 +34,16 @@ void RTRunner::deactivateRTLoop() {
     }
     is_active_ = false;
 };
+
+void RTRunner::activateTrigger() {
+    assert(settings_.mode == Mode::WAIT_FOR_TRIGGER);
+    activateRTLoop();
+}
+
+void RTRunner::deactivateTrigger() {
+    assert(settings_.mode == Mode::WAIT_FOR_TRIGGER);
+    deactivateRTLoop();
+}
 
 bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
     if (settings_.mode == Mode::WAIT_FOR_COMPONENTS && rt_order_.size() >= settings_.expected_num_components) {
@@ -133,23 +139,25 @@ bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
 void RTRunner::setSlavesOnMainContext() {
     // NOTE: main context needs to be stopped when calling this
 
-    std::vector<RTT::extras::SlaveActivity*> slaves;
+    // create list of slave activities to trigger
+    SlaveActivityVector slaves;
     for (const auto& component : rt_order_) {
         slaves.push_back(component->activity);
     }
     main_context_.clearSlaves();
     main_context_.setSlaves(slaves);
-};
-    /*
-    void RTRunner::stopComponents() {
-        main_context_.stop();
-        for (auto& component : rt_order) {
-            component.task_context->stop();
-        }
-    };
-    */
+}
 
-    void RTRunner::analyzeDependencies() {
+/*
+void RTRunner::stopComponents() {
+    main_context_.stop();
+    for (auto& component : rt_order) {
+        component.task_context->stop();
+    }
+};
+*/
+
+void RTRunner::analyzeDependencies() {
     // discard previously constructed stuff
     internal_connections_.clear();
     component_predecessors_.clear();

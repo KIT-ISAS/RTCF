@@ -1,16 +1,8 @@
 #ifndef RT_RUNNER_H
 #define RT_RUNNER_H
 
-#include <map>
 #include <rtt/Activity.hpp>
-#include <rtt/DataFlowInterface.hpp>
 #include <rtt/TaskContext.hpp>
-#include <rtt/base/InputPortInterface.hpp>
-#include <rtt/base/OutputPortInterface.hpp>
-#include <rtt/deployment/ComponentLoader.hpp>
-#include <rtt/extras/SlaveActivity.hpp>
-#include <typeinfo>
-#include <vector>
 
 #include "main_context.hpp"
 #include "rt_runner_types.hpp"
@@ -46,7 +38,8 @@ class RTRunner {
     };
 
   private:
-    Settings settings_;
+    void activateRTLoop();
+    void deactivateRTLoop();
 
     void analyzeDependencies();
     bool generateRTOrder();
@@ -61,29 +54,32 @@ class RTRunner {
 
     void setSlavesOnMainContext();
 
+    Settings settings_;
     bool is_active_ = false;
+
+    RTT::Activity* main_activity_;
+    MainContext main_context_;
+    RTOrder rt_order_;
+
+    ComponentContainerVector component_containers_;
+
+    InternalConnectionsMap internal_connections_;
+    ComponentPredecessorMap component_predecessors_;
+    ComponentSuccessorMap component_successors_;
 
   public:
     RTRunner();
 
     void configure(const Settings& settings);
-    void shutdown();
-    void stopComponents();
+    void shutdown();        // TODO: clean
+    void stopComponents();  // TODO: clean
 
     bool loadOrocosComponent(const LoadAttributes& info);
     bool unloadOrocosComponent(const UnloadAttributes& info);
 
-    void activateRTLoop();
-    void deactivateRTLoop();
-
-    RTT::Activity* main_activity_;
-    ComponentContainerVector component_containers_;
-    InternalConnectionsMap internal_connections_;
-    ComponentPredecessorMap component_predecessors_;
-    ComponentSuccessorMap component_successors_;
-    RTOrder rt_order_;
-
-    MainContext main_context_;
+    // these methods are only available in WAIT_FOR_TRIGGER-mode
+    void activateTrigger();
+    void deactivateTrigger();
 };
 
 #endif /* RT_RUNNER_H */

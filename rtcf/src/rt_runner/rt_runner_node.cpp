@@ -181,7 +181,7 @@ bool RTRunnerNode::activateRTLoopCallback(std_srvs::Trigger::Request &req, std_s
     (void)req;
 
     const std::lock_guard<std::mutex> lock(mtx_);
-    rt_runner_->activateRTLoop();
+    rt_runner_->activateTrigger();
 
     res.success = true;
     return true;
@@ -191,7 +191,7 @@ bool RTRunnerNode::deactivateRTLoopCallback(std_srvs::Trigger::Request &req, std
     (void)req;
 
     const std::lock_guard<std::mutex> lock(mtx_);
-    rt_runner_->deactivateRTLoop();
+    rt_runner_->deactivateTrigger();
 
     res.success = true;
     return true;
