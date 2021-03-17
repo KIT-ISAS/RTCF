@@ -41,6 +41,9 @@ class RTRunner {
     void activateRTLoop();
     void deactivateRTLoop();
 
+    void tryStartExecution();
+    void stopExecution();
+
     void analyzeDependencies();
     bool generateRTOrder();
 
@@ -55,7 +58,7 @@ class RTRunner {
     void setSlavesOnMainContext();
 
     Settings settings_;
-    bool is_active_ = false;
+    bool is_active_external_ = false;
 
     RTT::Activity* main_activity_;
     MainContext main_context_;
@@ -71,8 +74,7 @@ class RTRunner {
     RTRunner();
 
     void configure(const Settings& settings);
-    void shutdown();        // TODO: clean
-    void stopComponents();  // TODO: clean
+    void shutdown();
 
     bool loadOrocosComponent(const LoadAttributes& info);
     bool unloadOrocosComponent(const UnloadAttributes& info);

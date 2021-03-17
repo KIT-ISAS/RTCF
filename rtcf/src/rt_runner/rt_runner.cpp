@@ -8,41 +8,37 @@
 #include <rtt/deployment/ComponentLoader.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
 
-RTRunner::RTRunner() : is_active_(false), main_context_("main_context"){};
+RTRunner::RTRunner() : is_active_external_(false), main_context_("main_context"){};
 
 void RTRunner::configure(const Settings& settings) {
     settings_ = settings;
 
-    // TODO: add CPU affinity and similar stuff here
+    // configure thread for realtimeness
     main_activity_ = new RTT::Activity(ORO_SCHED_RT, 98);
+    main_activity_->setCpuAffinity(0x01);  // thread runs on first CPU
+    // TODO: think about memory locking and pre-faulting of stack/heap
+
+    // add thread to context
     main_context_.setActivity(main_activity_);
     main_context_.configure();
 };
-void RTRunner::shutdown() { deactivateRTLoop(); };
 
-void RTRunner::activateRTLoop() {
-    if (!is_active_) {
-        main_activity_->setPeriod(1.0 / settings_.frequency);
-        main_context_.start();
-    }
-    is_active_ = true;
-};
-
-void RTRunner::deactivateRTLoop() {
-    if (is_active_) {
-        main_context_.stop();
-    }
-    is_active_ = false;
-};
+void RTRunner::shutdown() { stopExecution(); };
 
 void RTRunner::activateTrigger() {
     assert(settings_.mode == Mode::WAIT_FOR_TRIGGER);
-    activateRTLoop();
+    if (!is_active_external_) {
+        is_active_external_ = true;
+        tryStartExecution();
+    }
 }
 
 void RTRunner::deactivateTrigger() {
     assert(settings_.mode == Mode::WAIT_FOR_TRIGGER);
-    deactivateRTLoop();
+    if (is_active_external_) {
+        is_active_external_ = false;
+        stopExecution();
+    }
 }
 
 bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
@@ -77,21 +73,10 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
 
     // stop the execution now (if not already stopped)
     // it is not necessary to stop the loop earlier because the component does not get triggered
-    deactivateRTLoop();
+    stopExecution();
     component_containers_.push_back(component_container);
 
-    // do the magic (connecting nodes, graph resolution, etc.)
-    // TODO: only call this when necessary, since this is quite expensive
-    disconnectPorts();
-    analyzeDependencies();
-    connectPorts();
-    generateRTOrder();
-    setSlavesOnMainContext();
-
-    if ((settings_.mode == Mode::NO_WAIT) ||
-        (settings_.mode == Mode::WAIT_FOR_COMPONENTS && rt_order_.size() == settings_.expected_num_components)) {
-        activateRTLoop();
-    }
+    tryStartExecution();
 
     return true;
 };
@@ -103,17 +88,15 @@ RTT::TaskContext* RTRunner::createInstance(const std::string& component_type, co
 }
 
 bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
-    deactivateRTLoop();
-
-    // stop all connections
-    disconnectPorts();
-
     // find the component to remove
     auto result = std::find_if(component_containers_.begin(), component_containers_.end(),
                                [&info](const auto& container) { return container.attributes.name == info.name; });
     if (result == component_containers_.end()) {
         return false;
     }
+
+    stopExecution();
+
     // tear down the component
     RTT::TaskContext* task = (*result).task_context;
     task->stop();
@@ -121,20 +104,62 @@ bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
     delete task;
     delete (*result).activity;
 
-    // update the remaining components
-    analyzeDependencies();
-    connectPorts();
-    generateRTOrder();
-    setSlavesOnMainContext();
-
-    // if allowed, restart automatically
-    if (settings_.mode == Mode::NO_WAIT) {
-        activateRTLoop();
-    }
+    tryStartExecution();
 
     // this always succeeds, if the component the remove was found
     return true;
 };
+
+void RTRunner::activateRTLoop() {
+    if (!main_activity_->isActive()) {
+        // first start all the components that are not already started
+        for (const auto& component : component_containers_) {
+            auto* tc = component.task_context;
+            if (tc->isConfigured() && !tc->isRunning()) {
+                if (!tc->start()) {
+                    ROS_ERROR_STREAM("start() call to component " << component.attributes.name << " failed.");
+                }
+            }
+        }
+
+        // then go to cyclic operation
+        main_activity_->setPeriod(1.0 / settings_.frequency);
+        main_context_.start();
+    }
+};
+
+void RTRunner::deactivateRTLoop() {
+    if (main_activity_->isActive()) {
+        // stop cyclic operation
+        main_context_.stop();
+    }
+};
+
+void RTRunner::tryStartExecution() {
+    if (main_activity_->isActive()) {
+        // if main activity is active, there is nothing to do
+        return;
+    }
+    // if allowed, (re)start automatically
+    if ((settings_.mode == Mode::NO_WAIT) ||
+        (settings_.mode == Mode::WAIT_FOR_COMPONENTS && rt_order_.size() == settings_.expected_num_components) ||
+        (settings_.mode == Mode::WAIT_FOR_TRIGGER && is_active_external_)) {
+        analyzeDependencies();
+        connectPorts();
+        generateRTOrder();
+        setSlavesOnMainContext();
+        activateRTLoop();
+    }
+}
+
+void RTRunner::stopExecution() {
+    if (!main_activity_->isActive()) {
+        // if main activity is not active, there is nothing to do
+        return;
+    }
+    deactivateRTLoop();
+    disconnectPorts();
+}
 
 void RTRunner::setSlavesOnMainContext() {
     // NOTE: main context needs to be stopped when calling this
@@ -147,15 +172,6 @@ void RTRunner::setSlavesOnMainContext() {
     main_context_.clearSlaves();
     main_context_.setSlaves(slaves);
 }
-
-/*
-void RTRunner::stopComponents() {
-    main_context_.stop();
-    for (auto& component : rt_order) {
-        component.task_context->stop();
-    }
-};
-*/
 
 void RTRunner::analyzeDependencies() {
     // discard previously constructed stuff
