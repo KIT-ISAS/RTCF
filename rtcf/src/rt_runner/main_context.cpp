@@ -7,8 +7,8 @@ MainContext::MainContext(std::string const& name) : TaskContext(name) {}
 bool MainContext::configureHook() {
     // std::cout << "Main context configured !" << std::endl;
 
-    time_service_ptr = RTT::os::TimeService::Instance();
-    time_service_ptr->enableSystemClock(true);
+    time_service_ptr_ = RTT::os::TimeService::Instance();
+    time_service_ptr_->enableSystemClock(true);
     return true;
 }
 
@@ -29,9 +29,12 @@ void MainContext::cleanupHook() {
     // std::cout << "MainContext cleaning up !" <<std::endl;
 }
 
-void MainContext::setSlaves(std::vector<RTT::extras::SlaveActivity*> slaves) {
-    // std::cout << "Set Slaves" << std::endl;
+void MainContext::setSlaves(SlaveActivityVector slaves) {
+    // std::cout << "Set slaves" << std::endl;
     slaves_ = slaves;
 };
 
-void MainContext::clearSlaves() { slaves_.clear(); };
+void MainContext::clearSlaves() {
+    // std::cout << "Clear slaves" << std::endl;
+    slaves_.clear();
+};

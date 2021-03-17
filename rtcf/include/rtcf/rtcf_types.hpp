@@ -26,7 +26,6 @@ struct LoadAttributes {
     // RTCF specific stuff
     std::string topics_ignore_for_graph;
     bool is_first = false;
-    bool is_sync  = false;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const LoadAttributes& a) {
@@ -34,8 +33,7 @@ inline std::ostream& operator<<(std::ostream& os, const LoadAttributes& a) {
     os << "Namespace: " << a.ns << std::endl;
     os << "RT-Package: " << a.rt_package << std::endl;
     os << "RT-Type: " << a.rt_type << std::endl;
-    os << "is_first: " << a.is_first << ", ";
-    os << "is_sync: " << a.is_sync << std::endl;
+    os << "is_first: " << a.is_first << std::endl;
     os << "Topics to ignore for graph:" << a.topics_ignore_for_graph << std::endl;
     os << "Mappings: " << std::endl;
     for (const auto& m : a.mappings) {

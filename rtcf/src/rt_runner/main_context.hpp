@@ -6,10 +6,13 @@
 #include <rtt/os/TimeService.hpp>
 #include <vector>
 
-#include "ros/ros.h"
+#include "rt_runner_types.hpp"
 
 class MainContext : public RTT::TaskContext {
   private:
+    SlaveActivityVector slaves_;
+    RTT::os::TimeService* time_service_ptr_;
+
   public:
     MainContext(std::string const& name);
     bool configureHook();
@@ -20,10 +23,6 @@ class MainContext : public RTT::TaskContext {
 
     void setSlaves(std::vector<RTT::extras::SlaveActivity*>);
     void clearSlaves();
-
-    std::vector<RTT::extras::SlaveActivity*> slaves_;
-
-    RTT::os::TimeService* time_service_ptr;
 };
 
 #endif /* MAIN_CONTEXT_H */

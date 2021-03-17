@@ -53,7 +53,6 @@ rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
     srv.request.component_type.data          = launcher_attributes_.rt_type;
     srv.request.component_pkg.data           = launcher_attributes_.rt_package;
     srv.request.is_first.data                = launcher_attributes_.is_first;
-    srv.request.is_sync.data                 = launcher_attributes_.is_sync;
     srv.request.topics_ignore_for_graph.data = launcher_attributes_.topics_ignore_for_graph;
 
     // ROS_INFO_STREAM("LOAD CALL:" << std::endl << srv.request);
@@ -79,14 +78,6 @@ bool RTLauncherNode::loadROSParameters() {
             return false;
         } else {
             node_handle_.getParam("is_first", launcher_attributes_.is_first);
-        }
-    }
-    if (node_handle_.hasParam("is_sync")) {
-        if (launcher_attributes_.is_sync) {
-            ROS_ERROR("Conflicting configuration for parameter is_sync");
-            return false;
-        } else {
-            node_handle_.getParam("is_sync", launcher_attributes_.is_sync);
         }
     }
 
@@ -164,7 +155,6 @@ bool RTLauncherNode::handleArgs(int &argc, char **argv) {
     desc.add_options()
         ("help", "help message")
         ("is_first,f", "mark RT component as start component")
-        ("is_sync,s", "mark RT component as sync component")
         ("component_info,c", po::value<std::vector<std::string>>(), "ROS package followed by RTT component name");
     // clang-format on
     // component_info is a positional argument
@@ -188,9 +178,6 @@ bool RTLauncherNode::handleArgs(int &argc, char **argv) {
     }
     if (vm.count("is_first")) {
         launcher_attributes_.is_first = true;
-    }
-    if (vm.count("is_sync")) {
-        launcher_attributes_.is_sync = true;
     }
     if (vm.count("component_info")) {
         std::vector<std::string> component_info = vm["component_info"].as<std::vector<std::string>>();

@@ -104,115 +104,18 @@ struct ComponentContainer {
 };
 
 using ComponentContainerVector = std::vector<ComponentContainer>;
-
-// Type used to store whether a component is satisfied or not.
-// The key is the the component information, the value is states whether all dependencies are satisfied.
-using ComponentSatisfactionMap = std::map<const ComponentContainer*, bool>;
+using RTOrder                  = std::vector<const ComponentContainer*>;
 
 // Type used to store the dependencies of a component.
-// They key is the component information, the value is a set of dependencies.
-using ComponentDependenciesMap = std::map<const ComponentContainer*, std::set<const ComponentContainer*>>;
+// They key is the component information, the value is a set of predecessors or successors.
+using ComponentPredecessorMap = std::map<const ComponentContainer*, std::set<const ComponentContainer*>>;
+using ComponentSuccessorMap   = std::map<const ComponentContainer*, std::set<const ComponentContainer*>>;
 
 // Type used for storing internal connections
 // This exploits the fact, that an input is only supplied by one output in a control system
 // For this reason, the key is the input port information and the value the output port information
 using InternalConnectionsMap = std::map<const PortContainer*, const PortContainer*>;
 
-
-
-
-
-    // struct GraphComponentContainer : ComponentContainer{
-    //     GraphOrocosContainer(const ComponentContainer& container)
-    //      : ComponentContainer(orocos_container){}
-
-    // };
-
-    /* TODO: This whole block beneth should be done better <03-02-21, Stefan Geyer> */
-
-/*
-    struct GraphOrocosContainer;
-
-struct GraphPortContainer : PortContainer {
-    GraphPortContainer(const PortContainer port_container) : PortContainer(port_container) {}
-
-    bool is_connected = false;
-    bool is_satisfied = false;
-};
-
-struct GraphPortMatch {
-    GraphPortMatch(GraphOrocosContainer* corr_orocos_ptr, GraphPortContainer* corr_port_ptr)
-        : corr_orocos_ptr_(corr_orocos_ptr), corr_port_ptr_(corr_port_ptr){};
-    GraphPortMatch(){};
-
-    GraphOrocosContainer* corr_orocos_ptr_ = nullptr;
-    GraphPortContainer* corr_port_ptr_     = nullptr;
-};
-typedef std::vector<GraphPortMatch> GraphPortMatches;
-
-struct GraphInportContainer : GraphPortContainer {
-    GraphInportContainer(const PortContainer port_container) : GraphPortContainer(port_container) {}
-
-    GraphPortMatch outport_match;
-};
-
-struct GraphOutportContainer : GraphPortContainer {
-    GraphOutportContainer(const PortContainer port_container) : GraphPortContainer(port_container) {}
-
-    GraphPortMatches inport_matches;
-};
-
-typedef std::vector<GraphOrocosContainer> GraphOrocosContainers;
-
-struct GraphOrocosContainer : ComponentContainer {
-    GraphOrocosContainer(const ComponentContainer orocos_container) : ComponentContainer(orocos_container) {
-        for (const auto& p : orocos_container.input_ports) {
-            input_ports_.push_back(GraphInportContainer(p));
-        }
-        for (const auto& p : orocos_container.output_ports) {
-            output_ports_.push_back(GraphOutportContainer(p));
-        }
-    }
-
-    bool is_queued = false;
-
-    std::vector<GraphInportContainer> input_ports_;
-    std::vector<GraphOutportContainer> output_ports_;
-
-    std::vector<GraphOrocosContainer*> connected_container_;
-
-    bool topic_is_ignored(const std::string topic) {
-        auto topic_is_ignored_regex = std::regex(connected_container_.topics_ignore_for_graph);
-        return std::regex_match(topic, topic_is_ignored_regex);
-    }
-
-    bool is_satisfied() {
-        bool is_satisfied = true;
-
-        for (const GraphInportContainer& p : input_ports_) {
-            if ((p.is_connected && !p.is_satisfied) && !topic_is_ignored(p.mapping_name_)) {
-                is_satisfied = false;
-            }
-        }
-        return is_satisfied;
-    }
-
-    std::vector<GraphOrocosContainer*> enqueue_and_satisfy_nodes() {
-        std::vector<GraphOrocosContainer*> to_enqueue;
-
-        for (auto& output_port : output_ports_) {
-            for (auto& inport_match : output_port.inport_matches) {
-                inport_match.corr_port_ptr_->is_satisfied = true;
-                if (!inport_match.corr_orocos_ptr_->is_queued) {
-                    inport_match.corr_orocos_ptr_->is_queued = true;
-                    to_enqueue.push_back(inport_match.corr_orocos_ptr_);
-                }
-            }
-        }
-
-        return to_enqueue;
-    }
-};
-*/
+using SlaveActivityVector = std::vector<RTT::extras::SlaveActivity*>;
 
 #endif /* RT_RUNNER_TYPES_H */

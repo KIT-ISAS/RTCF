@@ -6,7 +6,6 @@ std_msgs/String ns # ROS namespace of the real time component
 Mapping[] mappings # ROS remappings that apply to the real time component
 
 std_msgs/String topics_ignore_for_graph # topics which are not used during graph generation (can contain regex, this is applied after name resolution)
-std_msgs/Bool is_first # Flag for real time components that are first in every iteration (e.g., hardware interface)
-std_msgs/Bool is_sync # Additional flag for the graph generation algorithm
+std_msgs/Bool is_first # Flag for real time components that are first in every iteration (e.g., hardware interface). This flag implies that there are no dependencies.
 ---
 std_msgs/Bool success

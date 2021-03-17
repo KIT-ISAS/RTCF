@@ -155,7 +155,6 @@ bool RTRunnerNode::loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Reques
 
     attr.topics_ignore_for_graph = req.topics_ignore_for_graph.data;
     attr.is_first                = req.is_first.data;
-    attr.is_sync                 = req.is_sync.data;
 
     ROS_DEBUG_STREAM("Load service got called with following information:" << std::endl << attr);
 
