@@ -213,7 +213,7 @@ void RTRunner::analyzeDependencies() {
 
     // sort all components according to name to ensure determinism
     std::sort(component_containers_.begin(), component_containers_.end(),
-              [](const auto& a, const auto& b) { return (a.attributes.name > b.attributes.name); });
+              [](const auto& a, const auto& b) { return (a.attributes.name < b.attributes.name); });
 
     // iterate over all output ports
     for (const auto& c_from : component_containers_) {
@@ -236,22 +236,23 @@ void RTRunner::analyzeDependencies() {
                         ROS_INFO_STREAM("Connected " << c_from.attributes.name << " (" << p_output.original_name
                                                      << ") with " << c_to.attributes.name << " ("
                                                      << p_input.original_name << ") via " << p_input.mapped_name);
-                        // 2. predecessor components (aka input dependencies)
-                        //    exclude the ignored topics here
-                        if (!std::regex_match(p_input.mapped_name, c_to.topics_ignore_regex)) {
+                        // exclude the ignored topics here or components with is_first attribute set
+                        if (!std::regex_match(p_input.mapped_name, c_to.topics_ignore_regex) &&
+                            !c_to.attributes.is_first) {
+                            // 2. predecessor components (aka input dependencies)
                             if (component_predecessors_[&c_to].insert(&c_from).second) {
                                 ROS_INFO_STREAM("Added " << c_from.attributes.name
                                                          << " as predecessor (dependency) for " << c_to.attributes.name
                                                          << ".");
                             }
+                            // 3. successor components (aka output dependencies)
+                            if (component_successors_[&c_from].insert(&c_to).second) {
+                                ROS_INFO_STREAM("Added " << c_to.attributes.name << " as successor for "
+                                                         << c_from.attributes.name << ".");
+                            }
                         } else {
                             ROS_INFO_STREAM("Ignored " << c_from.attributes.name << " as predecessor (dependency) for "
                                                        << c_to.attributes.name << " due to explicit exclusion.");
-                        }
-                        // 3. successor components (aka output dependencies)
-                        if (component_successors_[&c_from].insert(&c_to).second) {
-                            ROS_INFO_STREAM("Added " << c_to.attributes.name << " as successorfor "
-                                                     << c_from.attributes.name << ".");
                         }
                     }
                 }
@@ -271,7 +272,7 @@ bool RTRunner::generateRTOrder() {
     std::set<const ComponentContainer*> S;  // nodes with no incoming edge
     // find all nodes with no incoming edge (predecessors empty or is_first set)
     for (const auto& component : component_containers_) {
-        if (component.attributes.is_first || !component_predecessors_[&component].empty()) {
+        if (component_predecessors_[&component].empty()) {
             S.insert(&component);
         }
     }
@@ -290,31 +291,58 @@ bool RTRunner::generateRTOrder() {
         }
     }
 
-    rt_order_ = L;
-    // debug print of RT order
-    std::stringstream ss;
-    ss << "RT order is determined as: ";
-    for (const auto& item : rt_order_) {
-        ss << item->attributes.name << ", ";
+    // check if all dependencies are met (maybe more checks than necessary ;-))
+    bool valid_solution = true;
+    // 1. L must have only unique elements
+    valid_solution &= (std::set<const ComponentContainer*>(L.begin(), L.end()).size() == L.size());
+    // 2. L must be same size as component_containers_
+    valid_solution &= (L.size() == component_containers_.size());
+    // 3. dependencies must be empty
+    for (const auto& component : component_containers_) {
+        valid_solution &= component_predecessors_[&component].empty();
     }
-    ROS_INFO_STREAM(ss.str());
-
-    // check if all dependencies are met
-    if (L.size() != component_containers_.size()) {
+    if (!valid_solution) {
         // error information for debugging
-        ROS_ERROR(
-            "Cyclic dependencies detected! Check is_first and topics_ignore_for_graph parameters in launchfile. "
-            "Following dependencies remained:");
+        ROS_ERROR_STREAM("Automatic dependency resolution failed. This might originate from cyclic dependencies. "
+                         << "Check is_first and topics_ignore_for_graph parameters in launchfile. "
+                         << "Here is some debug information that might help:");
+
+        std::stringstream ss;
+        ss << "Loaded components: ";
+        for (const auto& c : component_containers_) {
+            ss << c.attributes.name << ", ";
+        }
+        ROS_ERROR_STREAM(ss.str());
+
+        ss.clear();
+        ss << "Determined order: ";
+        for (const auto& item : L) {
+            ss << item->attributes.name << ", ";
+        }
+        ROS_ERROR_STREAM(ss.str());
+
+        ss.clear();
+        ss << "Following dependencies remained: " << std::endl;
         for (const auto& component : component_containers_) {
             if (!component_predecessors_[&component].empty()) {
                 for (const auto& predecessor : component_predecessors_[&component]) {
-                    ROS_ERROR_STREAM("Component " << component.attributes.name << " depends on "
-                                                  << predecessor->attributes.name);
+                    ss << "Component " << component.attributes.name << " depends on " << predecessor->attributes.name
+                       << std::endl;
                 }
             }
         }
+        ROS_ERROR_STREAM(ss.str());
+
         return false;
     } else {
+        rt_order_ = L;
+        // debug print of RT order
+        std::stringstream ss;
+        ss << "RT order is determined as: ";
+        for (const auto& item : rt_order_) {
+            ss << item->attributes.name << ", ";
+        }
+        ROS_INFO_STREAM(ss.str());
         return true;
     }
 }
