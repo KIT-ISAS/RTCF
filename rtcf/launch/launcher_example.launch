@@ -1,0 +1,14 @@
+<launch>
+    <node name="identity1" pkg="rtcf" type="rt_launcher" args="rtcf_examples Identity" output="screen">
+        <remap from="out_port" to="/mapped/tmp"/>
+        <remap from="in_port" to="/mapped/in"/>
+        <rosparam param="is_first">True</rosparam>
+    </node>
+
+    <node name="identity2" pkg="rtcf" type="rt_launcher" args="rtcf_examples Identity" output="screen">
+        <remap from="out_port" to="/mapped/out"/>
+        <remap from="in_port" to="/mapped/tmp"/>
+        <rosparam param="topics_ignore_for_graph">".*something"</rosparam>
+    </node>
+
+</launch>

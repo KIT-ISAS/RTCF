@@ -1,0 +1,5 @@
+std_msgs/String component_name # equivalent to a ROS node name
+std_msgs/String ns # ROS namespace of the real time component
+
+---
+std_msgs/Bool success

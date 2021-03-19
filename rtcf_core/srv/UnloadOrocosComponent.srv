@@ -1,5 +1,0 @@
-std_msgs/String component_name
-std_msgs/String ns
-
----
-std_msgs/Bool success

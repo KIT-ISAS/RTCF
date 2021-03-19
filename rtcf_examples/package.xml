@@ -1,0 +1,25 @@
+<package>
+  <name>rtcf_examples</name>
+  <version>0.0.1</version>
+  <description>Examples for the RTCF</description>
+
+  <maintainer email="michael.fennel@kit.edu">Michael Fennel</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rtt</build_depend>
+  <build_depend>rtt_rtcf_example_msgs</build_depend>
+  <build_depend>rtcf</build_depend>
+
+  <run_depend>rtt</run_depend>
+  <run_depend>rtt_rtcf_example_msgs</run_depend>
+  <run_depend>rtcf</run_depend>
+
+  <export>
+    <rtt_ros>
+      <plugin_depend>rtt_rtcf_example_msgs</plugin_depend>
+    </rtt_ros>
+  </export>
+</package>
