@@ -1,7 +1,7 @@
 #ifndef COMPONENT_HPP
 #define COMPONENT_HPP
 
-#include <rtcf_example_msgs/Custom.h>
+#include <std_msgs/Float64.h>
 
 // This header is causing many warnings, so we disable them temporarily
 #pragma GCC diagnostic push
@@ -20,12 +20,12 @@ class Mimo : public RTT::TaskContext {
     void cleanupHook();
 
   private:
-    RTT::OutputPort<rtcf_example_msgs::Custom> port_out1_;
-    RTT::OutputPort<rtcf_example_msgs::Custom> port_out2_;
+    RTT::OutputPort<std_msgs::Float64> port_out1_;
+    RTT::OutputPort<std_msgs::Float64> port_out2_;
 
-    RTT::InputPort<rtcf_example_msgs::Custom> port_in1_;
-    RTT::InputPort<rtcf_example_msgs::Custom> port_in2_;
-    RTT::InputPort<rtcf_example_msgs::Custom> port_in3_;
-    RTT::InputPort<rtcf_example_msgs::Custom> port_in4_;
+    RTT::InputPort<std_msgs::Float64> port_in1_;
+    RTT::InputPort<std_msgs::Float64> port_in2_;
+    RTT::InputPort<std_msgs::Float64> port_in3_;
+    RTT::InputPort<std_msgs::Float64> port_in4_;
 };
 #endif
