@@ -1,0 +1,99 @@
+<launch>
+    <!-- instantiate a runner -->
+    <node name="rt_runner" pkg="rtcf" type="rt_runner" output="screen">
+        <rosparam param="mode">"wait_for_components"</rosparam>
+        <!--<rosparam param="ros_mapping_blacklist">".*4.*"</rosparam>-->
+        <rosparam param="ros_mapping_whitelist">".*stream.*"</rosparam>
+        <rosparam param="num_components_expected">10</rosparam>
+        <rosparam param="frequency">1.0</rosparam>
+    </node>
+
+    <!--
+          *first
+       1 ┌─┐2_1┌─┐ 3 ┌─┐ 7
+    ┌───►│1├──►│4├─┐►│2├───────────────────────────────────┐
+    │    └┬┘   └─┘ │ └─┘                                   │
+    │     │ 2_2 ▲  │                                       │
+    │     └─────┘  │     3 ┌─┐ 5                           │
+    │              ├──────►│3├──────────┬───────────┬────┐ │
+    │              │       └─┘          │           │    │ │
+    │              │                    ▼           ▼    ▼ ▼
+    │              │     3 ┌─┐4_1┌─┐4_2┌─┐4_3┌─┐4_4┌─┐6┌►┌──┐
+    │              └──────►│5├──►│9├──►│8├─┐►│7├─┐►│6├─┤ │10│
+    │                      └─┘   └─┘   └─┘ │ └─┘ │ └─┘ └►└─┬┘
+    │                       ▲     ▲ 4_3    │     │         │
+    │                       │     └────────┘     │         │
+    │                       │ 4_4                │         │
+    │                       └────────────────────┘         │
+    │                                                      │
+    └──────────────────────────────────────────────────────┘
+    -->
+
+    <!-- controller components -->
+    <!-- first block, e.g., hardware interface -->
+    <node name="node_1" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <rosparam param="is_first">true</rosparam>
+        <remap from="in1" to="/stream1"/>
+        <remap from="out1" to="/stream2_1"/>
+        <remap from="out2" to="/stream2_2"/>
+    </node>
+
+    <node name="node_4" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <remap from="in1" to="/stream2_1"/>
+        <remap from="in2" to="/stream2_2"/>
+        <remap from="out1" to="/stream3"/>
+    </node>
+
+    <node name="node_3" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <remap from="in1" to="/stream3"/>
+        <remap from="out1" to="/stream5"/>
+    </node>
+    
+    <node name="node_2" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <remap from="in1" to="/stream3"/>
+        <remap from="out1" to="/stream7"/>
+    </node>
+
+    <node name="node_5" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <rosparam param="topics_ignore_for_graph">".*4_4"</rosparam>
+        <remap from="in1" to="/stream3"/>
+        <remap from="in2" to="/stream4_4"/> <!-- internal feedback loop -->
+        <remap from="out1" to="/stream4_1"/>
+    </node>
+
+    <node name="node_9" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <rosparam param="topics_ignore_for_graph">".*4_3"</rosparam>
+        <remap from="in1" to="/stream4_1"/>
+        <remap from="in2" to="/stream4_3"/> <!-- internal feedback loop-->
+        <remap from="out1" to="/stream4_2"/>
+    </node>
+
+    <node name="node_8" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <remap from="in1" to="/stream4_2"/>
+        <remap from="in2" to="/stream5"/>
+        <remap from="out1" to="/stream4_3"/>
+    </node>
+
+    <node name="node_7" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <remap from="in1" to="/stream4_3"/>
+        <remap from="out1" to="/stream4_4"/>
+    </node>
+
+    <node name="node_6" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <remap from="in1" to="/stream4_4"/>
+        <remap from="in2" to="/stream5"/>
+        <remap from="out1" to="/stream6"/>
+    </node>
+
+    <!-- last block feeds back into hardware interface -->
+    <node name="node_10" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo" output="screen">
+        <remap from="in1" to="/stream5"/>
+        <remap from="in1" to="/stream6"/>
+        <remap from="in3" to="/stream7"/>
+        <remap from="in4" to="/stream6"/> <!-- previous block output goes into two inputs-->
+        <remap from="out1" to="/stream1"/>
+    </node>
+
+
+</launch>
+
