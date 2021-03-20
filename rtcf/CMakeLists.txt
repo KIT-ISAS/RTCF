@@ -5,7 +5,7 @@ project(rtcf)
 #############
 ## General ##
 #############
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Wall -Wextra)
 
 if(NOT CMAKE_BUILD_TYPE)

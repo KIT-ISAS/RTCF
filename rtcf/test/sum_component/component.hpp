@@ -1,7 +1,6 @@
 #ifndef COMPONENT_HPP
 #define COMPONENT_HPP
 
-#include <rtcf_example_msgs/Custom.h>
 
 // This header is causing many warnings, so we disable them temporarily
 #pragma GCC diagnostic push
@@ -10,9 +9,11 @@
 #include <rtt/Port.hpp>
 #pragma GCC diagnostic pop
 
-class Identity : public RTT::TaskContext {
+#include <std_msgs/Float64.h>
+
+class SumTest : public RTT::TaskContext {
   public:
-    Identity(std::string const& name);
+    SumTest(std::string const& name);
     bool configureHook();
     bool startHook();
     void updateHook();
@@ -20,8 +21,12 @@ class Identity : public RTT::TaskContext {
     void cleanupHook();
 
   private:
-    RTT::OutputPort<rtcf_example_msgs::Custom> port_out_;
-    RTT::InputPort<rtcf_example_msgs::Custom> port_in_;
-    rtcf_example_msgs::Custom msg_;
+    RTT::OutputPort<std_msgs::Float64> out_;
+    RTT::InputPort<std_msgs::Float64> in1_;
+    RTT::InputPort<std_msgs::Float64> in2_;
+
+    std_msgs::Float64 in_msg_1_;
+    std_msgs::Float64 in_msg_2_;
+    std_msgs::Float64 out_msg_;
 };
 #endif

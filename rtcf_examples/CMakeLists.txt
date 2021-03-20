@@ -29,6 +29,7 @@ catkin_package(CATKIN_DEPENDS
 #######################
 add_subdirectory(src/bare_minimum)
 add_subdirectory(src/identity)
+add_subdirectory(src/mimo)
 
 # finalize the OROCOS package
 orocos_generate_package()

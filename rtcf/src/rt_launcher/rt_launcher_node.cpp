@@ -167,7 +167,7 @@ bool RTLauncherNode::handleArgs(int &argc, char **argv) {
         po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
         po::notify(vm);
     } catch (po::error e) {
-        std::cout << e.what() << std::endl;
+        ROS_ERROR_STREAM("Command line parsing failed: " << e.what());
         return false;
     }
 

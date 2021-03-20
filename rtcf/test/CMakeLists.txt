@@ -1,8 +1,9 @@
 find_package(rostest REQUIRED)
 
-# subcomponents
+# sub directories
 add_subdirectory(rt_launcher)
 add_subdirectory(rt_runner)
+add_subdirectory(sum_component)
 
 # integration tests
 add_rostest_gtest(
