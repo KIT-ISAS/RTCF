@@ -9,7 +9,7 @@
 #include <rtt/extras/SlaveActivity.hpp>
 
 RTRunner::RTRunner()
-    : is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0){};
+    : is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0){}
 
 void RTRunner::configure(const Settings& settings) {
     settings_ = settings;
@@ -369,6 +369,7 @@ void RTRunner::connectOrocosPorts() {
     for (const auto& connection : internal_connections_) {
         const auto& to_port   = connection.first;
         const auto& from_port = connection.second;
+        // the default connection policy does not use a buffer, which is what we want
         to_port->port->connectTo(from_port->port);
     }
 }

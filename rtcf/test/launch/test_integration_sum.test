@@ -1,29 +1,26 @@
 <launch>
-    <node name="runner" pkg="rtcf" type="rt_runner-gnulinux" output="screen">
+    <node name="rt_runner" pkg="rtcf" type="rt_runner" output="screen">
         <rosparam param="mode">"wait_for_components"</rosparam>
-        <rosparam param="whitelist_ros_mapping">".*ros.*"</rosparam>-->
+        <rosparam param="ros_mapping_blacklist">".*tmp.*"</rosparam>
+        <rosparam param="ros_mapping_whitelist">".*ros.*"</rosparam>
         <rosparam param="num_components_expected">2</rosparam>
-        <rosparam param="frequency">10</rosparam>
+        <rosparam param="frequency">100.0</rosparam>
     </node>
 
-    <node name="sum_1" pkg="rtcf" type="rt_launcher" output="screen">
-        <remap from="out_Port" to="/mapped/1"/>
-        <remap from="in_Port_1" to="/mapped/in_from_ros"/>
+    <group ns="rtcf">
+        <node name="sum1" pkg="rtcf" type="rt_launcher" args="rtcf SumTest" output="screen">
+            <remap from="in1" to="ros/in"/>
+            <remap from="in2" to="ros/in"/>
+            <remap from="out" to="ros/tmp"/>
+            <rosparam param="is_first">True</rosparam>
+        </node>
 
-        <rosparam param="is_first">false</rosparam>
-        <rosparam param="rt_type">"sum"</rosparam>
-        <rosparam param="is_sync">true</rosparam>
-    </node>
-
-    <node name="sum_2" pkg="rtcf" type="rt_launcher" output="screen">
-        <remap from="out_Port" to="/mapped/to_ros"/>
-        <remap from="in_Port_1" to="/mapped/1"/>
-        <remap from="in_Port_2" to="/mapped/1"/>
-
-        <rosparam param="is_first">false</rosparam>
-        <rosparam param="rt_type">"sum"</rosparam>
-        <rosparam param="is_sync">true</rosparam>
-    </node>
-
-    <test test-name="test_rtcf" pkg="rtcf" type="test_integration_sum"/>
+        <node name="sum2" pkg="rtcf" type="rt_launcher" args="rtcf SumTest" output="screen">
+            <remap from="in1" to="ros/tmp"/>
+            <remap from="in2" to="ros/in"/>
+            <remap from="out" to="ros/out"/>
+        </node>
+    </group>
+    
+    <test test-name="test_integration_sum" pkg="rtcf" type="test_integration_sum"/>
 </launch>
