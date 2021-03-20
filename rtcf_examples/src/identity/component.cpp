@@ -3,7 +3,7 @@
 #include <iostream>
 #include <rtt/Component.hpp>
 
-Identity::Identity(std::string const& name) : TaskContext(name), port_out_("out_port"), port_in_("in_port"){
+Identity::Identity(std::string const& name) : TaskContext(name), port_out_("out_port"), port_in_("in_port") {
     std::cout << "Identity constructed !" << std::endl;
 }
 
@@ -27,7 +27,6 @@ void Identity::updateHook() {
     // just forward the message
     if (port_in_.read(msg_) == RTT::NewData) {
         port_out_.write(msg_);
-        port_in_.clear();
     }
 }
 
