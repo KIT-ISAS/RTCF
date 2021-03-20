@@ -87,7 +87,7 @@ TEST_F(RTCFTest, ComponentOperation) {
         sendMsg(value);
         ros::Time start       = ros::Time::now();
         bool correct_appeared = false;
-        while (ros::ok()) {  //} && ros::Time::now() - start < ros::Duration(TIMEOUT)) {
+        while (ros::ok() && ros::Time::now() - start < ros::Duration(TIMEOUT)) {
             ros::spinOnce();
             auto rx_val = getReceivedValue();
             if (rx_val) {
@@ -106,5 +106,7 @@ TEST_F(RTCFTest, ComponentOperation) {
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     ros::init(argc, argv, "test_integration_sum");
+    ros::Time::init();
+    ros::Duration(5.0).sleep();
     return RUN_ALL_TESTS();
 }
