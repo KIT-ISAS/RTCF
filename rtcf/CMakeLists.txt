@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation 
   rtt_ros 
   rtt_roscomm 
+  rtt_rosclock
 )
 
 ##############
@@ -51,6 +52,7 @@ catkin_package(
   message_runtime 
   rtt_ros 
   rtt_roscomm 
+  rtt_rosclock
 )
 
 ###########

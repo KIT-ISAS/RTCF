@@ -36,9 +36,12 @@ class RTRunner {
         std::string ros_mapping_whitelist;
         std::string ros_mapping_blacklist;
         double frequency;
+        bool is_simulation;
     };
 
   private:
+    RTT::base::ActivityInterface* createMainActivity();
+
     void activateRTLoop();
     void deactivateRTLoop();
 

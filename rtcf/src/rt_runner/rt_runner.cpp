@@ -2,6 +2,12 @@
 
 #include <ros/ros.h>
 #include <rtt_ros/rtt_ros.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#include <rtt_rosclock/rtt_rosclock.h>
+#include <rtt_rosclock/rtt_rosclock_sim_clock_activity.h>
+#include <rtt_rosclock/rtt_rosclock_sim_clock_thread.h>
+#pragma GCC diagnostic pop
 #include <rtt_roscomm/rostopic.h>
 
 #include <rtt/Activity.hpp>
@@ -14,10 +20,8 @@ RTRunner::RTRunner()
 void RTRunner::configure(const Settings& settings) {
     settings_ = settings;
 
-    // configure thread for realtimeness
-    RTT::Activity* main_activity = new RTT::Activity(ORO_SCHED_RT, 98);
-    main_activity->setCpuAffinity(0x01);  // thread runs on first CPU
-    // TODO: think about memory locking and pre-faulting of stack/heap
+    // create and configure the main worker thread
+    RTT::base::ActivityInterface* main_activity = createMainActivity();
 
     // add thread to context
     main_context_.setActivity(main_activity);
@@ -39,6 +43,30 @@ void RTRunner::configure(const Settings& settings) {
         blacklist_ = std::regex("");
     }
 };
+
+RTT::base::ActivityInterface* RTRunner::createMainActivity() {
+    RTT::base::ActivityInterface* main_activity;
+    if (!settings_.is_simulation) {
+        // configure thread for realtimeness
+        main_activity = new RTT::Activity(ORO_SCHED_RT, 98);
+    } else {
+        ROS_WARN("RTCF is in simulation mode! Neither real-timeness nor set frequencies are guaranteed.")
+        // this activity will be triggered according to the clock signals
+        // NOTE: clock accuracy will depend on the simulation clock source
+        main_activity = new rtt_rosclock::SimClockActivity();
+        rtt_rosclock::use_ros_clock_topic();
+        // NOTE: setting the sim-clock-thread to real-time priority is not really beneficial
+        // as the clock input is not real-time anyway
+        // rtt_rosclock::SimClockThread::Instance()->setScheduler(ORO_SHED_RT);
+        // rtt_rosclock::SimClockThread::Instance()->setPriority(98);
+        rtt_rosclock::enable_sim();
+    }
+
+    // TODO: think about memory locking and pre-faulting of stack/heap
+    main_activity->setCpuAffinity(0x01);  // thread runs on first CPU
+
+    return main_activity;
+}
 
 void RTRunner::shutdown() {
     is_shutdown_ = true;

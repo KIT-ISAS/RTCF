@@ -135,6 +135,9 @@ bool RTRunnerNode::loadROSParameters() {
         ROS_WARN("No frequency given, assuming a default frequency of 1 Hz");
     }
 
+    // simulation time
+    settings_.is_simulation = node_handle_.param("/use_sim_time", false);
+
     return true;
 }
 

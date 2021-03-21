@@ -16,11 +16,13 @@
   <build_depend>message_generation</build_depend>
   <build_depend>rtt_ros</build_depend>
   <build_depend>rtt_roscomm</build_depend>
+  <build_depend>rtt_rosclock</build_depend>
   <build_depend>rtt</build_depend>
 
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>rtt_ros</exec_depend>
   <exec_depend>rtt_roscomm</exec_depend>
+  <exec_depend>rtt_rosclock</exec_depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>gtest</test_depend>
