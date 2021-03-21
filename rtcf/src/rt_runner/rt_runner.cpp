@@ -9,7 +9,7 @@
 #include <rtt/extras/SlaveActivity.hpp>
 
 RTRunner::RTRunner()
-    : is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0){}
+    : is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0) {}
 
 void RTRunner::configure(const Settings& settings) {
     settings_ = settings;
@@ -95,12 +95,13 @@ bool RTRunner::loadOrocosComponent(const LoadAttributes& info) {
     RTT::extras::SlaveActivity* slave_activity = new RTT::extras::SlaveActivity();
     task->setActivity(slave_activity);
     // try to configure the component
+    ComponentContainer component_container(info, task);
     if (!task->configure()) {
         ROS_ERROR_STREAM("configuration() call to component " << info.name << " failed");
         delete task;
         return false;
     }
-    ComponentContainer component_container(info, task);
+    component_container.handlePostConfiguration();
 
     // task->start() should not be called here as this would trigger the updateHook() prematurely
 

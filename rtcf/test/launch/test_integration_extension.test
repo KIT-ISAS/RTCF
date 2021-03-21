@@ -1,0 +1,17 @@
+<launch>
+    <node name="rt_runner" pkg="rtcf" type="rt_runner" output="screen">
+        <rosparam param="mode">"wait_for_components"</rosparam>
+        <rosparam param="ros_mapping_blacklist">".*tmp.*"</rosparam>
+        <rosparam param="ros_mapping_whitelist">".*ros.*"</rosparam>
+        <rosparam param="num_components_expected">1</rosparam>
+        <rosparam param="frequency">1.0</rosparam>
+    </node>
+
+    <group ns="rtcf">
+        <node name="dummy" pkg="rtcf" type="rt_launcher" args="rtcf ExtensionTest" output="screen">
+            <rosparam param="parameter_in">"abcdef"</rosparam>
+        </node>
+    </group>
+    
+    <test test-name="test_integration_extension" pkg="rtcf" type="test_integration_extension"/>
+</launch>
