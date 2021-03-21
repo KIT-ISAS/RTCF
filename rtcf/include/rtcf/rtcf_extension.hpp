@@ -1,17 +1,22 @@
 #ifndef RTCF_EXTENSION_H
 #define RTCF_EXTENSION_H
 
-#include "ros/ros.h"
+#include <ros/ros.h>
 
-class RtcfExtension
-{
-private:
+class RtcfExtension {
+    friend class ComponentContainer;  // allow ComponentContainer access to private parameters
 
-public:
-    RtcfExtension() {};
-    virtual ~RtcfExtension() {};
+  private:
+    // by using pointers the user will not accidentally use the node handle in the component constructor
+    ros::NodeHandlePtr nh_;
+    ros::NodeHandlePtr nh_private_;
 
-    ros::NodeHandle* node_handle_ptr_;
+  public:
+    RtcfExtension(){};
+    virtual ~RtcfExtension(){};
+
+    ros::NodeHandle& getNodeHandle() const { return *nh_; }
+    ros::NodeHandle& getPrivateNodeHandle() const { return *nh_private_; }
 };
 
 #endif /* RTCF_EXTENSION_H */

@@ -38,8 +38,6 @@ struct ComponentContainer {
         : attributes(attributes), task_context(task_context) {
         handleIgnoredTopicsRegex();
         handleNodeHandle();
-        handlePorts();
-        handleMappings();
     }
 
     // externally provided information
@@ -49,7 +47,8 @@ struct ComponentContainer {
     // internally constructed information
     std::vector<PortContainer> input_ports;
     std::vector<PortContainer> output_ports;
-    ros::NodeHandle node_handle;
+    ros::NodeHandlePtr node_handle;
+    ros::NodeHandlePtr node_handle_private;
 
     // regex
     std::regex topics_ignore_regex;
@@ -70,11 +69,16 @@ struct ComponentContainer {
         for (const auto& m : attributes.mappings) {
             remaps_ros[m.from_topic] = m.to_topic;
         }
-        node_handle = ros::NodeHandle(attributes.ns, remaps_ros);
 
-        // TODO: don't use pointers and think how private parameters can be resolved
+        // we create to node handles to be able to resolve private parameters
+        // this is the same way ros::nodelet does it
+        node_handle         = boost::make_shared<ros::NodeHandle>(attributes.ns, remaps_ros);
+        node_handle_private = boost::make_shared<ros::NodeHandle>(attributes.name, remaps_ros);
+
+        // forward it to the component if it can make use of it
         if (auto task_handle = dynamic_cast<RtcfExtension*>(task_context)) {
-            task_handle->node_handle_ptr_ = &node_handle;
+            task_handle->nh_         = node_handle;
+            task_handle->nh_private_ = node_handle_private;
         }
     };
 
@@ -103,15 +107,20 @@ struct ComponentContainer {
         for (auto& p : input_ports) {
             // resolveName takes into accounts remaps added to this nodehandle
             // TODO: private names are not handled correctly
-            const auto resolved_name = node_handle.resolveName(p.original_name, true);
+            const auto resolved_name = node_handle->resolveName(p.original_name, true);
             p.mapped_name            = resolved_name;
             ROS_INFO_STREAM("Input port " << p.original_name << " mapped to " << p.mapped_name);
         }
         for (auto& p : output_ports) {
-            const auto resolved_name = node_handle.resolveName(p.original_name, true);
+            const auto resolved_name = node_handle->resolveName(p.original_name, true);
             p.mapped_name            = resolved_name;
             ROS_INFO_STREAM("Input port " << p.original_name << " mapped to " << p.mapped_name);
         }
+    }
+
+    void handlePostConfiguration() {
+        handlePorts();
+        handleMappings();
     }
 };
 
