@@ -2,6 +2,8 @@
 
 #include <ros/ros.h>
 #include <rtt_ros/rtt_ros.h>
+
+#include "rtcf/rtcf_extension.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #include <rtt_rosclock/rtt_rosclock.h>
@@ -18,7 +20,8 @@ RTRunner::RTRunner()
     : is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0) {}
 
 void RTRunner::configure(const Settings& settings) {
-    settings_ = settings;
+    settings_                 = settings;
+    RtcfExtension::frequency_ = settings_.frequency;
 
     // create and configure the main worker thread
     RTT::base::ActivityInterface* main_activity = createMainActivity();
@@ -50,7 +53,7 @@ RTT::base::ActivityInterface* RTRunner::createMainActivity() {
         // configure thread for realtimeness
         main_activity = new RTT::Activity(ORO_SCHED_RT, 98);
     } else {
-        ROS_WARN("RTCF is in simulation mode! Neither real-timeness nor set frequencies are guaranteed.")
+        ROS_WARN("RTCF is in simulation mode! Neither real-timeness nor set frequencies are guaranteed.");
         // this activity will be triggered according to the clock signals
         // NOTE: clock accuracy will depend on the simulation clock source
         main_activity = new rtt_rosclock::SimClockActivity();

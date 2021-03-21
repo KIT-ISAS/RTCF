@@ -3,7 +3,10 @@
 
 #include <atomic>
 #include <regex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <rtt/TaskContext.hpp>
+#pragma GCC diagnostic pop
 
 #include "main_context.hpp"
 #include "rt_runner_types.hpp"

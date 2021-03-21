@@ -1,14 +1,25 @@
 #include "main_context.hpp"
 
-#include <rtt_rosclock/rtt_rosclock.h>
+#include "rtcf/rtcf_extension.hpp"
 
-MainContext::MainContext(std::string const& name) : TaskContext(name) {}
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#include <rtt_rosclock/rtt_rosclock.h>
+#include <rtt_roscomm/rostopic.h>
+#pragma GCC diagnostic pop
+
+MainContext::MainContext(std::string const& name) : TaskContext(name), port_iter_info_("iteration_info") {}
 
 bool MainContext::configureHook() {
     ROS_INFO("MainContext::configureHook() called");
 
-    time_service_ptr_ = RTT::os::TimeService::Instance();
-    time_service_ptr_->enableSystemClock(true);
+    time_service_ = RTT::os::TimeService::Instance();
+
+    // create connection to ROS for iteration information
+    this->ports()->addPort(port_iter_info_);
+    // add a buffer to not miss something as this is important for debugging
+    port_iter_info_.createStream(rtt_roscomm::topicBuffer("/rt_runner/" + port_iter_info_.getName(), 10));
+
     return true;
 }
 
@@ -18,11 +29,11 @@ bool MainContext::startHook() {
 }
 
 void MainContext::updateHook() {
-    ros::Time callback_time = rtt_rosclock::host_now();
-    // get start time
-    // provide the current time to all components
-    // - options: iterate over all slaves and enter information in RTCF extensions
-    // - add static variables in RTCF extension
+    // save current time
+    ros::Time callback_time = rtt_rosclock::host_now();  // this will resolve to ros::Time::now() or the sim time
+    RTT::os::TimeService::nsecs start, end, delta;
+    start                          = time_service_->getNSecs();
+    RtcfExtension::last_timestamp_ = callback_time;
 
     // this does all the heavy lifting and calls all our components in order
     ROS_INFO("MainContext::updateHook() called");
@@ -30,10 +41,15 @@ void MainContext::updateHook() {
         slave->task_context->update();  // calls update on underlying activity
     }
 
-    // get end time
-    // calculate difference
+    // calculate duration time and send it out
+    end   = time_service_->getNSecs();
+    delta = end - start;
+    rtcf::IterationInformation info;
+    info.stamp       = callback_time;
+    info.duration_ns = (uint64_t)delta;
+    port_iter_info_.write(info);
+
     // provide it to the system in some way (with timestamp, duration, optionally min, optionally max)
-    // idea: use an orocos port that is connected via a stream to ROS
     // add some statistics for print during shutdown? / issue a warning (RT-safe)
 }
 
