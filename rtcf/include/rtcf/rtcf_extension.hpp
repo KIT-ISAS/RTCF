@@ -11,6 +11,9 @@ class RtcfExtension {
     ros::NodeHandlePtr nh_;
     ros::NodeHandlePtr nh_private_;
 
+    // static double frequency;
+    // static ros::Time last_timestamp;
+
   public:
     RtcfExtension(){};
     virtual ~RtcfExtension(){};
