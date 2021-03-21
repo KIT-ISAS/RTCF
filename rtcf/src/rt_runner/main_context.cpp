@@ -8,12 +8,16 @@
 #include <rtt_roscomm/rostopic.h>
 #pragma GCC diagnostic pop
 
-MainContext::MainContext(std::string const& name) : TaskContext(name), port_iter_info_("iteration_info") {}
+#include <iomanip>
+
+MainContext::MainContext(std::string const& name)
+    : TaskContext(name), port_iter_info_("iteration_info"), first_iteration_(true), count_delayed_iterations_(0) {}
 
 bool MainContext::configureHook() {
     ROS_INFO("MainContext::configureHook() called");
 
-    time_service_ = RTT::os::TimeService::Instance();
+    time_service_   = RTT::os::TimeService::Instance();
+    period_desired_ = 1.0 / this->getPeriod();
 
     // create connection to ROS for iteration information
     this->ports()->addPort(port_iter_info_);
@@ -25,6 +29,7 @@ bool MainContext::configureHook() {
 
 bool MainContext::startHook() {
     ROS_INFO("MainContext::startHook() called");
+    clearStatistics();
     return true;
 }
 
@@ -49,8 +54,19 @@ void MainContext::updateHook() {
     info.duration_ns = (uint64_t)delta;
     port_iter_info_.write(info);
 
-    // provide it to the system in some way (with timestamp, duration, optionally min, optionally max)
-    // add some statistics for print during shutdown? / issue a warning (RT-safe)
+    // statistics for period duration
+    if (first_iteration_) {
+        first_iteration_ = false;
+    } else {
+        double period_duration = (callback_time - time_last_iteration_).toNSec();
+        iter_period_acc_(period_duration);
+        if (period_duration > 1.1 * period_desired_) {
+            count_delayed_iterations_++;
+        }
+    }
+    time_last_iteration_ = callback_time;
+    // statistics for calculation duration
+    iter_calculation_acc((double)delta);
 }
 
 void MainContext::stopHook() {
@@ -71,3 +87,27 @@ void MainContext::clearSlaves() {
     // std::cout << "Clear slaves" << std::endl;
     slaves_.clear();
 };
+
+std::string MainContext::generateStatisticsString() {
+    double percentage_delayed = (double)count_delayed_iterations_ / acc::count(iter_period_acc_) * 100.0;
+
+    std::stringstream ss;
+    ss << std::setprecision(5);
+    ss << "Performed " << acc::count(iter_calculation_acc) << " iterations." << std::endl;
+    ss << "Calculation duration: "
+       << "Mean " << acc::mean(iter_calculation_acc) << "us, Max " << acc::max(iter_calculation_acc) << " us, Min "
+       << acc::min(iter_calculation_acc) << " us." << std::endl;
+    ss << "Period duration: ";
+    ss << "Mean " << acc::mean(iter_period_acc_) << "us, Max " << acc::max(iter_period_acc_) << " us, Min "
+       << acc::min(iter_period_acc_) << " us, ";
+    ss << percentage_delayed << " % delayed by more than 10 %.";
+
+    return ss.str();
+}
+
+void MainContext::clearStatistics() {
+    iter_period_acc_          = {};
+    iter_calculation_acc      = {};
+    first_iteration_          = true;
+    count_delayed_iterations_ = 0;
+}

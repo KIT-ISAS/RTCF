@@ -73,6 +73,7 @@ RTT::base::ActivityInterface* RTRunner::createMainActivity() {
 
 void RTRunner::shutdown() {
     is_shutdown_ = true;
+    ROS_INFO_STREAM(main_context_.generateStatisticsString());
     stopExecution();
 }
 
