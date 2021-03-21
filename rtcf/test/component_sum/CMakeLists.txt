@@ -1,1 +1,1 @@
-orocos_component(sum_test component.cpp)
+orocos_component(component_sum component.cpp)

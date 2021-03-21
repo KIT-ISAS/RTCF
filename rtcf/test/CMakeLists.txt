@@ -12,9 +12,11 @@ add_rostest_gtest(
     launch/test_integration_sum.test
     test_integration_sum.cpp)
 target_link_libraries(test_integration_sum ${catkin_LIBRARIES})
+add_dependencies(test_integration_sum component_sum)
 
 add_rostest_gtest(
     test_integration_extension 
     launch/test_integration_extension.test
     test_integration_extension.cpp)
 target_link_libraries(test_integration_extension ${catkin_LIBRARIES})
+add_dependencies(test_integration_extension component_extension)

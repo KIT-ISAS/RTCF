@@ -1,1 +1,1 @@
-orocos_component(extension_test component.cpp)
+orocos_component(component_extension component.cpp)
