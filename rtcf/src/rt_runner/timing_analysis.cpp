@@ -51,21 +51,41 @@ void TimingAnalysis::stop() {
 std::string TimingAnalysis::generateStatisticsString() const {
     std::stringstream ss;
 
+    // boost::accumulator version
+    // // number of iterations
+    // ss << "Performed " << acc::count(acc_iter_calculation_) << " iterations since last start." << std::endl;
+
+    // // calculation duration
+    // ss << "Calculation duration: ";
+    // ss << "Mean " << (time_t)(acc::mean(acc_iter_calculation_) / 1000) << " us, "
+    //    << "Max " << acc::max(acc_iter_calculation_) / 1000 << " us, "
+    //    << "Min " << acc::min(acc_iter_calculation_) / 1000 << " us." << std::endl;
+
+    // // period duration
+    // ss << "Period duration: ";
+    // ss << "Mean " << (time_t)(acc::mean(acc_iter_period_) / 1000) << " us, "
+    //    << "Max " << acc::max(acc_iter_period_) / 1000 << " us, "
+    //    << "Min " << acc::min(acc_iter_period_) / 1000 << " us, ";
+    // double percentage_delayed = (double)count_delayed_iterations_ / acc::count(acc_iter_period_) * 100.0;
+    // ss << std::setprecision(3) << percentage_delayed << " % delayed "
+    //    << "by more than " << (int)(period_margin_ * 100) << " %.";
+
+    // custom accumulator
     // number of iterations
-    ss << "Performed " << acc::count(acc_iter_calculation_) << " iterations since last start." << std::endl;
+    ss << "Performed " << acc_iter_calculation_.getCount() << " iterations since last start." << std::endl;
 
     // calculation duration
     ss << "Calculation duration: ";
-    ss << "Mean " << (time_t)(acc::mean(acc_iter_calculation_) / 1000) << " us, "
-       << "Max " << acc::max(acc_iter_calculation_) / 1000 << " us, "
-       << "Min " << acc::min(acc_iter_calculation_) / 1000 << " us." << std::endl;
+    ss << "Mean " << (time_t)(acc_iter_calculation_.getMean() / 1000) << " us, "
+       << "Max " << acc_iter_calculation_.getMax() / 1000 << " us, "
+       << "Min " << acc_iter_calculation_.getMin() / 1000 << " us." << std::endl;
 
     // period duration
     ss << "Period duration: ";
-    ss << "Mean " << (time_t)(acc::mean(acc_iter_period_) / 1000) << " us, "
-       << "Max " << acc::max(acc_iter_period_) / 1000 << " us, "
-       << "Min " << acc::min(acc_iter_period_) / 1000 << " us, ";
-    double percentage_delayed = (double)count_delayed_iterations_ / acc::count(acc_iter_period_) * 100.0;
+    ss << "Mean " << (time_t)(acc_iter_period_.getMean() / 1000) << " us, "
+       << "Max " << acc_iter_period_.getMax() / 1000 << " us, "
+       << "Min " << acc_iter_period_.getMin() / 1000 << " us, ";
+    double percentage_delayed = (double)count_delayed_iterations_ / acc_iter_period_.getCount() * 100.0;
     ss << std::setprecision(3) << percentage_delayed << " % delayed "
        << "by more than " << (int)(period_margin_ * 100) << " %.";
 

@@ -1,11 +1,11 @@
 #ifndef TIMING_ANALYSIS_HPP
 #define TIMING_ANALYSIS_HPP
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/max.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/min.hpp>
-#include <boost/accumulators/statistics/variance.hpp>
+// #include <boost/accumulators/accumulators.hpp>
+// #include <boost/accumulators/statistics/max.hpp>
+// #include <boost/accumulators/statistics/mean.hpp>
+// #include <boost/accumulators/statistics/min.hpp>
+// #include <boost/accumulators/statistics/variance.hpp>
 #include <iostream>
 
 #pragma GCC diagnostic push
@@ -13,13 +13,46 @@
 #include <rtt_rosclock/rtt_rosclock.h>
 #pragma GCC diagnostic pop
 
-namespace acc = boost::accumulators;
+// namespace acc = boost::accumulators;
+
+template <class T>
+class Accumulator {
+  public:
+    Accumulator() { reset(); }
+
+    void operator()(const T& val) {
+        count++;
+        sum += val;
+        min = std::min(min, val);
+        max = std::max(max, val);
+    }
+
+    void reset() {
+        this->count = 0;
+        this->sum   = 0;
+        this->min   = +std::numeric_limits<T>::max();
+        this->max   = +std::numeric_limits<T>::min();
+    }
+
+    size_t getCount() const { return count; }
+    T getSum() const { return sum; }
+    double getMean() const { return (double)sum / (double)count; };
+    T getMin() const { return min; }
+    T getMax() const { return max; }
+
+  private:
+    size_t count;
+    T sum;
+    T min;
+    T max;
+};
 
 class TimingAnalysis {
   public:
     using time_t = uint64_t;
-    using DurationAccumulator =
-        acc::accumulator_set<time_t, acc::features<acc::tag::count, acc::tag::min, acc::tag::max, acc::tag::mean>>;
+    // using DurationAccumulator =
+    //    acc::accumulator_set<time_t, acc::features<acc::tag::count, acc::tag::min, acc::tag::max, acc::tag::mean>>;
+    using DurationAccumulator = Accumulator<time_t>;
 
     TimingAnalysis();
     void configure(double period, double outlier_threshold);
