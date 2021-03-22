@@ -43,7 +43,7 @@ void RTRunnerNode::shutdown() {
     // for simplicity, use polling here
     // TODO: (optional) use conditional variable or something similar for waiting
     while (rt_runner_->getNumLoadedComponents() > 0) {
-        ros::Duration(0.1).sleep();
+        ros::WallDuration(0.1).sleep();
     }
     shutdownROSServices();
 };
