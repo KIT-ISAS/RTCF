@@ -8,16 +8,18 @@ TimingAnalysis::TimingAnalysis() {
     reset();
 }
 
-void TimingAnalysis::configure(double period_desired_s, double period_margin) {
-    period_threshold_ = (1.0 + period_margin) * period_desired_s * 1'000'000'000;  // to ns
-    period_margin_    = period_margin;
+void TimingAnalysis::configure(double period_desired_s, double period_margin, size_t iterations_to_ignore) {
+    period_threshold_     = (1.0 + period_margin) * period_desired_s * 1'000'000'000;  // to ns
+    period_margin_        = period_margin;
+    iterations_to_ignore_ = iterations_to_ignore;
+    reset();
 }
 
 void TimingAnalysis::reset() {
-    acc_iter_period_          = {};
-    acc_iter_calculation_     = {};
-    first_iteration_          = true;
-    count_delayed_iterations_ = 0;
+    acc_iter_period_                = {};
+    acc_iter_calculation_           = {};
+    count_delayed_iterations_       = 0;
+    remaining_iterations_to_ignore_ = iterations_to_ignore_ + 1;  // one more to get a valid timestamp of last cycle
 }
 
 const ros::Time& TimingAnalysis::start() {
@@ -32,12 +34,14 @@ const ros::Time& TimingAnalysis::start() {
 void TimingAnalysis::stop() {
     // determine calculation duration
     delta_calculation_ = time_service_->getNSecs() - start_calculation_;
-    acc_iter_calculation_(delta_calculation_);
 
-    // determince period duration
-    if (first_iteration_) {
-        first_iteration_ = false;
+    if (remaining_iterations_to_ignore_ > 0) {
+        remaining_iterations_to_ignore_--;
     } else {
+        // store calculation duration
+        acc_iter_calculation_(delta_calculation_);
+
+        // determine period duration
         RTT::os::TimeService::nsecs period_duration =
             std::max((int64_t)0, (time_iteration_ - time_last_iteration_).toNSec());
         acc_iter_period_(period_duration);

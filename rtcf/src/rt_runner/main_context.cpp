@@ -13,7 +13,7 @@ MainContext::MainContext(std::string const& name) : TaskContext(name), port_iter
 bool MainContext::configureHook() {
     ROS_INFO("MainContext::configureHook() called");
 
-    timing_analysis_.configure(this->getPeriod(), 0.1);
+    timing_analysis_.configure(this->getPeriod());
 
     // create connection to ROS for iteration information
     this->ports()->addPort(port_iter_info_);
