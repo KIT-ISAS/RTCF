@@ -56,6 +56,7 @@ void MainContext::stopHook() {
 }
 
 void MainContext::cleanupHook() {
+    ROS_INFO("MainContext::cleanUp() called");
     // std::cout << "MainContext cleaning up !" <<std::endl;
     ROS_INFO_STREAM(timing_analysis_);
 }

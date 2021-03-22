@@ -30,6 +30,7 @@ void RTRunner::configure(const Settings& settings) {
     main_context_.setActivity(main_activity);
     // according to OROCOS doc, main activity is now owned by the main_context and shall only be reference through
     // getActivity().
+    main_context_.setPeriod(1.0 / settings_.frequency);
     main_context_.configure();
 
     // whitelist/blacklist exceptions
@@ -191,7 +192,6 @@ void RTRunner::activateRTLoop() {
         }
 
         // then go to cyclic operation
-        main_context_.setPeriod(1.0 / settings_.frequency);
         main_context_.start();
     }
 }

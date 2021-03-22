@@ -38,7 +38,8 @@ void TimingAnalysis::stop() {
     if (first_iteration_) {
         first_iteration_ = false;
     } else {
-        RTT::os::TimeService::nsecs period_duration = (time_iteration_ - time_last_iteration_).toNSec();
+        RTT::os::TimeService::nsecs period_duration =
+            std::max((int64_t)0, (time_iteration_ - time_last_iteration_).toNSec());
         acc_iter_period_(period_duration);
         if (period_duration > period_threshold_) {
             count_delayed_iterations_++;
@@ -51,17 +52,17 @@ std::string TimingAnalysis::generateStatisticsString() const {
     std::stringstream ss;
 
     // number of iterations
-    ss << "Performed " << acc::count(acc_iter_calculation_) / 1000 << "k iterations." << std::endl;
+    ss << "Performed " << acc::count(acc_iter_calculation_) << " iterations since last start." << std::endl;
 
     // calculation duration
     ss << "Calculation duration: ";
-    ss << "Mean " << acc::mean(acc_iter_calculation_) / 1000 << "us, "
+    ss << "Mean " << (time_t)(acc::mean(acc_iter_calculation_) / 1000) << " us, "
        << "Max " << acc::max(acc_iter_calculation_) / 1000 << " us, "
        << "Min " << acc::min(acc_iter_calculation_) / 1000 << " us." << std::endl;
 
     // period duration
     ss << "Period duration: ";
-    ss << "Mean " << acc::mean(acc_iter_period_) / 1000 << "us, "
+    ss << "Mean " << (time_t)(acc::mean(acc_iter_period_) / 1000) << " us, "
        << "Max " << acc::max(acc_iter_period_) / 1000 << " us, "
        << "Min " << acc::min(acc_iter_period_) / 1000 << " us, ";
     double percentage_delayed = (double)count_delayed_iterations_ / acc::count(acc_iter_period_) * 100.0;

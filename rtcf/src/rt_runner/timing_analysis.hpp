@@ -17,8 +17,9 @@ namespace acc = boost::accumulators;
 
 class TimingAnalysis {
   public:
+    using time_t = uint64_t;
     using DurationAccumulator =
-        acc::accumulator_set<double, acc::features<acc::tag::count, acc::tag::min, acc::tag::max, acc::tag::mean>>;
+        acc::accumulator_set<time_t, acc::features<acc::tag::count, acc::tag::min, acc::tag::max, acc::tag::mean>>;
 
     TimingAnalysis();
     void configure(double period, double outlier_threshold);
