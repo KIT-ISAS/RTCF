@@ -1,7 +1,7 @@
 #ifndef MAIN_CONTEXT_H
 #define MAIN_CONTEXT_H
 
-#include <rtcf/IterationInformation.h>
+#include <rtcf_msgs/IterationInformation.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -17,7 +17,7 @@ class MainContext : public RTT::TaskContext {
     RTOrder slaves_;
 
     TimingAnalysis timing_analysis_;
-    RTT::OutputPort<rtcf::IterationInformation> port_iter_info_;
+    RTT::OutputPort<rtcf_msgs::IterationInformation> port_iter_info_;
 
   public:
     MainContext(std::string const& name);

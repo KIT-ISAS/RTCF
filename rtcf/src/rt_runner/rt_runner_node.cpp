@@ -141,8 +141,8 @@ bool RTRunnerNode::loadROSParameters() {
     return true;
 }
 
-bool RTRunnerNode::loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Request &req,
-                                               rtcf::LoadOrocosComponent::Response &res) {
+bool RTRunnerNode::loadOrocosComponentCallback(rtcf_msgs::LoadOrocosComponent::Request &req,
+                                               rtcf_msgs::LoadOrocosComponent::Response &res) {
     const std::lock_guard<std::mutex> lock(mtx_);
 
     LoadAttributes attr;
@@ -168,8 +168,8 @@ bool RTRunnerNode::loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Reques
     return true;
 };
 
-bool RTRunnerNode::unloadOrocosComponentCallback(rtcf::UnloadOrocosComponent::Request &req,
-                                                 rtcf::UnloadOrocosComponent::Response &res) {
+bool RTRunnerNode::unloadOrocosComponentCallback(rtcf_msgs::UnloadOrocosComponent::Request &req,
+                                                 rtcf_msgs::UnloadOrocosComponent::Response &res) {
     const std::lock_guard<std::mutex> lock(mtx_);
 
     UnloadAttributes attr;
