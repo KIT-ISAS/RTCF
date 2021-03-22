@@ -16,6 +16,7 @@ class RtcfExtension {
     ros::NodeHandlePtr nh_private_;
 
     inline static double frequency_;
+    inline static double period_;
     inline static ros::Time last_timestamp_;
 
   public:
@@ -27,6 +28,7 @@ class RtcfExtension {
 
     const ros::Time& getTime() const { return last_timestamp_; }
     const double& getFrequency() const { return frequency_; }
+    const double& getPeriod() const { return period_; }
 };
 
 #endif /* RTCF_EXTENSION_H */

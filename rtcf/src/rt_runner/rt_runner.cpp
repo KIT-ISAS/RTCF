@@ -22,6 +22,7 @@ RTRunner::RTRunner()
 void RTRunner::configure(const Settings& settings) {
     settings_                 = settings;
     RtcfExtension::frequency_ = settings_.frequency;
+    RtcfExtension::period_    = 1.0 / settings_.frequency;
 
     // create and configure the main worker thread
     RTT::base::ActivityInterface* main_activity = createMainActivity();
