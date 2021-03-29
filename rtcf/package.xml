@@ -17,6 +17,7 @@
   <build_depend>rtt_roscomm</build_depend>
   <build_depend>rtt_rosclock</build_depend>
   <build_depend>rtt</build_depend>
+  <build_depend>ocl</build_depend>
 
   <exec_depend>rtt_rtcf_msgs</exec_depend>
   <exec_depend>rtt_ros</exec_depend>

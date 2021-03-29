@@ -11,5 +11,7 @@ orocos_add_include_directories(rt_runner ${OROCOS-RTT_INCLUDE_DIRS})
 target_link_libraries(rt_runner ${OROCOS-RTT_LIBRARIES})
 target_compile_definitions(rt_runner PUBLIC -DRTT_STATIC)
 
+target_compile_definitions(rt_runner PUBLIC ORO_MEMORY_POOL ORO_BUILD_RTALLOC OROSEM_LOG4CPP_LOGGING)
+
 add_dependencies(rt_runner ${catkin_EXPORTED_TARGETS})
 target_link_libraries(rt_runner ${catkin_LIBRARIES})
