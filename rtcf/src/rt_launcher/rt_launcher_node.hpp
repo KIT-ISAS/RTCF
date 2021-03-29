@@ -1,10 +1,11 @@
 #ifndef RT_LAUNCHER_NODE_H
 #define RT_LAUNCHER_NODE_H
 
+#include <rtcf_msgs/LoadOrocosComponent.h>
+#include <rtcf_msgs/UnloadOrocosComponent.h>
+
 #include "ros/ros.h"
 #include "ros/service_client.h"
-#include "rtcf/LoadOrocosComponent.h"
-#include "rtcf/UnloadOrocosComponent.h"
 #include "rtcf/rtcf_types.hpp"
 
 class RTLauncherNode {
@@ -13,8 +14,8 @@ class RTLauncherNode {
 
     LoadAttributes launcher_attributes_;
 
-    rtcf::LoadOrocosComponent genLoadMsg();
-    rtcf::UnloadOrocosComponent genUnloadMsg();
+    rtcf_msgs::LoadOrocosComponent genLoadMsg();
+    rtcf_msgs::UnloadOrocosComponent genUnloadMsg();
 
   public:
     RTLauncherNode(const ros::NodeHandle &node_handle);

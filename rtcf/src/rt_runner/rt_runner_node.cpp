@@ -43,7 +43,7 @@ void RTRunnerNode::shutdown() {
     // for simplicity, use polling here
     // TODO: (optional) use conditional variable or something similar for waiting
     while (rt_runner_->getNumLoadedComponents() > 0) {
-        ros::Duration(0.1).sleep();
+        ros::WallDuration(0.1).sleep();
     }
     shutdownROSServices();
 };
@@ -135,11 +135,14 @@ bool RTRunnerNode::loadROSParameters() {
         ROS_WARN("No frequency given, assuming a default frequency of 1 Hz");
     }
 
+    // simulation time
+    settings_.is_simulation = node_handle_.param("/use_sim_time", false);
+
     return true;
 }
 
-bool RTRunnerNode::loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Request &req,
-                                               rtcf::LoadOrocosComponent::Response &res) {
+bool RTRunnerNode::loadOrocosComponentCallback(rtcf_msgs::LoadOrocosComponent::Request &req,
+                                               rtcf_msgs::LoadOrocosComponent::Response &res) {
     const std::lock_guard<std::mutex> lock(mtx_);
 
     LoadAttributes attr;
@@ -165,8 +168,8 @@ bool RTRunnerNode::loadOrocosComponentCallback(rtcf::LoadOrocosComponent::Reques
     return true;
 };
 
-bool RTRunnerNode::unloadOrocosComponentCallback(rtcf::UnloadOrocosComponent::Request &req,
-                                                 rtcf::UnloadOrocosComponent::Response &res) {
+bool RTRunnerNode::unloadOrocosComponentCallback(rtcf_msgs::UnloadOrocosComponent::Request &req,
+                                                 rtcf_msgs::UnloadOrocosComponent::Response &res) {
     const std::lock_guard<std::mutex> lock(mtx_);
 
     UnloadAttributes attr;

@@ -14,43 +14,19 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp 
-  std_msgs 
-  message_generation 
+  rtcf_msgs
   rtt_ros 
   rtt_roscomm 
+  rtt_rosclock
 )
 
-##############
-## Messages ##
-##############
-
-## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   Mapping.msg
- )
-
-## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   LoadOrocosComponent.srv
-   UnloadOrocosComponent.srv
- )
-
-
-## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   std_msgs  # Or other packages containing msgs
- )
-
- 
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS   
-  message_runtime 
+  rtt_rtcf_msgs
   rtt_ros 
   rtt_roscomm 
+  rtt_rosclock
 )
 
 ###########

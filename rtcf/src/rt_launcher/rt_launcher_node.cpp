@@ -1,5 +1,7 @@
 #include "rt_launcher_node.hpp"
 
+#include <rtcf_msgs/LoadOrocosComponent.h>
+#include <rtcf_msgs/Mapping.h>
 #include <signal.h>
 
 #include <boost/program_options.hpp>
@@ -7,11 +9,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "ros/duration.h"
-#include "ros/service.h"
-#include "rtcf/LoadOrocosComponent.h"
-#include "rtcf/Mapping.h"
 
 RTLauncherNode::RTLauncherNode(const ros::NodeHandle &node_handle) : node_handle_(node_handle){};
 
@@ -23,11 +20,12 @@ void RTLauncherNode::shutdown() { shutdownServiceClients(); };
 
 void RTLauncherNode::setupServiceClients() {
     ros::service::waitForService("/rt_runner/load_orocos_component", ros::Duration(-1));
-    loadInRTRunnerClient = node_handle_.serviceClient<rtcf::LoadOrocosComponent>("/rt_runner/load_orocos_component");
+    loadInRTRunnerClient =
+        node_handle_.serviceClient<rtcf_msgs::LoadOrocosComponent>("/rt_runner/load_orocos_component");
 
     ros::service::waitForService("/rt_runner/unload_orocos_component", ros::Duration(-1));
     unloadInRTRunnerClient =
-        node_handle_.serviceClient<rtcf::UnloadOrocosComponent>("/rt_runner/unload_orocos_component");
+        node_handle_.serviceClient<rtcf_msgs::UnloadOrocosComponent>("/rt_runner/unload_orocos_component");
 };
 
 void RTLauncherNode::shutdownServiceClients() {
@@ -35,11 +33,11 @@ void RTLauncherNode::shutdownServiceClients() {
     unloadInRTRunnerClient.shutdown();
 };
 
-rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
-    rtcf::LoadOrocosComponent srv;
+rtcf_msgs::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
+    rtcf_msgs::LoadOrocosComponent srv;
 
     for (auto mapping : launcher_attributes_.mappings) {
-        rtcf::Mapping m;
+        rtcf_msgs::Mapping m;
 
         m.from_topic.data = mapping.from_topic;
         m.to_topic.data   = mapping.to_topic;
@@ -59,8 +57,8 @@ rtcf::LoadOrocosComponent RTLauncherNode::genLoadMsg() {
     return srv;
 };
 
-rtcf::UnloadOrocosComponent RTLauncherNode::genUnloadMsg() {
-    rtcf::UnloadOrocosComponent srv;
+rtcf_msgs::UnloadOrocosComponent RTLauncherNode::genUnloadMsg() {
+    rtcf_msgs::UnloadOrocosComponent srv;
 
     srv.request.component_name.data = launcher_attributes_.name;
     srv.request.ns.data             = launcher_attributes_.ns;
@@ -104,7 +102,7 @@ bool RTLauncherNode::loadROSParameters() {
 }
 
 bool RTLauncherNode::loadInRTRunner() {
-    rtcf::LoadOrocosComponent srv = genLoadMsg();
+    rtcf_msgs::LoadOrocosComponent srv = genLoadMsg();
 
     bool service_ok = loadInRTRunnerClient.call(srv);
     if (service_ok && srv.response.success.data) {
@@ -117,7 +115,7 @@ bool RTLauncherNode::loadInRTRunner() {
 };
 
 bool RTLauncherNode::unloadInRTRunner() {
-    rtcf::UnloadOrocosComponent srv = genUnloadMsg();
+    rtcf_msgs::UnloadOrocosComponent srv = genUnloadMsg();
 
     bool service_ok = unloadInRTRunnerClient.call(srv);
     if (service_ok && srv.response.success.data) {

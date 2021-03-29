@@ -11,16 +11,17 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>rtcf_msgs</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>message_generation</build_depend>
   <build_depend>rtt_ros</build_depend>
   <build_depend>rtt_roscomm</build_depend>
+  <build_depend>rtt_rosclock</build_depend>
   <build_depend>rtt</build_depend>
 
-  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>rtt_rtcf_msgs</exec_depend>
   <exec_depend>rtt_ros</exec_depend>
   <exec_depend>rtt_roscomm</exec_depend>
+  <exec_depend>rtt_rosclock</exec_depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>gtest</test_depend>

@@ -3,7 +3,10 @@
 
 #include <atomic>
 #include <regex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <rtt/TaskContext.hpp>
+#pragma GCC diagnostic pop
 
 #include "main_context.hpp"
 #include "rt_runner_types.hpp"
@@ -36,9 +39,12 @@ class RTRunner {
         std::string ros_mapping_whitelist;
         std::string ros_mapping_blacklist;
         double frequency;
+        bool is_simulation;
     };
 
   private:
+    RTT::base::ActivityInterface* createMainActivity();
+
     void activateRTLoop();
     void deactivateRTLoop();
 
