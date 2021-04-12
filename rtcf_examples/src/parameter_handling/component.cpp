@@ -19,7 +19,7 @@ bool ParameterHandling::startHook() {
 }
 
 void ParameterHandling::updateHook() {
-    rtcf_examples::ExampleConfig config_data;
+    ExampleParameters config_data;
     dynamic_config.getValue(config_data);
     std::cout << "ParameterHandling executes updateHook with dynamic double parameter value "
               << config_data.double_param << "!" << std::endl;
