@@ -14,6 +14,7 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp 
+  dynamic_reconfigure
   rtcf_msgs
   rtt_ros 
   rtt_roscomm 

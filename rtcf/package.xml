@@ -13,11 +13,13 @@
 
   <build_depend>rtcf_msgs</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>rtt_ros</build_depend>
   <build_depend>rtt_roscomm</build_depend>
   <build_depend>rtt_rosclock</build_depend>
   <build_depend>rtt</build_depend>
 
+  <exec_depend>dynamic_reconfigure</exec_depend>
   <exec_depend>rtt_rtcf_msgs</exec_depend>
   <exec_depend>rtt_ros</exec_depend>
   <exec_depend>rtt_roscomm</exec_depend>
