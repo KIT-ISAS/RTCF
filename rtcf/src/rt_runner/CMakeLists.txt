@@ -3,7 +3,8 @@ add_executable(rt_runner
   rt_runner_node.cpp
   rt_runner.cpp
   main_context.cpp
-  timing_analysis.cpp)
+  timing_analysis.cpp
+  tlsf_memory_pool.cpp)
 # We could also use orocos_add_executable. However, this will add an ugly gnulinux-suffix
 # So, we have to do some manual work 
 # (see UseOROCOS-RTT.cmake and https://orocos.org/wiki/orocos/toolchain/getting-started/cmake-and-building.html)
