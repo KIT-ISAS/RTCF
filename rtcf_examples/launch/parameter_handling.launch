@@ -12,7 +12,7 @@
         <rosparam param="int_param">33</rosparam>
         <rosparam param="double_param">0.56789</rosparam>
         <rosparam param="size">2</rosparam>
-        <rosparam param="another_private_param">-13</rosparam>
+        <rosparam param="another_private_param">-111222333</rosparam>
     </node>
 
     <rosparam param="public_param">123.456789</rosparam>
