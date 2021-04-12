@@ -4,7 +4,7 @@ project(rtcf_examples)
 #############
 ## General ##
 #############
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Wall -Wextra)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -17,12 +17,8 @@ endif()
 ##################
 find_package(catkin REQUIRED COMPONENTS 
   rtt_rtcf_example_msgs
-  rtcf)
-
-catkin_package(CATKIN_DEPENDS 
-  rtt_rtcf_example_msgs
   rtcf
-)
+  dynamic_reconfigure)
 
 #######################
 ## Actual components ##
@@ -30,6 +26,12 @@ catkin_package(CATKIN_DEPENDS
 add_subdirectory(src/bare_minimum)
 add_subdirectory(src/identity)
 add_subdirectory(src/mimo)
+add_subdirectory(src/parameter_handling)
 
 # finalize the OROCOS package
 orocos_generate_package()
+
+catkin_package(CATKIN_DEPENDS 
+  rtt_rtcf_example_msgs
+  rtcf
+)
