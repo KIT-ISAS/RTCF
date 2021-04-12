@@ -18,6 +18,7 @@ include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp 
+  dynamic_reconfigure
   rtcf_msgs
   rtt_ros 
   rtt_roscomm 

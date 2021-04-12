@@ -4,4 +4,5 @@ ColumnLimit: '120'
 IndentWidth: '4'
 AlignConsecutiveAssignments: 'true'
 AccessModifierOffset: '-2'
+BreakConstructorInitializers: AfterColon
 ...

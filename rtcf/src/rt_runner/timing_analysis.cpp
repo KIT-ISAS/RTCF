@@ -43,20 +43,21 @@ void TimingAnalysis::stop() {
 
         // determine period duration
         RTT::os::TimeService::nsecs period_duration =
-            std::max((int64_t)0, (time_iteration_ - time_last_iteration_).toNSec());
+            std::max((RTT::os::TimeService::nsecs)0, start_calculation_ - start_calculation_last_);
         acc_iter_period_(period_duration);
         if (period_duration > period_threshold_) {
             count_delayed_iterations_++;
         }
     }
-    time_last_iteration_ = time_iteration_;
+    start_calculation_last_ = start_calculation_;
 }
 
 std::string TimingAnalysis::generateStatisticsString() const {
     std::stringstream ss;
 
     // number of iterations
-    ss << "Performed " << acc::count(acc_iter_calculation_) << " iterations since last start." << std::endl;
+    ss << "Performed " << acc::count(acc_iter_calculation_) << " iterations "
+       << "(first " << iterations_to_ignore_ << " ignored) since last start." << std::endl;
 
     // calculation duration
     ss << "Calculation duration: ";

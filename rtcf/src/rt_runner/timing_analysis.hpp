@@ -45,9 +45,9 @@ class TimingAnalysis {
 
     // period duration calculation
     RTT::os::TimeService::nsecs start_calculation_;
+    RTT::os::TimeService::nsecs start_calculation_last_;
     RTT::os::TimeService::nsecs delta_calculation_;
     ros::Time time_iteration_;
-    ros::Time time_last_iteration_;
     size_t remaining_iterations_to_ignore_;
 
     // overly delayed count
