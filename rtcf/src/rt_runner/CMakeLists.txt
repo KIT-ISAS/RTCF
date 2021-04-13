@@ -16,3 +16,12 @@ target_compile_definitions(rt_runner PUBLIC ORO_MEMORY_POOL ORO_BUILD_RTALLOC OR
 
 add_dependencies(rt_runner ${catkin_EXPORTED_TARGETS})
 target_link_libraries(rt_runner ${catkin_LIBRARIES})
+
+
+# this is the logging component
+orocos_component(rt_logging 
+  rt_rosconsole_logging.cpp
+  tlsf_memory_pool.cpp)
+target_compile_definitions(rt_logging PUBLIC ORO_MEMORY_POOL ORO_BUILD_RTALLOC OROSEM_LOG4CPP_LOGGING)
+add_dependencies(rt_logging ${catkin_EXPORTED_TARGETS})
+target_link_libraries(rt_logging ${catkin_LIBRARIES})

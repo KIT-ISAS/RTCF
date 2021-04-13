@@ -1,20 +1,22 @@
 #ifndef TLSF_MEMORY_POOL
 #define TLSF_MEMORY_POOL
 
-#include <cstdint>
+#include <cstddef>
 
 /**
  * @brief This class manages an TLSF (two-level segregated fit) memory pool.
  * The TLSF implementation is provided by OROCOS and this class is taken from
  * orocos_toolchain/ocl/bin/deployer-funcs.cpp/.hpp
  * Unfortunately, it was not compiled into a library there and hence had to be copied by us.
+ *
+ * The first instance of this object will be used by oro_rt_malloc and friends.
  */
-class TLSFMemoryPool {
+class TlsfMemoryPool {
   public:
     /// Create default object (no allocation to pool)
-    TLSFMemoryPool();
+    TlsfMemoryPool();
     /// Shutdown and deallocate memory pool (if necessary)
-    ~TLSFMemoryPool();
+    ~TlsfMemoryPool();
 
     /** Initialize the default TLSF memory pool
      **
