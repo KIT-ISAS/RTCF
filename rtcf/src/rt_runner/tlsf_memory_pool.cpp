@@ -9,6 +9,9 @@
 #ifndef OS_RT_MALLOC
 #error "Logging needs real-time allocation. Check build options of OROCOS!"
 #endif
+#ifndef ORO_MEMORY_POOL
+#error "Logging needs real-time memory pool. Check build options of OROCOS!"
+#endif
 
 TlsfMemoryPool::TlsfMemoryPool() : rtMem(0) {}
 

@@ -19,7 +19,6 @@ class RtRosconsoleLogging : public RTT::TaskContext {
   public:
     RtRosconsoleLogging();
     static constexpr size_t MEMORY_POOL_SIZE = 1024 * 512;  // 512 kByte
-    static constexpr char* DEFAULT_LOGGER    = ROSCONSOLE_DEFAULT_NAME;
 
     static bool setLoggerLevel(const std::string& name, ros::console::levels::Level level);
 

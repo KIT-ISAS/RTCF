@@ -16,13 +16,17 @@
 #include <rtt/deployment/ComponentLoader.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
 
-RTRunner::RTRunner()
-    : is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0) {}
+RTRunner::RTRunner() :
+    is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0) {}
 
 void RTRunner::configure(const Settings& settings) {
     settings_                 = settings;
     RtcfExtension::frequency_ = settings_.frequency;
     RtcfExtension::period_    = 1.0 / settings_.frequency;
+
+    // configure logging (before any spinner is started to not miss any service callbacks)
+    rt_logger_.configure();
+    rt_logger_.start();
 
     // create and configure the main worker thread
     RTT::base::ActivityInterface* main_activity = createMainActivity();
