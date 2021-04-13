@@ -1,16 +1,10 @@
 #include "rt_rosconsole_logging.hpp"
 
 #include <ros/console.h>
-#include <ros/ros.h>
 #include <ros/service_manager.h>
 
 #include <map>
 
-// this is a workaround for old log4cpp version that do not compile in C++17 due to usage of deprecated features
-#define throw(...)
-#include <log4cpp/HierarchyMaintainer.hh>
-#include <ocl/Category.hpp>
-#undef throw
 
 RtRosconsoleLogging::RtRosconsoleLogging() : TaskContext("logger") {
     rt_memory_pool_.initialize(MEMORY_POOL_SIZE);
@@ -69,6 +63,10 @@ bool RtRosconsoleLogging::setLoggerLevel(const std::string& name, ros::console::
         return false;
     }
     return false;
+}
+
+OCL::logging::Category* RtRosconsoleLogging::getLoggerInstance(const std::string& name){
+    return dynamic_cast<OCL::logging::Category*>(&log4cpp::Category::getInstance(name));
 }
 
 void RtRosconsoleLogging::drainBuffer() {

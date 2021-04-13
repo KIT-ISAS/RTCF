@@ -6,9 +6,15 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+
+// this is a workaround for old log4cpp version that do not compile in C++17 due to usage of deprecated features
+#include <rtt/RTT.hpp>  // this must be here so that the throw is still intact in RTT heades
 #define throw(...)
+#include <log4cpp/HierarchyMaintainer.hh>
+#include <ocl/Category.hpp>
 #include <ocl/LoggingEvent.hpp>
 #undef throw
+
 #include <rtt/InputPort.hpp>
 #include <rtt/TaskContext.hpp>
 #pragma GCC diagnostic pop
@@ -21,6 +27,8 @@ class RtRosconsoleLogging : public RTT::TaskContext {
     static constexpr size_t MEMORY_POOL_SIZE = 1024 * 512;  // 512 kByte
 
     static bool setLoggerLevel(const std::string& name, ros::console::levels::Level level);
+
+    static OCL::logging::Category* getLoggerInstance(const std::string& name);
 
   protected:
     virtual bool configureHook();
