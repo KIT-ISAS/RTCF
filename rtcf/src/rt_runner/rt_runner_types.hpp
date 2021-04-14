@@ -88,7 +88,8 @@ struct ComponentContainer {
     void handleLogger() {
         // create a logger for the component when it uses the extension
         if (auto task_handle = dynamic_cast<RtcfExtension*>(task_context)) {
-            std::string logger_name = ROSCONSOLE_DEFAULT_NAME"." + attributes.name;
+            std::string last_name = attributes.name.substr(attributes.name.rfind("/")+1);
+            std::string logger_name = ROSCONSOLE_DEFAULT_NAME"." + last_name;
             task_handle->logger_    = RtRosconsoleLogging::getInstance().getLoggerInstance(logger_name);
             assert(task_handle->logger_);
         }

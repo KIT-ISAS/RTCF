@@ -47,7 +47,7 @@ class RtRosconsoleLogging : public RTT::TaskContext {
 
     RTT::InputPort<OCL::logging::LoggingEvent> log_port_;
     TlsfMemoryPool rt_memory_pool_;
-    ros::NodeHandle nh_;
+    ros::ServiceServer logger_level_service_;
 
     static bool setLoggerLevelCallback(roscpp::SetLoggerLevel::Request& req, roscpp::SetLoggerLevel::Response&);
     static bool setRTLoggerLevel(const std::string& name, ros::console::levels::Level);

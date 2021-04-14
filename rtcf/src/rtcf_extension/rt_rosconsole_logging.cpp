@@ -7,8 +7,8 @@
 
 std::shared_ptr<RtRosconsoleLogging> RtRosconsoleLogging::instance;
 
-RtRosconsoleLogging& RtRosconsoleLogging::getInstance(){
-    if(!instance){
+RtRosconsoleLogging& RtRosconsoleLogging::getInstance() {
+    if (!instance) {
         instance.reset(new RtRosconsoleLogging());
     }
     return *instance;
@@ -26,9 +26,10 @@ bool RtRosconsoleLogging::configureHook() {
 
     // make real-time loggers runtime-modifiable by intercepting rosconsole logger level callbacks
     // remove initial service handler
-    ros::ServiceManager::instance()->unadvertiseService(nh_.resolveName("~set_logger_level"));
+    ros::NodeHandle nh_private("~");
+    ros::ServiceManager::instance()->unadvertiseService(nh_private.resolveName("set_logger_level"));
     // replace it with new service handler
-    nh_.advertiseService("~set_logger_level", &RtRosconsoleLogging::setLoggerLevelCallback);
+    logger_level_service_ = nh_private.advertiseService("set_logger_level", &RtRosconsoleLogging::setLoggerLevelCallback);
 
     // fetch all existing loggers from rosconsole and setup the corresponding real-time loggers
     std::map<std::string, ros::console::levels::Level> existing_loggers;
