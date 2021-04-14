@@ -26,6 +26,7 @@ bool MainContext::configureHook() {
 
 bool MainContext::startHook() {
     ROS_DEBUG("MainContext::startHook() called");
+    ROS_INFO("Real-time loop activated.");
     timing_analysis_.reset();
     return true;
 }
@@ -49,12 +50,14 @@ void MainContext::updateHook() {
     port_iter_info_.write(info);
 }
 
-void MainContext::stopHook() { ROS_DEBUG("MainContext::stopHook() called"); }
-
-void MainContext::cleanupHook() {
-    ROS_DEBUG("MainContext::cleanUp() called");
+void MainContext::stopHook() {
+    ROS_DEBUG("MainContext::stopHook() called");
+    
+    ROS_INFO("Real-time loop deactivated.");
     ROS_INFO_STREAM(timing_analysis_);
 }
+
+void MainContext::cleanupHook() { ROS_DEBUG("MainContext::cleanUp() called"); }
 
 void MainContext::setSlaves(const RTOrder& slaves) { slaves_ = slaves; }
 

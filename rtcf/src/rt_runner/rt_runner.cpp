@@ -203,7 +203,6 @@ void RTRunner::activateRTLoop() {
         }
         // then go to cyclic operation
         main_context_.start();
-        ROS_INFO("Real-time loop activated.");
     }
 }
 
@@ -218,7 +217,6 @@ void RTRunner::deactivateRTLoop() {
         }
         // stop cyclic operation
         main_context_.stop();
-        ROS_INFO("Real-time loop deactivated.");
     }
 }
 
