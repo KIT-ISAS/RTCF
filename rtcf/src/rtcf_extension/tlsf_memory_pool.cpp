@@ -24,6 +24,7 @@ bool TlsfMemoryPool::initialize(const size_t memSize) {
     // don't calloc() as is first thing TLSF does.
     rtMem = malloc(memSize);
     assert(0 != rtMem);
+    memset(rtMem, 0xaa, memSize);  // pre-fault
     const size_t freeMem = init_memory_pool(memSize, rtMem);
     if ((size_t)-1 == freeMem) {
         ROS_ERROR_STREAM("Invalid memory pool size of " << memSize << " bytes (TLSF has a several kilobyte overhead).");

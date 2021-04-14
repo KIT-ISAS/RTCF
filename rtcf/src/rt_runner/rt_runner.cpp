@@ -82,7 +82,12 @@ RTT::base::ActivityInterface* RTRunner::createMainActivity() {
 void RTRunner::shutdown() {
     is_shutdown_ = true;
     stopExecution();
+}
+
+void RTRunner::finalize() {
     main_context_.cleanup();
+    RtRosconsoleLogging::getInstance().stop();
+    RtRosconsoleLogging::getInstance().cleanup();
 }
 
 size_t RTRunner::getNumLoadedComponents() { return num_loaded_components_; }
@@ -174,7 +179,6 @@ bool RTRunner::unloadOrocosComponent(const UnloadAttributes& info) {
 
     // tear down the component
     RTT::TaskContext* task = (*result).task_context;
-    task->stop();
     task->cleanup();
     delete task;
     component_containers_.erase(result);
@@ -197,7 +201,6 @@ void RTRunner::activateRTLoop() {
                 }
             }
         }
-
         // then go to cyclic operation
         main_context_.start();
     }
@@ -205,6 +208,13 @@ void RTRunner::activateRTLoop() {
 
 void RTRunner::deactivateRTLoop() {
     if (main_context_.isRunning()) {
+        // first stop all components that are running
+        for (const auto& component : component_containers_) {
+            auto* tc = component.task_context;
+            if (tc->isRunning()) {
+                tc->stop();
+            }
+        }
         // stop cyclic operation
         main_context_.stop();
     }

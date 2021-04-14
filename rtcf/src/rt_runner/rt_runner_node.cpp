@@ -46,6 +46,7 @@ void RTRunnerNode::shutdown() {
         ros::WallDuration(0.1).sleep();
     }
     shutdownROSServices();
+    rt_runner_->finalize();
 };
 
 void RTRunnerNode::loop() {

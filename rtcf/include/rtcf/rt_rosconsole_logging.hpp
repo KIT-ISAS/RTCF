@@ -25,7 +25,7 @@ class RtRosconsoleLogging : public RTT::TaskContext {
   public:
     static RtRosconsoleLogging& getInstance();
 
-    static constexpr size_t MEMORY_POOL_SIZE = 1024 * 512;  // 512 kByte
+    static constexpr size_t MEMORY_POOL_SIZE = 1024 * 1024;  // 1 MByte
 
     static bool setLoggerLevel(const std::string& name, ros::console::levels::Level level);
 
@@ -56,10 +56,10 @@ class RtRosconsoleLogging : public RTT::TaskContext {
     static std::shared_ptr<RtRosconsoleLogging> instance;
 
     // TODO:
-    // - test
-    // - unload logger gracefully
     // - create macros in RTCF extension
     // DONE:
+    // - unload logger gracefully
+    // - test
     // - load logger at the right places
     // - remove code from RTCF extension
     // - push everything that arrives to rosconsole

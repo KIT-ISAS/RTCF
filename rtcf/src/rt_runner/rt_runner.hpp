@@ -87,6 +87,7 @@ class RTRunner {
 
     void configure(const Settings& settings);
     void shutdown();
+    void finalize();
 
     bool loadOrocosComponent(const LoadAttributes& info);
     bool unloadOrocosComponent(const UnloadAttributes& info);
