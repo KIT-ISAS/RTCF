@@ -30,6 +30,7 @@ add_subdirectory(src/bare_minimum)
 add_subdirectory(src/identity)
 add_subdirectory(src/mimo)
 add_subdirectory(src/parameter_handling)
+add_subdirectory(src/logging)
 
 # finalize the OROCOS package
 orocos_generate_package()
