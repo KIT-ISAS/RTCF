@@ -11,7 +11,7 @@
 MainContext::MainContext(std::string const& name) : TaskContext(name), port_iter_info_("iteration_info") {}
 
 bool MainContext::configureHook() {
-    ROS_INFO("MainContext::configureHook() called");
+    ROS_DEBUG("MainContext::configureHook() called");
 
     timing_analysis_.configure(this->getPeriod());
 
@@ -25,7 +25,7 @@ bool MainContext::configureHook() {
 }
 
 bool MainContext::startHook() {
-    ROS_INFO("MainContext::startHook() called");
+    ROS_DEBUG("MainContext::startHook() called");
     timing_analysis_.reset();
     return true;
 }
@@ -35,7 +35,6 @@ void MainContext::updateHook() {
     RtcfExtension::last_timestamp_ = timing_analysis_.start();
 
     // this does all the heavy lifting and calls all our components in order
-    // ROS_INFO("MainContext::updateHook() called");
     for (const auto& slave : slaves_) {
         slave->task_context->update();  // calls update on underlying activity
     }
@@ -50,10 +49,10 @@ void MainContext::updateHook() {
     port_iter_info_.write(info);
 }
 
-void MainContext::stopHook() { ROS_INFO("MainContext::stopHook() called"); }
+void MainContext::stopHook() { ROS_DEBUG("MainContext::stopHook() called"); }
 
 void MainContext::cleanupHook() {
-    ROS_INFO("MainContext::cleanUp() called");
+    ROS_DEBUG("MainContext::cleanUp() called");
     ROS_INFO_STREAM(timing_analysis_);
 }
 

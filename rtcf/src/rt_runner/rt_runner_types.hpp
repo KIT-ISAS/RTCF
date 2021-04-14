@@ -113,7 +113,7 @@ struct ComponentContainer {
             } else {
                 ss << "(neither input nor output)";
             }
-            ROS_INFO_STREAM(ss.str());
+            ROS_DEBUG_STREAM(ss.str());
         }
     }
 
@@ -123,12 +123,12 @@ struct ComponentContainer {
             // TODO: private names are not handled correctly
             const auto resolved_name = node_handle->resolveName(p.original_name, true);
             p.mapped_name            = resolved_name;
-            ROS_INFO_STREAM("Input port " << p.original_name << " mapped to " << p.mapped_name);
+            ROS_DEBUG_STREAM("Input port " << p.original_name << " mapped to " << p.mapped_name);
         }
         for (auto& p : output_ports) {
             const auto resolved_name = node_handle->resolveName(p.original_name, true);
             p.mapped_name            = resolved_name;
-            ROS_INFO_STREAM("Input port " << p.original_name << " mapped to " << p.mapped_name);
+            ROS_DEBUG_STREAM("Input port " << p.original_name << " mapped to " << p.mapped_name);
         }
     }
 

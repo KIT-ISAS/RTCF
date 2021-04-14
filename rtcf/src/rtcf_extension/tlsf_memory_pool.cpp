@@ -32,16 +32,16 @@ bool TlsfMemoryPool::initialize(const size_t memSize) {
         rtMem = 0;
         return false;
     }
-    // ROS_INFO_STREAM("Real-time memory: " << freeMem << " bytes free of " << memSize << " allocated.");
+    ROS_DEBUG_STREAM("Real-time memory: " << freeMem << " bytes free of " << memSize << " allocated.");
     return true;
 }
 
 void TlsfMemoryPool::shutdown() {
     if (0 != rtMem) {
         const size_t overhead = get_overhead_size(rtMem);
-        // ROS_INFO_STREAM("TLSF bytes allocated=" << get_pool_size(rtMem) << " overhead=" << overhead
-        //                                         << " max-used=" << (get_max_size(rtMem) - overhead)
-        //                                         << " still-allocated=" << (get_used_size(rtMem) - overhead));
+        ROS_DEBUG_STREAM("TLSF bytes allocated=" << get_pool_size(rtMem) << " overhead=" << overhead
+                                                 << " max-used=" << (get_max_size(rtMem) - overhead)
+                                                 << " still-allocated=" << (get_used_size(rtMem) - overhead));
         if (get_used_size(rtMem) - overhead != 0) {
             ROS_ERROR("Not all memory TLSF memory pool has been freed.");
         }

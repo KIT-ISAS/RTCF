@@ -39,7 +39,7 @@ void RTRunnerNode::shutdown() {
         const std::lock_guard<std::mutex> lock(mtx_);
         rt_runner_->shutdown();  // this stops the execution engine of all components
     }
-    ROS_INFO("Waiting for components to be unloaded...");
+    ROS_DEBUG("Waiting for components to be unloaded...");
     // for simplicity, use polling here
     // TODO: (optional) use conditional variable or something similar for waiting
     while (rt_runner_->getNumLoadedComponents() > 0) {
@@ -163,7 +163,7 @@ bool RTRunnerNode::loadOrocosComponentCallback(rtcf_msgs::LoadOrocosComponent::R
     attr.topics_ignore_for_graph = req.topics_ignore_for_graph.data;
     attr.is_first                = req.is_first.data;
 
-    ROS_INFO_STREAM("Load service got called with following information:" << std::endl << attr);
+    ROS_DEBUG_STREAM("Load service got called with following information:" << std::endl << attr);
 
     res.success.data = rt_runner_->loadOrocosComponent(attr);
     return true;
@@ -177,7 +177,7 @@ bool RTRunnerNode::unloadOrocosComponentCallback(rtcf_msgs::UnloadOrocosComponen
     attr.name = req.component_name.data;
     attr.ns   = req.ns.data;
 
-    ROS_INFO_STREAM("Unload service got called with following information:" << std::endl << attr);
+    ROS_DEBUG_STREAM("Unload service got called with following information:" << std::endl << attr);
 
     res.success.data = rt_runner_->unloadOrocosComponent(attr);
     return true;

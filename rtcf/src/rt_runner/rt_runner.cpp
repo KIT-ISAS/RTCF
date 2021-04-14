@@ -203,6 +203,7 @@ void RTRunner::activateRTLoop() {
         }
         // then go to cyclic operation
         main_context_.start();
+        ROS_INFO("Real-time loop activated.");
     }
 }
 
@@ -217,6 +218,7 @@ void RTRunner::deactivateRTLoop() {
         }
         // stop cyclic operation
         main_context_.stop();
+        ROS_INFO("Real-time loop deactivated.");
     }
 }
 
@@ -283,26 +285,26 @@ void RTRunner::analyzeDependencies() {
                         // extract relevant information
                         // 1. input ports that are supplied by an output port (aka internal connections)
                         internal_connections_[&p_input] = &p_output;
-                        ROS_INFO_STREAM("Connected " << c_from.attributes.name << " (" << p_output.original_name
-                                                     << ") with " << c_to.attributes.name << " ("
-                                                     << p_input.original_name << ") via " << p_input.mapped_name);
+                        ROS_DEBUG_STREAM("Connected " << c_from.attributes.name << " (" << p_output.original_name
+                                                      << ") with " << c_to.attributes.name << " ("
+                                                      << p_input.original_name << ") via " << p_input.mapped_name);
                         // exclude the ignored topics here or components with is_first attribute set
                         if (!std::regex_match(p_input.mapped_name, c_to.topics_ignore_regex) &&
                             !c_to.attributes.is_first) {
                             // 2. predecessor components (aka input dependencies)
                             if (component_predecessors_[&c_to].insert(&c_from).second) {
-                                ROS_INFO_STREAM("Added " << c_from.attributes.name
-                                                         << " as predecessor (dependency) for " << c_to.attributes.name
-                                                         << ".");
+                                ROS_DEBUG_STREAM("Added " << c_from.attributes.name
+                                                          << " as predecessor (dependency) for " << c_to.attributes.name
+                                                          << ".");
                             }
                             // 3. successor components (aka output dependencies)
                             if (component_successors_[&c_from].insert(&c_to).second) {
-                                ROS_INFO_STREAM("Added " << c_to.attributes.name << " as successor for "
-                                                         << c_from.attributes.name << ".");
+                                ROS_DEBUG_STREAM("Added " << c_to.attributes.name << " as successor for "
+                                                          << c_from.attributes.name << ".");
                             }
                         } else {
-                            ROS_INFO_STREAM("Ignored " << c_from.attributes.name << " as predecessor (dependency) for "
-                                                       << c_to.attributes.name << " due to explicit exclusion.");
+                            ROS_DEBUG_STREAM("Ignored " << c_from.attributes.name << " as predecessor (dependency) for "
+                                                        << c_to.attributes.name << " due to explicit exclusion.");
                         }
                     }
                 }
@@ -442,8 +444,8 @@ void RTRunner::connectPortsToRos() {
         for (const auto& output_port : container.output_ports) {
             if (check_name(output_port.mapped_name)) {
                 output_port.port->createStream(rtt_roscomm::topic(output_port.mapped_name));
-                ROS_INFO_STREAM("Connected " << container.attributes.name << " (output " << output_port.original_name
-                                             << ") to ROS topic " << output_port.mapped_name << "");
+                ROS_DEBUG_STREAM("Connected " << container.attributes.name << " (output " << output_port.original_name
+                                              << ") to ROS topic " << output_port.mapped_name << "");
             }
         }
     }
@@ -456,12 +458,12 @@ void RTRunner::connectPortsToRos() {
                 // check for internal connection
                 if (internal_connections_.count(&input_port) == 0) {
                     input_port.port->createStream(rtt_roscomm::topic(input_port.mapped_name));
-                    ROS_INFO_STREAM("Connected " << container.attributes.name << " (input " << input_port.original_name
-                                                 << ") to ROS topic " << input_port.mapped_name << "");
+                    ROS_DEBUG_STREAM("Connected " << container.attributes.name << " (input " << input_port.original_name
+                                                  << ") to ROS topic " << input_port.mapped_name << "");
                 } else {
-                    ROS_INFO_STREAM("Skipped connecting " << container.attributes.name << " (input "
-                                                          << input_port.original_name << ") to ROS topic "
-                                                          << input_port.mapped_name << " due to internal connection");
+                    ROS_DEBUG_STREAM("Skipped connecting " << container.attributes.name << " (input "
+                                                           << input_port.original_name << ") to ROS topic "
+                                                           << input_port.mapped_name << " due to internal connection");
                 }
             }
         }

@@ -122,7 +122,7 @@ bool RtRosconsoleLogging::setLoggerLevelCallback(roscpp::SetLoggerLevel::Request
     // This is the extended part, where the real-time logger is changed
     success &= RtRosconsoleLogging::setRTLoggerLevel(req.logger, level);
 
-    // ROS_INFO("Logger changed via service call!");
+    ROS_DEBUG("Logger changed via service call!");
 
     return success;
 }
