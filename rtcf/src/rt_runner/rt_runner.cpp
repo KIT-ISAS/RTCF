@@ -1,21 +1,22 @@
 #include "rt_runner.hpp"
 
 #include <ros/ros.h>
-#include <rtt_ros/rtt_ros.h>
 
 #include "rtcf/rt_rosconsole_logging.hpp"
 #include "rtcf/rtcf_extension.hpp"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
+#include <rtt_ros/rtt_ros.h>
 #include <rtt_rosclock/rtt_rosclock.h>
 #include <rtt_rosclock/rtt_rosclock_sim_clock_activity.h>
 #include <rtt_rosclock/rtt_rosclock_sim_clock_thread.h>
-#pragma GCC diagnostic pop
 #include <rtt_roscomm/rostopic.h>
-
 #include <rtt/Activity.hpp>
 #include <rtt/deployment/ComponentLoader.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
+OROCOS_HEADERS_END
+
 
 RTRunner::RTRunner() :
     is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0) {}

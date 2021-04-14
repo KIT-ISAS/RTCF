@@ -7,8 +7,11 @@
 #include <boost/functional/forward_adapter.hpp>
 #include <memory>
 #include <regex>
-#include <rtcf/rtcf_extension.hpp>
-#include <rtcf/rtcf_types.hpp>
+#include <string>
+#include <vector>
+
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 #include <rtt/Activity.hpp>
 #include <rtt/DataFlowInterface.hpp>
 #include <rtt/InputPort.hpp>
@@ -17,10 +20,11 @@
 #include <rtt/base/InputPortInterface.hpp>
 #include <rtt/base/PortInterface.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
-#include <string>
-#include <vector>
+OROCOS_HEADERS_END
 
 #include "rtcf/rt_rosconsole_logging.hpp"
+#include "rtcf/rtcf_extension.hpp"
+#include "rtcf/rtcf_types.hpp"
 
 struct PortContainer {
     PortContainer(RTT::base::PortInterface* port) : port(port) {

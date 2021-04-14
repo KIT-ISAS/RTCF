@@ -3,9 +3,13 @@
 
 #include <rtcf_examples/ExampleConfig.h>
 
+#include <rtcf/macros.hpp>
+OROCOS_HEADERS_BEGIN
+#include <rtt/RTT.hpp>
+OROCOS_HEADERS_END
+
 #include <rtcf/rt_dynamic_reconfigure.hpp>
 #include <rtcf/rtcf_extension.hpp>
-#include <rtt/RTT.hpp>
 
 class ParameterHandling : public RTT::TaskContext, public RtcfExtension {
   public:

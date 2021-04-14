@@ -1,13 +1,11 @@
 #ifndef COMPONENT_HPP
 #define COMPONENT_HPP
 
-
-// This header is causing many warnings, so we disable them temporarily
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#include <rtt/RTT.hpp>
+#include <rtcf/macros.hpp>
+OROCOS_HEADERS_BEGIN
 #include <rtt/Port.hpp>
-#pragma GCC diagnostic pop
+#include <rtt/RTT.hpp>
+OROCOS_HEADERS_END
 
 #include <std_msgs/Float64.h>
 

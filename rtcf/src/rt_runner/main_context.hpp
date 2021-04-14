@@ -3,12 +3,12 @@
 
 #include <rtcf_msgs/IterationInformation.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 #include <rtt/Port.hpp>
 #include <rtt/RTT.hpp>
-#pragma GCC diagnostic pop
 #include <rtt/extras/SlaveActivity.hpp>
+OROCOS_HEADERS_END
 
 #include "rt_runner_types.hpp"
 #include "timing_analysis.hpp"

@@ -8,10 +8,10 @@
 #include <boost/accumulators/statistics/variance.hpp>
 #include <iostream>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 #include <rtt_rosclock/rtt_rosclock.h>
-#pragma GCC diagnostic pop
+OROCOS_HEADERS_END
 
 namespace acc = boost::accumulators;
 

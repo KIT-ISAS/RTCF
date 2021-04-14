@@ -3,10 +3,11 @@
 
 #include <atomic>
 #include <regex>
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 #include <rtt/TaskContext.hpp>
-#pragma GCC diagnostic pop
+OROCOS_HEADERS_END
 
 #include "main_context.hpp"
 #include "rt_runner_types.hpp"

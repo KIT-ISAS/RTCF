@@ -1,8 +1,11 @@
 #include "component.hpp"
 
-#include <iostream>
-#include <rtcf/rt_logging_macros.hpp>
+#include <rtcf/macros.hpp>
+OROCOS_HEADERS_BEGIN
 #include <rtt/Component.hpp>
+OROCOS_HEADERS_END
+
+#include <rtcf/rt_logging_macros.hpp>
 
 SumTest::SumTest(std::string const& name) : TaskContext(name), out_("out"), in1_("in1"), in2_("in2") {
     NON_RT_INFO("SumTest constructed !");

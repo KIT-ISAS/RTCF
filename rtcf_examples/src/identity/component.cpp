@@ -1,8 +1,11 @@
 #include "component.hpp"
 
-#include <iostream>
-#include <rtcf/rt_logging_macros.hpp>
+#include <rtcf/macros.hpp>
+OROCOS_HEADERS_BEGIN
 #include <rtt/Component.hpp>
+OROCOS_HEADERS_END
+
+#include <rtcf/rt_logging_macros.hpp>
 
 Identity::Identity(std::string const& name) : TaskContext(name), port_out_("out_port"), port_in_("in_port") {
     NON_RT_INFO("Identity constructed !");

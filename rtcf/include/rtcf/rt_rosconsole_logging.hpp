@@ -4,9 +4,8 @@
 #include <ros/ros.h>
 #include <roscpp/SetLoggerLevel.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 // this is a workaround for old log4cpp version that do not compile in C++17 due to usage of deprecated features
 #define throw(...)
 #include <log4cpp/HierarchyMaintainer.hh>
@@ -16,8 +15,7 @@
 #include <ocl/LoggingEvent.hpp>
 #include <rtt/InputPort.hpp>
 #include <rtt/TaskContext.hpp>
-
-#pragma GCC diagnostic pop
+OROCOS_HEADERS_END
 
 #include "tlsf_memory_pool.hpp"
 

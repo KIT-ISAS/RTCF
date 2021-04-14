@@ -1,7 +1,9 @@
 #include "component.hpp"
 
-#include <iostream>
+#include <rtcf/macros.hpp>
+OROCOS_HEADERS_BEGIN
 #include <rtt/Component.hpp>
+OROCOS_HEADERS_END
 
 ParameterHandling::ParameterHandling(std::string const& name) : TaskContext(name) {
     NON_RT_INFO("ParameterHandling constructed !");

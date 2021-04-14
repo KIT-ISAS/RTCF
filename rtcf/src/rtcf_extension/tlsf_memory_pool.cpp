@@ -1,7 +1,11 @@
 #include "rtcf/tlsf_memory_pool.hpp"
 
 #include <ros/ros.h>
+
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 #include <rtt/os/tlsf/tlsf.h>
+OROCOS_HEADERS_END
 
 #include <cstdlib>
 

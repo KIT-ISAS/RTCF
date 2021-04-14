@@ -3,7 +3,11 @@
 
 #include <dynamic_reconfigure/server.h>
 
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 #include <rtt/base/DataObjectLockFree.hpp>
+OROCOS_HEADERS_END
+
 #include <thread>
 
 /**

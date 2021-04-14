@@ -3,12 +3,11 @@
 
 #include <std_msgs/Float64.h>
 
-// This header is causing many warnings, so we disable them temporarily
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <rtcf/macros.hpp>
+OROCOS_HEADERS_BEGIN
 #include <rtt/Port.hpp>
 #include <rtt/RTT.hpp>
-#pragma GCC diagnostic pop
+OROCOS_HEADERS_END
 
 class Mimo : public RTT::TaskContext {
   public:

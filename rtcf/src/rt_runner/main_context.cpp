@@ -2,11 +2,11 @@
 
 #include "rtcf/rtcf_extension.hpp"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 #include <rtt_ros/rtt_ros.h>
 #include <rtt_roscomm/rostopic.h>
-#pragma GCC diagnostic pop
+OROCOS_HEADERS_END
 
 MainContext::MainContext(std::string const& name) : TaskContext(name), port_iter_info_("iteration_info") {}
 

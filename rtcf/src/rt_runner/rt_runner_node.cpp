@@ -1,8 +1,12 @@
-#include "rt_runner_node.hpp"
 
 #include <ros/ros.h>
+
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 #include <rtt/os/main.h>
 #include <rtt_ros/rtt_ros.h>
+OROCOS_HEADERS_END
+
 #include <signal.h>
 
 #include <boost/algorithm/string.hpp>
@@ -11,6 +15,7 @@
 #include <vector>
 
 #include "rt_runner.hpp"
+#include "rt_runner_node.hpp"
 #include "rtcf/rtcf_types.hpp"
 
 RTRunnerNode::RTRunnerNode(const ros::NodeHandle &node_handle) : node_handle_(node_handle), is_shutdown_(false) {

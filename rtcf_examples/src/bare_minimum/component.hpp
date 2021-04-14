@@ -1,7 +1,10 @@
 #ifndef COMPONENT_HPP
 #define COMPONENT_HPP
 
+#include <rtcf/macros.hpp>
+OROCOS_HEADERS_BEGIN
 #include <rtt/RTT.hpp>
+OROCOS_HEADERS_END
 
 class BareMinimum : public RTT::TaskContext {
   public:

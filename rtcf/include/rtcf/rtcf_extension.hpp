@@ -3,7 +3,10 @@
 
 #include <ros/ros.h>
 
+#include "rtcf/macros.hpp"
+OROCOS_HEADERS_BEGIN
 #include <rtt/Port.hpp>
+OROCOS_HEADERS_END
 
 #include "rtcf/rt_logging_macros.hpp"
 #include "rtcf/rt_rosconsole_logging.hpp"

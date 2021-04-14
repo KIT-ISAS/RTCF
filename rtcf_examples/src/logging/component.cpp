@@ -1,7 +1,9 @@
 #include "component.hpp"
 
-#include <iostream>
+#include <rtcf/macros.hpp>
+OROCOS_HEADERS_BEGIN
 #include <rtt/Component.hpp>
+OROCOS_HEADERS_END
 
 Logging::Logging(std::string const& name) : TaskContext(name) {
     NON_RT_INFO("Non-RT logging works in constructor.");
