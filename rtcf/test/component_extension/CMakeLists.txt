@@ -1,1 +1,2 @@
 orocos_component(component_extension component.cpp)
+target_link_libraries(component_extension rtcf_extension)

@@ -9,8 +9,8 @@
 #pragma GCC diagnostic pop
 
 #include "main_context.hpp"
-#include "rt_rosconsole_logging.hpp"
 #include "rt_runner_types.hpp"
+#include "rtcf/rt_rosconsole_logging.hpp"
 #include "rtcf/rtcf_types.hpp"
 
 class RTRunner {

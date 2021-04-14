@@ -15,9 +15,9 @@ class RtcfExtension {
     ros::NodeHandlePtr nh_;
     ros::NodeHandlePtr nh_private_;
 
-    inline static double frequency_;
-    inline static double period_;
-    inline static ros::Time last_timestamp_;
+    static double frequency_;
+    static double period_;
+    static ros::Time last_timestamp_;
 
   public:
     RtcfExtension() { last_timestamp_ = ros::Time(0); };

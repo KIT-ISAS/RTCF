@@ -23,12 +23,16 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES rtcf_extension
   CATKIN_DEPENDS   
-  rtt_rtcf_msgs
-  rtt_ros 
-  rtt_roscomm 
-  rtt_rosclock
 )
+
+# OROCOS specific
+find_package(OROCOS-RTT REQUIRED)
+find_package(OROCOS-OCL REQUIRED)
+include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
+add_definitions(-DORO_MEMORY_POOL -DORO_BUILD_RTALLOC)
+orocos_use_package(ocl-logging)
 
 ###########
 ## Build ##
@@ -41,6 +45,7 @@ include_directories(
 
 add_subdirectory(src/rt_launcher)
 add_subdirectory(src/rt_runner)
+add_subdirectory(src/rtcf_extension)
 
 # in addition to a catkin package, create an OROCOS package 
 # (this will make OROCOS find the dependencies automatically by reading the package.xml)

@@ -1,10 +1,9 @@
-#include "rt_rosconsole_logging.hpp"
+#include "rtcf/rt_rosconsole_logging.hpp"
 
 #include <ros/console.h>
 #include <ros/service_manager.h>
 
 #include <map>
-
 
 RtRosconsoleLogging::RtRosconsoleLogging() : TaskContext("logger") {
     rt_memory_pool_.initialize(MEMORY_POOL_SIZE);
@@ -65,7 +64,7 @@ bool RtRosconsoleLogging::setLoggerLevel(const std::string& name, ros::console::
     return false;
 }
 
-OCL::logging::Category* RtRosconsoleLogging::getLoggerInstance(const std::string& name){
+OCL::logging::Category* RtRosconsoleLogging::getLoggerInstance(const std::string& name) {
     return dynamic_cast<OCL::logging::Category*>(&log4cpp::Category::getInstance(name));
 }
 
