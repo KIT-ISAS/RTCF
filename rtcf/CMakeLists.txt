@@ -31,6 +31,7 @@ catkin_package(
 find_package(OROCOS-RTT REQUIRED)
 find_package(OROCOS-OCL REQUIRED)
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
+# needed for real-time logging in rtcf_extension
 add_definitions(-DORO_MEMORY_POOL -DORO_BUILD_RTALLOC)
 orocos_use_package(ocl-logging)
 
