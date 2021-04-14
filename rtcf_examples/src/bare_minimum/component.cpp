@@ -1,26 +1,27 @@
 #include "component.hpp"
 
 #include <iostream>
+#include <rtcf/rt_logging_macros.hpp>
 #include <rtt/Component.hpp>
 
-BareMinimum::BareMinimum(std::string const& name) : TaskContext(name) {
-    std::cout << "BareMinimum constructed !" << std::endl;
-}
+BareMinimum::BareMinimum(std::string const& name) : TaskContext(name) { NON_RT_INFO("BareMinimum constructed !"); }
 
 bool BareMinimum::configureHook() {
-    std::cout << "BareMinimum configured !" << std::endl;
+    NON_RT_INFO("BareMinimum configured !");
     return true;
 }
 
 bool BareMinimum::startHook() {
-    std::cout << "BareMinimum started !" << std::endl;
+    NON_RT_INFO("BareMinimum started !");
     return true;
 }
 
-void BareMinimum::updateHook() { std::cout << "BareMinimum executes updateHook !" << std::endl; }
+void BareMinimum::updateHook() {
+    // put your periodic payload here
+}
 
-void BareMinimum::stopHook() { std::cout << "BareMinimum executes stopping !" << std::endl; }
+void BareMinimum::stopHook() { NON_RT_INFO("BareMinimum executes stopping !"); }
 
-void BareMinimum::cleanupHook() { std::cout << "BareMinimum cleaning up !" << std::endl; }
+void BareMinimum::cleanupHook() { NON_RT_INFO("BareMinimum cleaning up !"); }
 
 ORO_CREATE_COMPONENT(BareMinimum)

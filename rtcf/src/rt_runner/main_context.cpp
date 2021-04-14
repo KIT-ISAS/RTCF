@@ -11,7 +11,7 @@
 MainContext::MainContext(std::string const& name) : TaskContext(name), port_iter_info_("iteration_info") {}
 
 bool MainContext::configureHook() {
-    ROS_INFO("MainContext::configureHook() called");
+    ROS_DEBUG("MainContext::configureHook() called");
 
     timing_analysis_.configure(this->getPeriod());
 
@@ -25,7 +25,8 @@ bool MainContext::configureHook() {
 }
 
 bool MainContext::startHook() {
-    ROS_INFO("MainContext::startHook() called");
+    ROS_DEBUG("MainContext::startHook() called");
+    ROS_INFO("Real-time loop activated.");
     timing_analysis_.reset();
     return true;
 }
@@ -35,7 +36,6 @@ void MainContext::updateHook() {
     RtcfExtension::last_timestamp_ = timing_analysis_.start();
 
     // this does all the heavy lifting and calls all our components in order
-    ROS_INFO("MainContext::updateHook() called");
     for (const auto& slave : slaves_) {
         slave->task_context->update();  // calls update on underlying activity
     }
@@ -51,22 +51,14 @@ void MainContext::updateHook() {
 }
 
 void MainContext::stopHook() {
-    ROS_INFO("MainContext::stopHook() called");
-    // std::cout << "Main Context stopping !" << std::endl;
-}
-
-void MainContext::cleanupHook() {
-    ROS_INFO("MainContext::cleanUp() called");
-    // std::cout << "MainContext cleaning up !" <<std::endl;
+    ROS_DEBUG("MainContext::stopHook() called");
+    
+    ROS_INFO("Real-time loop deactivated.");
     ROS_INFO_STREAM(timing_analysis_);
 }
 
-void MainContext::setSlaves(const RTOrder& slaves) {
-    // std::cout << "Set slaves" << std::endl;
-    slaves_ = slaves;
-}
+void MainContext::cleanupHook() { ROS_DEBUG("MainContext::cleanUp() called"); }
 
-void MainContext::clearSlaves() {
-    // std::cout << "Clear slaves" << std::endl;
-    slaves_.clear();
-}
+void MainContext::setSlaves(const RTOrder& slaves) { slaves_ = slaves; }
+
+void MainContext::clearSlaves() { slaves_.clear(); }

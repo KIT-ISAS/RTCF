@@ -1,14 +1,15 @@
 #include "component.hpp"
 
 #include <iostream>
+#include <rtcf/rt_logging_macros.hpp>
 #include <rtt/Component.hpp>
 
 Identity::Identity(std::string const& name) : TaskContext(name), port_out_("out_port"), port_in_("in_port") {
-    std::cout << "Identity constructed !" << std::endl;
+    NON_RT_INFO("Identity constructed !");
 }
 
 bool Identity::configureHook() {
-    std::cout << "Identity configured !" << std::endl;
+    NON_RT_INFO("Identity configured !");
 
     this->ports()->addPort(port_in_);
     this->ports()->addPort(port_out_);
@@ -17,21 +18,19 @@ bool Identity::configureHook() {
 }
 
 bool Identity::startHook() {
-    std::cout << "Identity started !" << std::endl;
+    NON_RT_INFO("Identity started !");
     return true;
 }
 
 void Identity::updateHook() {
-    std::cout << "Identity executes updateHook !" << std::endl;
-
     // just forward the message
     if (port_in_.read(msg_) == RTT::NewData) {
         port_out_.write(msg_);
     }
 }
 
-void Identity::stopHook() { std::cout << "Identity executes stopping !" << std::endl; }
+void Identity::stopHook() { NON_RT_INFO("Identity executes stopping !"); }
 
-void Identity::cleanupHook() { std::cout << "Identity cleaning up !" << std::endl; }
+void Identity::cleanupHook() { NON_RT_INFO("Identity cleaning up !"); }
 
 ORO_CREATE_COMPONENT(Identity)

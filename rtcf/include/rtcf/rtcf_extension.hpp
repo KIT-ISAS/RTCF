@@ -3,6 +3,11 @@
 
 #include <ros/ros.h>
 
+#include <rtt/Port.hpp>
+
+#include "rtcf/rt_logging_macros.hpp"
+#include "rtcf/rt_rosconsole_logging.hpp"
+
 class RtcfExtension {
     // allow some classes access to private parameters
     // reason: public setter methods are tempting for the component-developers
@@ -15,9 +20,11 @@ class RtcfExtension {
     ros::NodeHandlePtr nh_;
     ros::NodeHandlePtr nh_private_;
 
-    inline static double frequency_;
-    inline static double period_;
-    inline static ros::Time last_timestamp_;
+    static double frequency_;
+    // static double period_;
+    static ros::Time last_timestamp_;
+
+    OCL::logging::Category* logger_;
 
   public:
     RtcfExtension() { last_timestamp_ = ros::Time(0); };
@@ -28,7 +35,17 @@ class RtcfExtension {
 
     const ros::Time& getTime() const { return last_timestamp_; }
     const double& getFrequency() const { return frequency_; }
-    const double& getPeriod() const { return period_; }
+    // const double& getPeriod() const { return period_; }
+
+    void rtLogDebug(const RTT::rt_string& message) { logger_->debug(message); }
+    void rtLogInfo(const RTT::rt_string& message) { logger_->info(message); }
+    void rtLogWarn(const RTT::rt_string& message) { logger_->warn(message); }
+    void rtLogError(const RTT::rt_string& message) { logger_->error(message); }
+    void rtLogFatal(const RTT::rt_string& message) { logger_->fatal(message); }
+
+    OCL::logging::CategoryStream rtLogStream(ros::console::Level level) {
+        return logger_->getRTStream(RtRosconsoleLogging::levelROS2RTT(level));
+    }
 };
 
 #endif /* RTCF_EXTENSION_H */
