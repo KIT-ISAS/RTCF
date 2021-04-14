@@ -44,7 +44,7 @@ void RTRunnerNode::shutdown() {
         const std::lock_guard<std::mutex> lock(mtx_);
         rt_runner_->shutdown();  // this stops the execution engine of all components
     }
-    ROS_DEBUG("Waiting for components to be unloaded...");
+    ROS_INFO("Waiting for components to be unloaded...");
     // for simplicity, use polling here
     // TODO: (optional) use conditional variable or something similar for waiting
     while (rt_runner_->getNumLoadedComponents() > 0) {

@@ -7,8 +7,11 @@
 
 #define NAME_PREFIX "ros.rtcf"  // This is here since the compiling package of this header is usually not rtcf-package.
 
+// transitions (start() and stop()) shall not be treated as active
+#define RT_ACTIVE this->isRunning() && this->getTargetState() == RTT::base::TaskCore::TaskState::Running
+
 #define NON_RT_LOG(level, name, ...)                                                           \
-    if (this->isRunning()) {                                                                   \
+    if (RT_ACTIVE) {                                                                           \
         ROS_LOG(ros::console::levels::Error, std::string(NAME_PREFIX) + "." + this->getName(), \
                 "You called a non real-time log statement in a real-time context!");           \
         throw(std::runtime_error("Non real-time log statement in real-time context."));        \
@@ -17,7 +20,7 @@
     }
 
 #define NON_RT_LOG_STREAM(level, name, args)                                                   \
-    if (this->isRunning()) {                                                                   \
+    if (RT_ACTIVE) {                                                                           \
         ROS_LOG(ros::console::levels::Error, std::string(NAME_PREFIX) + "." + this->getName(), \
                 "You called a non real-time log statement in a real-time context!");           \
         throw(std::runtime_error("Non real-time log statement in real-time context."));        \
