@@ -9,7 +9,7 @@
         <rosparam param="frequency">1.0</rosparam>
     </node>
 
-    <node name="loggin_test" pkg="rtcf" type="rt_launcher" args="rtcf_examples Logging" output="screen" />
+    <node name="logging_test" pkg="rtcf" type="rt_launcher" args="rtcf_examples Logging" output="screen" />
 
 </launch>
 

@@ -4,7 +4,7 @@
 #include <rtt/Component.hpp>
 
 ParameterHandling::ParameterHandling(std::string const& name) : TaskContext(name) {
-    std::cout << "ParameterHandling constructed !" << std::endl;
+    NON_RT_INFO("ParameterHandling constructed !");
 }
 
 bool ParameterHandling::configureHook() {
@@ -19,15 +19,15 @@ bool ParameterHandling::configureHook() {
     success &= getPrivateNodeHandle().getParam("another_private_param", another_private_param);
     success &= getNodeHandle().getParam("public_param", public_param);
 
-    std::cout << "ParameterHandling configured!" << std::endl;
-    std::cout << "another_private_param=" << another_private_param << std::endl;
-    std::cout << "public_param=" << public_param << std::endl;
+    NON_RT_INFO("ParameterHandling configured!");
+    NON_RT_INFO_STREAM("another_private_param=" << another_private_param);
+    NON_RT_INFO_STREAM("public_param=" << public_param);
 
     return true;
 }
 
 bool ParameterHandling::startHook() {
-    std::cout << "ParameterHandling started !" << std::endl;
+    NON_RT_INFO("ParameterHandling started !");
     return true;
 }
 
@@ -36,12 +36,12 @@ void ParameterHandling::updateHook() {
     ExampleParameters config_data;
     dynamic_config.getValue(config_data);
 
-    std::cout << "ParameterHandling executes updateHook with dynamic double parameter value "
-              << config_data.double_param << "!" << std::endl;
+    RT_INFO_STREAM("ParameterHandling executes updateHook with dynamic double parameter value "
+                   << config_data.double_param << "!");
 }
 
-void ParameterHandling::stopHook() { std::cout << "ParameterHandling executes stopping !" << std::endl; }
+void ParameterHandling::stopHook() { NON_RT_INFO("ParameterHandling executes stopping !"); }
 
-void ParameterHandling::cleanupHook() { std::cout << "ParameterHandling cleaning up !" << std::endl; }
+void ParameterHandling::cleanupHook() { NON_RT_INFO("ParameterHandling cleaning up !"); }
 
 ORO_CREATE_COMPONENT(ParameterHandling)

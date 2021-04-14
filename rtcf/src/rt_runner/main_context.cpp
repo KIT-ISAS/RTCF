@@ -35,7 +35,7 @@ void MainContext::updateHook() {
     RtcfExtension::last_timestamp_ = timing_analysis_.start();
 
     // this does all the heavy lifting and calls all our components in order
-    ROS_INFO("MainContext::updateHook() called");
+    // ROS_INFO("MainContext::updateHook() called");
     for (const auto& slave : slaves_) {
         slave->task_context->update();  // calls update on underlying activity
     }
@@ -50,23 +50,13 @@ void MainContext::updateHook() {
     port_iter_info_.write(info);
 }
 
-void MainContext::stopHook() {
-    ROS_INFO("MainContext::stopHook() called");
-    // std::cout << "Main Context stopping !" << std::endl;
-}
+void MainContext::stopHook() { ROS_INFO("MainContext::stopHook() called"); }
 
 void MainContext::cleanupHook() {
     ROS_INFO("MainContext::cleanUp() called");
-    // std::cout << "MainContext cleaning up !" <<std::endl;
     ROS_INFO_STREAM(timing_analysis_);
 }
 
-void MainContext::setSlaves(const RTOrder& slaves) {
-    // std::cout << "Set slaves" << std::endl;
-    slaves_ = slaves;
-}
+void MainContext::setSlaves(const RTOrder& slaves) { slaves_ = slaves; }
 
-void MainContext::clearSlaves() {
-    // std::cout << "Clear slaves" << std::endl;
-    slaves_.clear();
-}
+void MainContext::clearSlaves() { slaves_.clear(); }

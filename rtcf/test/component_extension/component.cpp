@@ -1,14 +1,13 @@
 #include "component.hpp"
 
 #include <iostream>
+#include <rtcf/rt_logging_macros.hpp>
 #include <rtt/Component.hpp>
 
-ExtensionTest::ExtensionTest(std::string const& name) : TaskContext(name) {
-    std::cout << "ExtensionTest constructed !" << std::endl;
-}
+ExtensionTest::ExtensionTest(std::string const& name) : TaskContext(name) { NON_RT_INFO("ExtensionTest constructed "); }
 
 bool ExtensionTest::configureHook() {
-    std::cout << "ExtensionTest configured !" << std::endl;
+    NON_RT_INFO("ExtensionTest configured !");
 
     // read a parameter and write it to two different locations
     std::string value = "";
@@ -21,14 +20,14 @@ bool ExtensionTest::configureHook() {
 }
 
 bool ExtensionTest::startHook() {
-    std::cout << "ExtensionTest started !" << std::endl;
+    NON_RT_INFO("ExtensionTest started !");
     return true;
 }
 
-void ExtensionTest::updateHook() { std::cout << "ExtensionTest executes updateHook !" << std::endl; }
+void ExtensionTest::updateHook() {}
 
-void ExtensionTest::stopHook() { std::cout << "ExtensionTest executes stopping !" << std::endl; }
+void ExtensionTest::stopHook() { NON_RT_INFO("ExtensionTest executes stopping !"); }
 
-void ExtensionTest::cleanupHook() { std::cout << "ExtensionTest cleaning up !" << std::endl; }
+void ExtensionTest::cleanupHook() { NON_RT_INFO("ExtensionTest cleaning up !"); }
 
 ORO_CREATE_COMPONENT(ExtensionTest)

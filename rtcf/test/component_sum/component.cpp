@@ -1,14 +1,15 @@
 #include "component.hpp"
 
 #include <iostream>
+#include <rtcf/rt_logging_macros.hpp>
 #include <rtt/Component.hpp>
 
 SumTest::SumTest(std::string const& name) : TaskContext(name), out_("out"), in1_("in1"), in2_("in2") {
-    std::cout << "SumTest constructed !" << std::endl;
+    NON_RT_INFO("SumTest constructed !");
 }
 
 bool SumTest::configureHook() {
-    std::cout << "SumTest configured !" << std::endl;
+    NON_RT_INFO("SumTest configured !");
 
     this->ports()->addPort(out_);
     this->ports()->addPort(in1_);
@@ -17,13 +18,11 @@ bool SumTest::configureHook() {
 }
 
 bool SumTest::startHook() {
-    std::cout << "SumTest started !" << std::endl;
+    NON_RT_INFO("SumTest started !");
     return true;
 }
 
 void SumTest::updateHook() {
-    std::cout << "SumTest executes updateHook !" << std::endl;
-
     // read will copy old data, which is fine
     bool data_avail = true;
     data_avail &= (in1_.read(in_msg_1_) >= RTT::OldData);
@@ -35,8 +34,8 @@ void SumTest::updateHook() {
     }
 }
 
-void SumTest::stopHook() { std::cout << "SumTest executes stopping !" << std::endl; }
+void SumTest::stopHook() { NON_RT_INFO("SumTest executes stopping !"); }
 
-void SumTest::cleanupHook() { std::cout << "SumTest cleaning up !" << std::endl; }
+void SumTest::cleanupHook() { NON_RT_INFO("SumTest cleaning up !"); }
 
 ORO_CREATE_COMPONENT(SumTest)

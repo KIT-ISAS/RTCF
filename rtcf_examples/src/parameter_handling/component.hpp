@@ -33,7 +33,7 @@ class ParameterHandling : public RTT::TaskContext, public RtcfExtension {
             double_param(config.double_param),
             bool_param(config.bool_param),
             size(config.size) {}
-        ExampleParameters(){}
+        ExampleParameters() {}
     };
     // this prepares the dynamic reconfigure server
     RTDynamicReconfigure<ExampleParameters> dynamic_config;

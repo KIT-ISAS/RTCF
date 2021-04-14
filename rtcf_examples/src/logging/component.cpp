@@ -3,7 +3,7 @@
 #include <iostream>
 #include <rtt/Component.hpp>
 
-Logging::Logging(std::string const& name) : TaskContext(name) { std::cout << "Logging constructed !" << std::endl; }
+Logging::Logging(std::string const& name) : TaskContext(name) {}
 
 bool Logging::configureHook() {
     // non real-time logging
