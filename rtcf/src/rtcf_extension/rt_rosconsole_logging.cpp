@@ -5,6 +5,15 @@
 
 #include <map>
 
+std::shared_ptr<RtRosconsoleLogging> RtRosconsoleLogging::instance;
+
+RtRosconsoleLogging& RtRosconsoleLogging::getInstance(){
+    if(!instance){
+        instance.reset(new RtRosconsoleLogging());
+    }
+    return *instance;
+}
+
 RtRosconsoleLogging::RtRosconsoleLogging() : TaskContext("logger") {
     rt_memory_pool_.initialize(MEMORY_POOL_SIZE);
 

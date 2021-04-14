@@ -1,10 +1,3 @@
-# OROCOS specific
-find_package(OROCOS-RTT REQUIRED)
-find_package(OROCOS-OCL REQUIRED)
-include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
-add_definitions(-DORO_MEMORY_POOL -DORO_BUILD_RTALLOC)
-orocos_use_package(ocl-logging)
-
 # this will make the executable
 add_executable(rt_runner 
   rt_runner_node.cpp

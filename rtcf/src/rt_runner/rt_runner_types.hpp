@@ -1,24 +1,26 @@
 #ifndef RT_RUNNER_TYPES_H
 #define RT_RUNNER_TYPES_H
 
+#include <ros/node_handle.h>
+#include <ros/ros.h>
+
 #include <boost/functional/forward_adapter.hpp>
 #include <memory>
 #include <regex>
+#include <rtcf/rtcf_extension.hpp>
+#include <rtcf/rtcf_types.hpp>
 #include <rtt/Activity.hpp>
+#include <rtt/DataFlowInterface.hpp>
+#include <rtt/InputPort.hpp>
 #include <rtt/OperationCaller.hpp>
 #include <rtt/TaskContext.hpp>
+#include <rtt/base/InputPortInterface.hpp>
+#include <rtt/base/PortInterface.hpp>
+#include <rtt/extras/SlaveActivity.hpp>
 #include <string>
 #include <vector>
 
-#include "ros/node_handle.h"
-#include "ros/ros.h"
-#include "rtcf/rtcf_extension.hpp"
-#include "rtcf/rtcf_types.hpp"
-#include "rtt/DataFlowInterface.hpp"
-#include "rtt/InputPort.hpp"
-#include "rtt/base/InputPortInterface.hpp"
-#include "rtt/base/PortInterface.hpp"
-#include "rtt/extras/SlaveActivity.hpp"
+#include "rtcf/rt_rosconsole_logging.hpp"
 
 struct PortContainer {
     PortContainer(RTT::base::PortInterface* port) : port(port) {
@@ -34,10 +36,11 @@ struct PortContainer {
 };
 
 struct ComponentContainer {
-    ComponentContainer(const LoadAttributes& attributes, RTT::TaskContext* task_context)
-        : attributes(attributes), task_context(task_context) {
+    ComponentContainer(const LoadAttributes& attributes, RTT::TaskContext* task_context) :
+        attributes(attributes), task_context(task_context) {
         handleIgnoredTopicsRegex();
         handleNodeHandle();
+        handleLogger();
     }
 
     // externally provided information
@@ -80,7 +83,16 @@ struct ComponentContainer {
             task_handle->nh_         = node_handle;
             task_handle->nh_private_ = node_handle_private;
         }
-    };
+    }
+
+    void handleLogger() {
+        // create a logger for the component when it uses the extension
+        if (auto task_handle = dynamic_cast<RtcfExtension*>(task_context)) {
+            std::string logger_name = ROSCONSOLE_DEFAULT_NAME"." + attributes.name;
+            task_handle->logger_    = RtRosconsoleLogging::getInstance().getLoggerInstance(logger_name);
+            assert(task_handle->logger_);
+        }
+    }
 
     void handlePorts() {
         for (RTT::base::PortInterface* port : task_context->ports()->getPorts()) {

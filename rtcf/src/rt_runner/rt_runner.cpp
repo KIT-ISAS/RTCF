@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <rtt_ros/rtt_ros.h>
 
+#include "rtcf/rt_rosconsole_logging.hpp"
 #include "rtcf/rtcf_extension.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
@@ -22,11 +23,12 @@ RTRunner::RTRunner() :
 void RTRunner::configure(const Settings& settings) {
     settings_                 = settings;
     RtcfExtension::frequency_ = settings_.frequency;
-    RtcfExtension::period_    = 1.0 / settings_.frequency;
+    // period is made available thorugh TaskContext::getPeriod()
+    // RtcfExtension::period_    = 1.0 / settings_.frequency;
 
     // configure logging (before any spinner is started to not miss any service callbacks)
-    rt_logger_.configure();
-    rt_logger_.start();
+    RtRosconsoleLogging::getInstance().configure();
+    RtRosconsoleLogging::getInstance().start();
 
     // create and configure the main worker thread
     RTT::base::ActivityInterface* main_activity = createMainActivity();

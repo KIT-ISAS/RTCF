@@ -10,7 +10,6 @@
 
 #include "main_context.hpp"
 #include "rt_runner_types.hpp"
-#include "rtcf/rt_rosconsole_logging.hpp"
 #include "rtcf/rtcf_types.hpp"
 
 class RTRunner {
@@ -82,8 +81,6 @@ class RTRunner {
     ComponentSuccessorMap component_successors_;
 
     std::atomic<size_t> num_loaded_components_;
-
-    RtRosconsoleLogging rt_logger_;
 
   public:
     RTRunner();

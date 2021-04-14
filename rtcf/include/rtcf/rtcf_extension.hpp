@@ -3,6 +3,10 @@
 
 #include <ros/ros.h>
 
+#include <rtt/Port.hpp>
+
+#include "rtcf/rt_rosconsole_logging.hpp"
+
 class RtcfExtension {
     // allow some classes access to private parameters
     // reason: public setter methods are tempting for the component-developers
