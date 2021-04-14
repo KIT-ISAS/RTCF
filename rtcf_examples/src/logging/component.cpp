@@ -3,7 +3,10 @@
 #include <iostream>
 #include <rtt/Component.hpp>
 
-Logging::Logging(std::string const& name) : TaskContext(name) {}
+Logging::Logging(std::string const& name) : TaskContext(name) {
+    NON_RT_INFO("Non-RT logging works in constructor.");
+    // RT_INFO("RT logging does NOT work in constructor.");
+}
 
 bool Logging::configureHook() {
     // non real-time logging
@@ -35,6 +38,10 @@ void Logging::updateHook() {
     RT_ERROR_STREAM("Test RT error stream with number " << 12345);
     RT_FATAL("Test RT fatal");
     RT_FATAL_STREAM("Test RT fatal stream with number " << 12345);
+
+    // illegal things (will crash the program on purpose)
+    // NON_RT_INFO("Boom!");
+    // NON_RT_INFO_STREAM("Boom with stream!");
 }
 
 void Logging::stopHook() {}

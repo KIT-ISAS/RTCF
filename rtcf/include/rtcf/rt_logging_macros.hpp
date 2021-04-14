@@ -3,7 +3,27 @@
 
 #include <ros/console.h>
 
+#include <stdexcept>
+
 #define NAME_PREFIX "ros.rtcf"  // This is here since the compiling package of this header is usually not rtcf-package.
+
+#define NON_RT_LOG(level, name, ...)                                                           \
+    if (this->isRunning()) {                                                                   \
+        ROS_LOG(ros::console::levels::Error, std::string(NAME_PREFIX) + "." + this->getName(), \
+                "You called a non real-time log statement in a real-time context!");           \
+        throw(std::runtime_error("Non real-time log statement in real-time context."));        \
+    } else {                                                                                   \
+        ROS_LOG(level, name, __VA_ARGS__);                                                     \
+    }
+
+#define NON_RT_LOG_STREAM(level, name, args)                                                   \
+    if (this->isRunning()) {                                                                   \
+        ROS_LOG(ros::console::levels::Error, std::string(NAME_PREFIX) + "." + this->getName(), \
+                "You called a non real-time log statement in a real-time context!");           \
+        throw(std::runtime_error("Non real-time log statement in real-time context."));        \
+    } else {                                                                                   \
+        ROS_LOG_STREAM(level, name, args);                                                     \
+    }
 
 /**
  * @brief Macros for normal logging (NOT real-time safe).
@@ -13,20 +33,20 @@
  * NEVER EVER CALL THESE IN A REAL-TIME CRITICAL CONTEXT!
  */
 // clang-format off
-#define NON_RT_DEBUG(...)           ROS_LOG(ros::console::levels::Debug, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
-#define NON_RT_DEBUG_STREAM(args)   ROS_LOG_STREAM(ros::console::levels::Debug, std::string(NAME_PREFIX) + "." + this->getName(), args)
+#define NON_RT_DEBUG(...)           NON_RT_LOG(ros::console::levels::Debug, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
+#define NON_RT_DEBUG_STREAM(args)   NON_RT_LOG_STREAM(ros::console::levels::Debug, std::string(NAME_PREFIX) + "." + this->getName(), args)
 
-#define NON_RT_INFO(...)            ROS_LOG(ros::console::levels::Info, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
-#define NON_RT_INFO_STREAM(args)    ROS_LOG_STREAM(ros::console::levels::Info, std::string(NAME_PREFIX) + "." + this->getName(), args)
+#define NON_RT_INFO(...)            NON_RT_LOG(ros::console::levels::Info, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
+#define NON_RT_INFO_STREAM(args)    NON_RT_LOG_STREAM(ros::console::levels::Info, std::string(NAME_PREFIX) + "." + this->getName(), args)
 
-#define NON_RT_WARN(...)            ROS_LOG(ros::console::levels::Warn, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
-#define NON_RT_WARN_STREAM(args)    ROS_LOG_STREAM(ros::console::levels::Warn, std::string(NAME_PREFIX) + "." + this->getName(), args)
+#define NON_RT_WARN(...)            NON_RT_LOG(ros::console::levels::Warn, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
+#define NON_RT_WARN_STREAM(args)    NON_RT_LOG_STREAM(ros::console::levels::Warn, std::string(NAME_PREFIX) + "." + this->getName(), args)
 
-#define NON_RT_ERROR(...)           ROS_LOG(ros::console::levels::Error, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
-#define NON_RT_ERROR_STREAM(args)   ROS_LOG_STREAM(ros::console::levels::Error, std::string(NAME_PREFIX) + "." + this->getName(), args)
+#define NON_RT_ERROR(...)           NON_RT_LOG(ros::console::levels::Error, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
+#define NON_RT_ERROR_STREAM(args)   NON_RT_LOG_STREAM(ros::console::levels::Error, std::string(NAME_PREFIX) + "." + this->getName(), args)
 
-#define NON_RT_FATAL(...)           ROS_LOG(ros::console::levels::Fatal, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
-#define NON_RT_FATAL_STREAM(args)   ROS_LOG_STREAM(ros::console::levels::Fatal, std::string(NAME_PREFIX) + "." + this->getName(), args)
+#define NON_RT_FATAL(...)           NON_RT_LOG(ros::console::levels::Fatal, std::string(NAME_PREFIX) + "." + this->getName(), __VA_ARGS__)
+#define NON_RT_FATAL_STREAM(args)   NON_RT_LOG_STREAM(ros::console::levels::Fatal, std::string(NAME_PREFIX) + "." + this->getName(), args)
 // clang-format on
 
 /**
