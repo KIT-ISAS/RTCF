@@ -29,7 +29,8 @@ bool RtRosconsoleLogging::configureHook() {
     ros::NodeHandle nh_private("~");
     ros::ServiceManager::instance()->unadvertiseService(nh_private.resolveName("set_logger_level"));
     // replace it with new service handler
-    logger_level_service_ = nh_private.advertiseService("set_logger_level", &RtRosconsoleLogging::setLoggerLevelCallback);
+    logger_level_service_ =
+        nh_private.advertiseService("set_logger_level", &RtRosconsoleLogging::setLoggerLevelCallback);
 
     // fetch all existing loggers from rosconsole and setup the corresponding real-time loggers
     std::map<std::string, ros::console::levels::Level> existing_loggers;
@@ -120,7 +121,8 @@ bool RtRosconsoleLogging::setLoggerLevelCallback(roscpp::SetLoggerLevel::Request
 
     // This is the extended part, where the real-time logger is changed
     success &= RtRosconsoleLogging::setRTLoggerLevel(req.logger, level);
-    ROS_INFO("Logger changed via service call!");
+
+    // ROS_INFO("Logger changed via service call!");
 
     return success;
 }

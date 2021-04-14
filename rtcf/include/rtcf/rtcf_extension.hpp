@@ -5,6 +5,7 @@
 
 #include <rtt/Port.hpp>
 
+#include "rtcf/rt_logging_macros.hpp"
 #include "rtcf/rt_rosconsole_logging.hpp"
 
 class RtcfExtension {
@@ -36,14 +37,14 @@ class RtcfExtension {
     const double& getFrequency() const { return frequency_; }
     // const double& getPeriod() const { return period_; }
 
-    void RtLogDebug(const RTT::rt_string& message) { logger_->debug(message); }
-    void RtLogInfo(const RTT::rt_string& message) { logger_->info(message); }
-    void RtLogWarn(const RTT::rt_string& message) { logger_->warn(message); }
-    void RtLogError(const RTT::rt_string& message) { logger_->error(message); }
-    void RtLogFatal(const RTT::rt_string& message) { logger_->fatal(message); }
-    
-    OCL::logging::CategoryStream RtLogStream(ros::console::Level level){
-          return logger_->getRTStream(RtRosconsoleLogging::levelROS2RTT(level));
+    void rtLogDebug(const RTT::rt_string& message) { logger_->debug(message); }
+    void rtLogInfo(const RTT::rt_string& message) { logger_->info(message); }
+    void rtLogWarn(const RTT::rt_string& message) { logger_->warn(message); }
+    void rtLogError(const RTT::rt_string& message) { logger_->error(message); }
+    void rtLogFatal(const RTT::rt_string& message) { logger_->fatal(message); }
+
+    OCL::logging::CategoryStream rtLogStream(ros::console::Level level) {
+        return logger_->getRTStream(RtRosconsoleLogging::levelROS2RTT(level));
     }
 };
 
