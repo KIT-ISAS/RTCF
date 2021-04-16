@@ -1,44 +1,6 @@
 # Real-Time Control Framework
 
 The Real-Time Control Framework (RTCF) provides an easy way of developing modular and real-time safe controller architectures that can be seamlessly integrated within a Robot Operating System (ROS) environment. Minimum learning effort is required for users that are familiar with ROS.
-
-
-<!-- TABLE OF CONTENTS -->
-<details open="open">
-  <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
-  <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Built and Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a>
-    <ul>
-        <li><a href="#components">Components</a></li>
-        <li><a href="#deplyong">Deploying</a></li>
-        <li><a href="#real-time-safe-code">Real-Time Safe Code</a></li>
-        <li><a href="#advanced-features">Advanced Features</a>
-        <ul>
-          <li><a href="#custom-message-packages">Custom Messages Packages</a></li>
-          <li><a href="#parameter-handling">Parameter Handling</a></li>
-          <li><a href="#dynamic-reconfigure">Dynamic Reconfigure</a></li>
-          <li><a href="#logging">Logging</a></li>
-          <li><a href="#runtime-analysis">Runtime Analysis</a></li>
-          <li><a href="#runtime-analysis">Timestamps</a></li>
-          <li><a href="#usage-in-simulation">Usage in Simulations</a></li>
-        </ul>
-        </li>
-    </ul>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgements">Acknowledgements</a></li>
-  </ol>
-</details>
-
 ## About The Project
 
 In recent years, ROS evolved to one of the de-facto standards in robotics research. Although control systems are inherent part in any robotic application, their implementation in ROS is somewhat limited due to the concept of nodes running in parallel. In the past, several attempts have been made to mitigate those issues. A very popular among them is *ros_control*. However, this library has some shortcomings, mainly including missing modularity and a steep learning curve as well.
@@ -385,7 +347,19 @@ Both logging styles are fully compatible with *rosconsole*, including *rqt_logge
 
 #### Runtime Analysis
 
-#### Timestamps
+To monitor the performance of the controllers, it is vital to measure the calculation time as well as the jitter of the `updateHook()`-invocations. For this reason, the *rt_runner* publishes a timestamp of the update invocation time as well as the calculation time on the topic `/rt_runner/iteration_info` after the completion of every iteration.
+
+Additionally, some timing statistics are printed to the console each time the control-loop is stopped.
+
+#### Miscellaneous 
+
+Some controllers might be interested in information about the current execution cycle (e.g., for stamping messages or for scaling the gains of a PID controller). To serve these needs, the component-class can inherit from the `RtcfExtension`-class, which is included using `rtcf/rtcf_extension.hpp`. This gives access to the following methods:
+
+```cpp
+this->getTime();
+this->getFrequency();
+this->getPeriod();
+```
 
 #### Usage in Simulations
 
