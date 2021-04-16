@@ -265,6 +265,20 @@ Note, that the main difference to a standard launch-file is the necessity for th
 
 ### Real-Time Safe Code
 
+Writing real-time safe code is not black magic, but it requires some disclipline. Here are some things that should NEVER be done in a real-time code section:
+
+- Usual logging or anything that directly prints to the console (`std::cout`, `ROS_INFO` and friends).
+- Writing/reading files.
+- Allocations. This includes data types where the allocation is not obvious. Pre-allocations before real-timeness is required are fine.
+  - `std::string()`
+  - `std::vector()`
+  - `std::map()`
+  - `new`
+  - ROS message types with variable field size
+  - ...
+
+Note, that real-time safe does not necessarily imply efficient or fast. It just means that the code execution does not block for in indefinite time because it is waiting for something else.
+
 ### Advanced Features
 
 The RTCF brings ships with many more useful features.
@@ -296,9 +310,78 @@ In your `CMakeLists.txt` add `rtt_your_custom_msgs` to your `find_package()`-com
 
 #### Parameter Handling
 
+ROS parameters can be used in a RTCF component using the same API as in ROS nodes. Therefore, the component class must include `rtcf/rtcf_extension.hpp` and inherit from `RtcfExtension`. Then, the methods `getPrivateNodeHandle()` and `getNodeHandle()` can be used to obtain a private node handle or a node handle in the node's namespace. Refer to [rtcf_examples/src/parameter_handling/](rtcf_examples/src/parameter_handling/) for an example.
+
+Do NOT use this in `updateHook()` as it will break real-timeness. If reading in parameters during showtime is really desired, refer to the next section.
+
 #### Dynamic Reconfigure
 
+The RTCF wraps *dynamic_reconfigure* to allow components that can be adjusted during runtime, e.g. for dynamically tuning controller parameters. To implement this in a custom component, a [dynamic_reconfigure-config-file](http://wiki.ros.org/dynamic_reconfigure/Tutorials) must be created and a struct with a conversion function must be provided. The struct has the following form:
+
+```cpp
+struct ExampleParameters {
+    using ConfigType = rtcf_examples::ExampleConfig;
+    // list all fields of the .cfg-file
+    int int_param;
+    double double_param;
+    bool bool_param;
+    int size;
+
+    // converting constructor
+    ExampleParameters(const ConfigType& config) :
+        int_param(config.int_param),
+        double_param(config.double_param),
+        bool_param(config.bool_param),
+        size(config.size) {}
+    // standard constructor
+    ExampleParameters() {}
+};
+```
+
+If the header `rtcf/rt_dynamic_reconfigure.hpp` is included and the component class has a member such as `RTDynamicReconfigure<ExampleParameters> dynamic_config;`, the dynamic_reconfigure backend is set up with `dynamic_config.configure(getPrivateNodeHandle());` in the `configureHook()`. After that, the current parameters can be queried real-time safe using:
+
+```cpp
+ExampleParameters config_data;
+dynamic_config.getValue(config_data);
+```
+
+A complete example is given in [rtcf_examples/src/parameter_handling/](rtcf_examples/src/parameter_handling/).
+
 #### Logging
+
+The RTCF provides two types of logging statements in [rt_logging_macros.hpp](rtcf/include/rtcf/rt_logging_macros.hpp). The use of `ROS_*`-style logging is discouraged as it breaks `rqt_logger_level` as well as real-timeness. For logging in non real-time sections, following macros can be used:
+
+```cpp
+NON_RT_DEBUG(...);
+NON_RT_DEBUG_STREAM(...);
+NON_RT_INFO(...);
+NON_RT_INFO_STREAM(...);
+NON_RT_WARN(...);
+NON_RT_WARN_STREAM(...);
+NON_RT_ERROR(...);
+NON_RT_ERROR_STREAM(...);
+NON_RT_FATAL(...);
+NON_RT_FATAL_STREAM(...);
+```
+
+For logging in real-time sections, following macros can be used:
+
+```cpp
+RT_DEBUG(...);
+RT_DEBUG_STREAM(...);
+RT_INFO(...);
+RT_INFO_STREAM(...);
+RT_WARN(...);
+RT_WARN_STREAM(...);
+RT_ERROR(...);
+RT_ERROR_STREAM(...);
+RT_FATAL(...);
+RT_FATAL_STREAM(...);
+```
+
+Note, this only means that your code will still have deterministic execution times, but there is still a significant overhead for logging. Furthermore, real-time log statements can be dropped if necessary resources are not available when the logging statement is called.
+
+Both logging styles are fully compatible with *rosconsole*, including *rqt_logger_level*, `/rosout` ,as well as `ROSCONSOLE_CONFIG_FILE`. For a complete example, refer to [rtcf_examples/src/logging/](rtcf_examples/src/logging/)
 
 #### Runtime Analysis
 
@@ -338,4 +421,7 @@ Project Link: [https://github.com/KIT-ISAS/RTCF](https://github.com/KIT-ISAS/RTC
 ## Acknowledgements
 
 - Funded by: [Intelligent Sensor-Actuator-Systems Laboratory (ISAS)](https://isas.iar.kit.edu/), Karlsruhe Institue of Technology (KIT)
+- OROCOS: [https://docs.orocos.org/](https://docs.orocos.org/)
+- rtt_ros_integration: [https://github.com/orocos/rtt_ros_integration](https://github.com/orocos/rtt_ros_integration)
+- ROS: [https://www.ros.org/](https://www.ros.org/)
 - Readme Template: [https://github.com/othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template)
