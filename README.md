@@ -1,9 +1,10 @@
 # Real-Time Control Framework
 
 The Real-Time Control Framework (RTCF) provides an easy way of developing modular and real-time safe controller architectures that can be seamlessly integrated within a Robot Operating System (ROS) environment. Minimum learning effort is required for users that are familiar with ROS.
-## About The Project
 
-In recent years, ROS evolved to one of the de-facto standards in robotics research. Although control systems are inherent part in any robotic application, their implementation in ROS is somewhat limited due to the concept of nodes running in parallel. In the past, several attempts have been made to mitigate those issues. A very popular among them is *ros_control*. However, this library has some shortcomings, mainly including missing modularity and a steep learning curve as well.
+## About the Project
+
+In recent years, ROS evolved to one of the de-facto standards in robotics research. Although control systems are an inherent part of any robotic application, their implementation in ROS is somewhat limited due to the concept of nodes running in parallel. In the past, several attempts have been made to mitigate those issues. A very popular among them is *ros_control*. However, this library has some shortcomings, mainly including missing modularity and a steep learning curve as well.
 
 For this reason, we developed a new software package based on *OROCOS* and *rtt_ros_integration* that we call the *Real-Time Control Framework* (RTCF). The features include:
 
@@ -28,7 +29,7 @@ Currently, RTCF is developed in the following environment:
 
 Chances are good that the RTCF also works on ROS Noetic and ROS Kinetic, although this is not tested.
 
-For real-time execution, the [PREEMPT_RT kernel patch](https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/preemptrt_setup) is used. Please note, that the real-time performance of your controller will heavily depend on the proper setup of PREEMPT_RT. However, your controllers can also run on a non real-time system if reduced performance (e.g., jitter, missed deadlines) is acceptable.
+For real-time execution, the [PREEMPT_RT kernel patch](https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/preemptrt_setup) is used. Please note, that the real-time performance of your controller will heavily depend on the proper setup of PREEMPT_RT. However, your controllers can also run on a non-real-time system if reduced performance (e.g., jitter, missed deadlines) is acceptable.
 
 ### Installation
 
@@ -40,23 +41,23 @@ The main dependencies of this project are *OROCOS* and *rtt_ros_integration*. Fo
 
 If you are worried about typing your password, just have a look at the script file. `sudo` is only required for installing missing packages. It takes 5-30 minutes to build everything. Don't forget to follow the instruction in the last output line of the script.
 
-Now, the RTCF can be built. In order to do this, this repo must be cloned into your project's ROS workspace:
+Now, the RTCF can be built. To do this, this repo must be cloned into your project's ROS workspace:
 
 ```bash
 git clone https://github.com/KIT-ISAS/RTCF path_to_project_workspace/src/RTCF
 ```
 
-If everything is setup correct, your preferred build command for catkin packages (`catkin_make` or `catkin build`) will now build RTCF like any other ROS package.
+If everything is set up correctly, your preferred build command for catkin packages (`catkin_make` or `catkin build`) will now build RTCF like any other ROS package.
 
 ## Usage
 
-The RTCF is designed to be used as simple as possible by ROS users. However, some new terminology appears due to the usage of OROCOS behind the scenes. Here is some translation guide from OROCOS to ROS:
+The RTCF is designed to be used as simply as possible by ROS users. However, some new terminology appears due to the usage of OROCOS behind the scenes. Here is some translation guide from OROCOS to ROS:
 
 - component: node or nodelet
 - input port: subscriber
 - output port: publisher
 
-In the following the basic concepts of the RTCF, that are required for component development and deployment are required. Furthermore, it is highly recommended to have a look at the code in the [rtcf_examples-package](rtcf_examples/).
+In the following, the basic concepts of the RTCF, that are required for component development and deployment are required. Furthermore, it is highly recommended to have a look at the code in the [rtcf_examples-package](rtcf_examples/).
 
 ### Components
 
@@ -182,7 +183,7 @@ This component simply reads a message and outputs it again. To accomplish that, 
 
 ### Deploying
 
-In the previous chapter the creation of a simple component was presented. Now these components need to be loaded at runtime. Here, The RTCF follows an approach very similar to *nodelets* from ROS, where multiple components (nodelets) are loaded into a single process. In contrast to nodelets, the RTCF goes further and executes all components in a single thread. This allows almost zero overhead and very high controller frequencies. The necessary resolution of dependencies arising from data exchange between components is done automatically by the RTCF as far as possible.
+In the previous chapter, the creation of a simple component was presented. Now, these components need to be loaded at runtime. Here, The RTCF follows an approach very similar to *nodelets* from ROS, where multiple components (nodelets) are loaded into a single process. In contrast to nodelets, the RTCF goes further and executes all components in a single thread. This allows almost zero overhead and very high controller frequencies. The necessary resolution of dependencies arising from data exchange between components is done automatically by the RTCF as far as possible.
 
 The launch-file for the previous example looks like this:
 
@@ -208,14 +209,14 @@ The launch-file for the previous example looks like this:
 </launch>
 ```
 
-The fist `node` tag creates a so called *rt_runner*, which is responsible for executing and organizing all components. It has several settings that can be given as parameters:
+The first `node` tag creates a so-called *rt_runner*, which is responsible for executing and organizing all components. It has several settings that can be given as parameters:
 
 - `frequency`: The control-loop frequency in Hz.
 - `ros_mapping_whitelist`: A regular expression for connections between components that shall be linked to a ROS topic with the same name.
 - `ros_mapping_blacklist`: A regular expression for connections between components that shall be excluded from linking to ROS topics.
 - `mode`: The mode of the runner:
   - `wait_for_components`: Do not start the control-loop until the expected number of components in `num_components_expected` is reached.
-  - `no_wait`: Start the control-loop immediately after a component is loaded. When additional components are loaded, the control-loop is paused briefly.
+  - `no_wait`: Start the control loop immediately after a component is loaded. When additional components are loaded, the control loop is paused briefly.
   - `wait_for_trigger`: The control loop does not start and stop automatically, but it is triggered using the services provided under `/rt_runner/activate_rt_loop` and `/rt_runner/deactivate_rt_loop`.
 
 The other `node` tags of type `rt_launcher` create an instance of the component `SimpleComponent`from the package `simple_component`. Therefore, the `rt_launcher` program, which has the following options, is used:
@@ -227,11 +228,11 @@ Note, that the main difference to a standard launch-file is the necessity for th
 
 ### Real-Time Safe Code
 
-Writing real-time safe code is not black magic, but it requires some disclipline. Here are some things that should NEVER be done in a real-time code section:
+Writing real-time safe code is not black magic, but it requires some discipline. Here are some things that should NEVER be done in a real-time code section:
 
 - Usual logging or anything that directly prints to the console (`std::cout`, `ROS_INFO` and friends).
 - Writing/reading files.
-- Allocations. This includes data types where the allocation is not obvious. Pre-allocations before real-timeness is required are fine.
+- Allocations. This includes data types where the allocation is not obvious. Pre-allocations, before real-timeness is required, are fine.
   - `std::string()`
   - `std::vector()`
   - `std::map()`
@@ -239,7 +240,7 @@ Writing real-time safe code is not black magic, but it requires some disclipline
   - ROS message types with variable field size
   - ...
 
-Note, that real-time safe does not necessarily imply efficient or fast. It just means that the code execution does not block for in indefinite time because it is waiting for something else.
+Note, that the attribute real-time safe does not necessarily imply efficient or fast. It just means that the code execution does not block for an indefinite time because it is waiting for something else.
 
 ### Advanced Features
 
@@ -249,7 +250,7 @@ The RTCF brings ships with many more useful features.
 
 Custom ROS message packages can be easily used within the RTCF, thanks to [rtt_roscomm](https://github.com/orocos/rtt_ros_integration/tree/toolchain-2.9/rtt_roscomm#making-a-packages-ros-msg-and-srv-types-available).
 
-To generate such a RTCF-compatible message package, execute the following command in your workspace's `src`-directory:
+To generate such an RTCF-compatible message package, execute the following command in your workspace's `src`-directory:
 
 ```bash
 rosrun rtt_roscomm create_rtt_msgs your_custom_msgs
@@ -311,7 +312,7 @@ A complete example is given in [rtcf_examples/src/parameter_handling/](rtcf_exam
 
 #### Logging
 
-The RTCF provides two types of logging statements in [rt_logging_macros.hpp](rtcf/include/rtcf/rt_logging_macros.hpp). The use of `ROS_*`-style logging is discouraged as it breaks `rqt_logger_level` as well as real-timeness. For logging in non real-time sections, following macros can be used:
+The RTCF provides two types of logging statements in [rt_logging_macros.hpp](rtcf/include/rtcf/rt_logging_macros.hpp). The use of `ROS_*`-style logging is discouraged as it breaks `rqt_logger_level` as well as real-timeness. For logging in non-real-time sections, following macros can be used:
 
 ```cpp
 NON_RT_DEBUG(...);
@@ -349,7 +350,7 @@ Both logging styles are fully compatible with *rosconsole*, including *rqt_logge
 
 To monitor the performance of the controllers, it is vital to measure the calculation time as well as the jitter of the `updateHook()`-invocations. For this reason, the *rt_runner* publishes a timestamp of the update invocation time as well as the calculation time on the topic `/rt_runner/iteration_info` after the completion of every iteration.
 
-Additionally, some timing statistics are printed to the console each time the control-loop is stopped.
+Additionally, some timing statistics are printed to the console each time the control loop is stopped.
 
 #### Miscellaneous 
 
@@ -365,13 +366,13 @@ this->getPeriod();
 
 Code that can be used in simulation as well as on real hardware is always preferred. For this reason, the RTCF implements the `/use_sim_time`-parameter that is used in ROS.
 
-Normally, the RTCF uses `CLOCK_MONOTONIC` to perform its wait and timing operations. If `/use_sim_time` is set to true, the `/clock`-topic is used as time source.
+Normally, the RTCF uses `CLOCK_MONOTONIC` to perform its wait and timing operations. If `/use_sim_time` is set to true, the `/clock`-topic is used as a time source.
 
-Due to the implementation of the underlying `rtt_rosclock`-library, care must be taken, when choosing the clock frequency: The control-loop will only wake up when the control period has expired and a new clock tick arrives. This means, a clock that runs slightly slower than the control frequency will result in a slightly reduced control frequency. However, a clock that runs slightly faster than the control frequency will almost half the resulting control frequency! For this reason, it is ideal if the clock frequency is much higher than the control frequency.
+Due to the implementation of the underlying `rtt_rosclock`-library, care must be taken, when choosing the clock frequency: The control loop will only wake up when the control period has expired and a new clock tick arrives. This means a clock that runs slightly slower than the control frequency will result in a slightly reduced control frequency. However, a clock that runs slightly faster than the control frequency will almost half the resulting control frequency! For this reason, it is ideal if the clock frequency is much higher than the control frequency.
 
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are what makes the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 1. Fork the Project
 1. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -379,7 +380,7 @@ Contributions are what make the open source community such an amazing place to b
 1. Push to the Branch (`git push origin feature/AmazingFeature`)
 1. Open a Pull Request
 
-Also feel free to open an issue at any time.
+Also, feel free to open an issue at any time.
 
 ## License
 
