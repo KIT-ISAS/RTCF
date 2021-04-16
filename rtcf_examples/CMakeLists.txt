@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 #######################
 ## Actual components ##
 #######################
+include_directories(${catkin_INCLUDE_DIRS})
 add_subdirectory(src/bare_minimum)
 add_subdirectory(src/identity)
 add_subdirectory(src/mimo)
