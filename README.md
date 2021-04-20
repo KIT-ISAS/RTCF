@@ -219,6 +219,9 @@ The first `node` tag creates a so-called *rt_runner*, which is responsible for e
   - `wait_for_components`: Do not start the control loop until the expected number of components in `num_components_expected` is reached.
   - `no_wait`: Start the control loop immediately after the first component is loaded. When additional components are loaded, the control loop is paused briefly.
   - `wait_for_trigger`: The control loop does not start and stop automatically, but it is triggered using the services provided under `/rt_runner/activate_rt_loop` and `/rt_runner/deactivate_rt_loop`.
+- `wait_policy`: The policy of the wait-command used in the real-time loop. The default value is `absolute`. This option is ignored in simulation mode (parameter `/use_sim_time=True`).
+  - `absolute`: Wait, so that the time between each wake-up corresponds to the cycle period. If the runtime of the components exceeds the cycle period, the wait-command will be skipped until all missed wake-up times are caught up.
+  - `relative`: Wait for the cycle period after the execution of all components. If the runtime of the components exceeds the cycle period, no catching up takes place.
 
 The other `node` tags of type `rt_launcher` create an instance of the component `SimpleComponent`from the package `simple_component`. Therefore, the `rt_launcher` program is used with the following options:
 

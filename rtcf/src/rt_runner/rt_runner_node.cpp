@@ -106,6 +106,17 @@ bool RTRunnerNode::loadROSParameters() {
     }
     settings_.mode = mode;
 
+    // get wait policy
+    std::string wait_policy_str = node_handle_.param("wait_policy", std::string("absolute"));
+    boost::algorithm::to_lower(wait_policy_str);
+    RTRunner::WaitPolicy policy;
+    policy = RTRunner::string2WaitPolicy(wait_policy_str);
+    if (policy == RTRunner::WaitPolicy::UNKNOWN) {
+        ROS_ERROR("Unknown wait policy specified");
+        return false;
+    }
+    settings_.wait_policy = policy;
+
     // get number of expected components if mode is WAIT_FOR_COMPONENT
     if (settings_.mode == RTRunner::Mode::WAIT_FOR_COMPONENTS) {
         if (node_handle_.hasParam("num_components_expected")) {

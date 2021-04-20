@@ -59,7 +59,10 @@ RTT::base::ActivityInterface* RTRunner::createMainActivity() {
     RTT::base::ActivityInterface* main_activity;
     if (!settings_.is_simulation) {
         // configure thread for realtimeness
-        main_activity = new RTT::extras::PeriodicActivity(ORO_SCHED_RT, 98, 1.0 / settings_.frequency);
+        RTT::extras::PeriodicActivity* activity =
+            new RTT::extras::PeriodicActivity(ORO_SCHED_RT, 98, 1.0 / settings_.frequency);
+        activity->thread()->setWaitPeriodPolicy(static_cast<int>(settings_.wait_policy));
+        main_activity = activity;
     } else {
         ROS_WARN("RTCF is in simulation mode! Neither real-timeness nor set frequencies are guaranteed.");
         // this activity will be triggered according to the clock signals
