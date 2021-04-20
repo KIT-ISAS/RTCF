@@ -2,21 +2,21 @@
 
 #include <ros/ros.h>
 
+#include "rtcf/macros.hpp"
 #include "rtcf/rt_rosconsole_logging.hpp"
 #include "rtcf/rtcf_extension.hpp"
-
-#include "rtcf/macros.hpp"
 OROCOS_HEADERS_BEGIN
 #include <rtt_ros/rtt_ros.h>
 #include <rtt_rosclock/rtt_rosclock.h>
 #include <rtt_rosclock/rtt_rosclock_sim_clock_activity.h>
 #include <rtt_rosclock/rtt_rosclock_sim_clock_thread.h>
 #include <rtt_roscomm/rostopic.h>
-#include <rtt/Activity.hpp>
+
+#include <rtt/base/ActivityInterface.hpp>
 #include <rtt/deployment/ComponentLoader.hpp>
+#include <rtt/extras/PeriodicActivity.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
 OROCOS_HEADERS_END
-
 
 RTRunner::RTRunner() :
     is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0) {}
@@ -38,7 +38,6 @@ void RTRunner::configure(const Settings& settings) {
     main_context_.setActivity(main_activity);
     // according to OROCOS doc, main activity is now owned by the main_context and shall only be reference through
     // getActivity().
-    main_context_.setPeriod(1.0 / settings_.frequency);
     main_context_.configure();
 
     // whitelist/blacklist exceptions
@@ -60,12 +59,12 @@ RTT::base::ActivityInterface* RTRunner::createMainActivity() {
     RTT::base::ActivityInterface* main_activity;
     if (!settings_.is_simulation) {
         // configure thread for realtimeness
-        main_activity = new RTT::Activity(ORO_SCHED_RT, 98);
+        main_activity = new RTT::extras::PeriodicActivity(ORO_SCHED_RT, 98, 1.0 / settings_.frequency);
     } else {
         ROS_WARN("RTCF is in simulation mode! Neither real-timeness nor set frequencies are guaranteed.");
         // this activity will be triggered according to the clock signals
         // NOTE: clock accuracy will depend on the simulation clock source
-        main_activity = new rtt_rosclock::SimClockActivity();
+        main_activity = new rtt_rosclock::SimClockActivity(1.0 / settings_.frequency);
         rtt_rosclock::use_ros_clock_topic();
         // NOTE: setting the sim-clock-thread to real-time priority is not really beneficial
         // as the clock input is not real-time anyway
@@ -230,7 +229,7 @@ void RTRunner::tryStartExecution() {
         return;
     }
     // if allowed, (re)start automatically
-    if ((settings_.mode == Mode::NO_WAIT) ||
+    if ((settings_.mode == Mode::NO_WAIT && !component_containers_.empty()) ||
         (settings_.mode == Mode::WAIT_FOR_COMPONENTS &&
          component_containers_.size() == settings_.expected_num_components) ||
         (settings_.mode == Mode::WAIT_FOR_TRIGGER && is_active_external_)) {
