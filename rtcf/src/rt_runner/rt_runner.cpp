@@ -86,6 +86,13 @@ void RTRunner::shutdown() {
 
 void RTRunner::finalize() {
     main_context_.cleanup();
+
+    // stop the rosclock thread if it exists
+    if (rtt_rosclock::SimClockThread::GetInstance()) {
+        rtt_rosclock::SimClockThread::GetInstance()->stop();
+    }
+
+    // stop the logging
     RtRosconsoleLogging::getInstance().stop();
     RtRosconsoleLogging::getInstance().cleanup();
 }
