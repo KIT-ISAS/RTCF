@@ -7,6 +7,9 @@
         <rosparam param="ros_mapping_whitelist">".*mapped.*"</rosparam>
         <rosparam param="num_components_expected">2</rosparam>
         <rosparam param="frequency">10.0</rosparam>
+        <rosparam param="safe_heap_size_kB">1024</rosparam>
+        <rosparam param="safe_stack_size_kB">512</rosparam>
+        <rosparam param="cpu_affinity_mask">02</rosparam>
     </node>
 
     <node name="identity1" pkg="rtcf" type="rt_launcher" args="rtcf_examples Identity" output="screen">

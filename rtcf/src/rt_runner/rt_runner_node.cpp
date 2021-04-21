@@ -181,10 +181,10 @@ bool RTRunnerNode::loadROSParameters() {
 
     // get optinal cpu affinity
     int cpu_affinity;
-    if (node_handle_.getParam("cpu_affinity_bitmask", cpu_affinity)) {
+    if (node_handle_.getParam("cpu_affinity_mask", cpu_affinity)) {
         settings_.cpu_affinity = cpu_affinity;
     } else {
-        settings_.safe_heap_size = 0x01;  // first CPU is default
+        settings_.cpu_affinity = 0x01;  // first CPU is default
     }
 
     return true;
