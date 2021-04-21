@@ -82,7 +82,8 @@ RTT::base::ActivityInterface* RTRunner::createMainActivity() {
     }
 
     // set CPU affinity
-    main_context_.getActivity()->setCpuAffinity(settings_.cpu_affinity);
+    main_activity->setCpuAffinity(settings_.cpu_affinity);
+
     return main_activity;
 }
 
