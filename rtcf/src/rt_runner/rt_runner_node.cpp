@@ -155,6 +155,38 @@ bool RTRunnerNode::loadROSParameters() {
     // simulation time
     settings_.is_simulation = node_handle_.param("/use_sim_time", false);
 
+    // get optional heap memory size for pre-faulting
+    int safe_heap_size_kB;
+    if (node_handle_.getParam("safe_heap_size_kB", safe_heap_size_kB)) {
+        if (safe_heap_size_kB < 0) {
+            ROS_ERROR("Given heap size is infeasible.");
+            return false;
+        }
+        settings_.safe_heap_size = safe_heap_size_kB * 1024;
+    } else {
+        settings_.safe_heap_size = 0;  // default is 0 (no pre-faulting)
+    }
+
+    // get optional stack memory size for pre-faulting
+    int safe_stack_size_kB;
+    if (node_handle_.getParam("safe_stack_size_kB", safe_stack_size_kB)) {
+        if (safe_stack_size_kB < 0) {
+            ROS_ERROR("Given stack size is infeasible.");
+            return false;
+        }
+        settings_.safe_stack_size = safe_stack_size_kB * 1024;
+    } else {
+        settings_.safe_stack_size = 0;  // default is 0 (no pre-faulting)
+    }
+
+    // get optinal cpu affinity
+    int cpu_affinity;
+    if (node_handle_.getParam("cpu_affinity_bitmask", cpu_affinity)) {
+        settings_.cpu_affinity = cpu_affinity;
+    } else {
+        settings_.safe_heap_size = 0x01;  // first CPU is default
+    }
+
     return true;
 }
 

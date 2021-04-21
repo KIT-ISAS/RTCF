@@ -40,6 +40,11 @@ void RTRunner::configure(const Settings& settings) {
     // getActivity().
     main_context_.configure();
 
+    // do further thread configuration
+    // avoid page faults
+    prefaulting_executable_ = PrefaultingExecutable(settings_.safe_heap_size, settings_.safe_stack_size);
+    main_context_.engine()->runFunction(&prefaulting_executable_);
+
     // whitelist/blacklist exceptions
     try {
         whitelist_ = std::regex(settings_.ros_mapping_whitelist);
@@ -76,9 +81,8 @@ RTT::base::ActivityInterface* RTRunner::createMainActivity() {
         rtt_rosclock::enable_sim();
     }
 
-    // TODO: think about memory locking and pre-faulting of stack/heap
-    main_activity->setCpuAffinity(0x01);  // thread runs on first CPU
-
+    // set CPU affinity
+    main_context_.getActivity()->setCpuAffinity(settings_.cpu_affinity);
     return main_activity;
 }
 
