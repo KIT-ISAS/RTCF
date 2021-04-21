@@ -222,6 +222,9 @@ The first `node` tag creates a so-called *rt_runner*, which is responsible for e
 - `wait_policy`: The policy of the wait-command used in the real-time loop. The default value is `absolute`. This option is ignored in simulation mode (parameter `/use_sim_time=True`).
   - `absolute`: If the runtime of the components exceeds the cycle period, the following wait times are shortened to catch up with missed wake-up times. See also `ORO_WAIT_ABS` in OROCOS documentation.
   - `relative`: If the runtime of the components exceeds the cycle period, the following wait times are not shortened.  See also `ORO_WAIT_REL` in OROCOS documentation. Due to the implementation, slightly high cycle periods (a few microseconds)
+- `safe_heap_size_kB`: The **heap** size in kilobytes that is pre-faulted (i.e. allocated, accessed, and then released). A value of zero means that no pre-faulting of the heap takes place. The default value is zero.
+- `safe_stack_size_kB`: The **stack** size in kilobytes that is pre-faulted (i.e. allocated, accessed, and then released). A value of zero means that no pre-faulting of the stack takes place. The default value is zero. Internally, the stack allocation is done using `alloca()`.
+- `cpu_affinity_mask`: A bitmask specifying on which CPUs the real-time thread is going to be run. The default value is 1. Examples: 1 means CPU0, 8 means CPU3, 3 means CPU0 and CPU1.
 
 The other `node` tags of type `rt_launcher` create an instance of the component `SimpleComponent`from the package `simple_component`. Therefore, the `rt_launcher` program is used with the following options:
 

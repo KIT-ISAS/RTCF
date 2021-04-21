@@ -10,6 +10,7 @@ OROCOS_HEADERS_BEGIN
 OROCOS_HEADERS_END
 
 #include "main_context.hpp"
+#include "prefaulting.hpp"
 #include "rt_runner_types.hpp"
 #include "rtcf/rtcf_types.hpp"
 
@@ -59,6 +60,9 @@ class RTRunner {
         std::string ros_mapping_blacklist;
         double frequency;
         bool is_simulation;
+        size_t safe_heap_size;
+        size_t safe_stack_size;
+        unsigned cpu_affinity;
     };
 
   private:
@@ -88,6 +92,7 @@ class RTRunner {
     bool is_shutdown_;
 
     MainContext main_context_;
+    PrefaultingExecutable prefaulting_executable_;
     RTOrder rt_order_;
 
     std::regex whitelist_;
