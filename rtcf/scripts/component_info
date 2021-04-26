@@ -50,23 +50,20 @@ def printComponentInfo(component_info):
 
 
 if __name__ == '__main__':
-    # fetch data
-    component_data = getComponentData()
-    if not component_data:
-        print("No components found!")
-        sys.exit()
-
     # if a component is given try to print that specific one
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 2:
+        # fetch data
+        component_data = getComponentData()
+        if not component_data:
+            print("No components found!")
+            sys.exit()
+        # print
         component_name = sys.argv[1]
         component_info = getComponentInfo(component_data, component_name)
         if component_info:
             printComponentInfo(component_info)
         else:
             print("Given component not found!")
-    # no component is given, so print a list of all
+    # no component is given, error
     else:
-        component_data = sorted(component_data, key=lambda entry: entry.name)
-        print("Loaded components (in alphabetical order):")
-        for entry in component_data:
-            print(" * {} ({}/{})".format(entry.name, entry.package, entry.type))
+        print("Invalid number of arguments.")

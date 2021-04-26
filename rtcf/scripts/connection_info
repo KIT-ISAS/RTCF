@@ -53,23 +53,20 @@ def printConnectionInfo(connection_info):
 
 
 if __name__ == '__main__':
-    # fetch data
-    connection_data = getConnectionData()
-    if not connection_data:
-        print("No connections found!")
-        sys.exit()
-
     # if a connection is given try to print that specific one
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 2:
+        # fetch data
+        connection_data = getConnectionData()
+        if not connection_data:
+            print("No connections found!")
+            sys.exit()
+        # print
         connection_name = sys.argv[1]
         connection_info = getConnectionInfo(connection_data, connection_name)
         if connection_info:
             printConnectionInfo(connection_info)
         else:
             print("Given connection not found!")
-    # no connection is given, so print all
+    # no connection is given, error
     else:
-        connection_data = sorted(connection_data, key=lambda entry: entry.name)
-        print("Available connections:")
-        for entry in connection_data:
-            print(" * {} ({})".format(entry.name, entry.type))
+        print("Invalid number of arguments.")

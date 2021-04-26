@@ -1,0 +1,28 @@
+#! /usr/bin/env python
+
+from rtcf_msgs.srv import GetRunnerInfo
+import rospy
+import sys
+
+
+def getComponentData():
+    service_name = '/rt_runner/get_introspection_information'
+    rospy.wait_for_service(service_name)
+    try:
+        get_runner_info = rospy.ServiceProxy(service_name, GetRunnerInfo)
+        resp = get_runner_info()
+        return resp.runner_info.components
+    except rospy.ServiceException as e:
+        print("Service call failed: %s" % e)
+        return None
+
+
+if __name__ == '__main__':
+    # fetch data
+    component_data = getComponentData()
+    if not component_data:
+        sys.exit()
+    # print
+    component_data = sorted(component_data, key=lambda entry: entry.name)
+    for entry in component_data:
+        print(entry.name)

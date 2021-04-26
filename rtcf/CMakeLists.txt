@@ -62,8 +62,10 @@ orocos_generate_package(
 
 catkin_install_python(PROGRAMS
   scripts/component_info
+  scripts/component_list
   scripts/component_order
   scripts/connection_info
+  scripts/connection_list
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############

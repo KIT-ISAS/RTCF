@@ -1,0 +1,30 @@
+#! /usr/bin/env python
+
+from rtcf_msgs.srv import GetRunnerInfo
+import rospy
+import sys
+
+
+def getConnectionData():
+    service_name = '/rt_runner/get_introspection_information'
+    rospy.wait_for_service(service_name)
+    try:
+        get_runner_info = rospy.ServiceProxy(service_name, GetRunnerInfo)
+        resp = get_runner_info()
+        return resp.runner_info.connections
+    except rospy.ServiceException as e:
+        print("Service call failed: %s" % e)
+        return None
+
+
+if __name__ == '__main__':
+
+    # fetch data
+    connection_data = getConnectionData()
+    if not connection_data:
+        print("No connections found!")
+        sys.exit()
+    # print
+    connection_data = sorted(connection_data, key=lambda entry: entry.name)
+    for entry in connection_data:
+        print(entry.name)
