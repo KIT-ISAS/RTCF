@@ -1,0 +1,34 @@
+#! /usr/bin/env python
+
+from rtcf_msgs.srv import GetRunnerInfo
+import rospy
+import sys
+
+
+def getOrderData():
+    service_name = '/rt_runner/get_introspection_information'
+    rospy.wait_for_service(service_name)
+    try:
+        get_runner_info = rospy.ServiceProxy(service_name, GetRunnerInfo)
+        resp = get_runner_info()
+        return resp.runner_info.component_order
+    except rospy.ServiceException as e:
+        print("Service call failed: %s" % e)
+        return None
+
+
+def printOrder(order):
+    print("Real-time execution order is:")
+    for i, item in enumerate(order, 1):
+        print("{}. {}".format(i, item))
+
+
+if __name__ == '__main__':
+    # fetch data
+    order_data = getOrderData()
+    if not order_data:
+        print("Empty order!")
+    else:
+        printOrder(order_data)
+        print("")
+        print("Total: {}".format(len(order_data)))

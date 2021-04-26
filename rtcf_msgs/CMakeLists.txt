@@ -7,7 +7,12 @@ find_package(catkin REQUIRED COMPONENTS message_generation std_msgs)
 add_message_files(
   FILES
   Mapping.msg
-  IterationInformation.msg
+  IterationInfo.msg
+  # introspection
+  PortInfo.msg
+  ComponentInfo.msg
+  ConnectionInfo.msg
+  RunnerInfo.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -15,6 +20,7 @@ add_service_files(
   FILES
   LoadOrocosComponent.srv
   UnloadOrocosComponent.srv
+  GetRunnerInfo.srv
 )
 
 

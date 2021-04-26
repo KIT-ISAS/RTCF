@@ -2,6 +2,7 @@
 #define RT_RUNNER_NODE_H
 
 #include <ros/ros.h>
+#include <rtcf_msgs/GetRunnerInfo.h>
 #include <rtcf_msgs/LoadOrocosComponent.h>
 #include <rtcf_msgs/UnloadOrocosComponent.h>
 #include <std_srvs/Trigger.h>
@@ -22,6 +23,7 @@ class RTRunnerNode {
     ros::ServiceServer unloadOrocosComponentService_;
     ros::ServiceServer activateRTLoopService_;
     ros::ServiceServer deactivateRTLoopService_;
+    ros::ServiceServer introspectionService_;
 
     bool loadOrocosComponentCallback(rtcf_msgs::LoadOrocosComponent::Request &req,
                                      rtcf_msgs::LoadOrocosComponent::Response &res);
@@ -30,6 +32,8 @@ class RTRunnerNode {
 
     bool activateRTLoopCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
     bool deactivateRTLoopCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+
+    bool introspectionCallback(rtcf_msgs::GetRunnerInfo::Request &req, rtcf_msgs::GetRunnerInfo::Response &res);
 
     void setupROSServices();
     void shutdownROSServices();

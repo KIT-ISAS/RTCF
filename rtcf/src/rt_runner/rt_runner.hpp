@@ -9,6 +9,10 @@ OROCOS_HEADERS_BEGIN
 #include <rtt/TaskContext.hpp>
 OROCOS_HEADERS_END
 
+#include <rtcf_msgs/ComponentInfo.h>
+#include <rtcf_msgs/ConnectionInfo.h>
+#include <rtcf_msgs/PortInfo.h>
+
 #include "main_context.hpp"
 #include "prefaulting.hpp"
 #include "rt_runner_types.hpp"
@@ -121,6 +125,11 @@ class RTRunner {
     // these methods are only available in WAIT_FOR_TRIGGER-mode
     void activateTrigger();
     void deactivateTrigger();
+
+    // for introspection
+    std::vector<rtcf_msgs::ComponentInfo> getComponentInfos();
+    std::vector<rtcf_msgs::ConnectionInfo> getConnectionInfos();
+    std::vector<std::string> getComponentOrder();
 };
 
 #endif /* RT_RUNNER_H */

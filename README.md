@@ -238,6 +238,16 @@ In comparison with a standard launch-file, the main differences are
 
 All other launch-file features, such as parameters, remaps, and namespaces, stay intact and are transparently handled by the RTCF.
 
+### Introspection
+
+ROS provides small helper tools to analyze its runtime behavior such as `rostopic` or `rosnode`. The RTCF offers similar tools to allow easy debugging and runtime inspection. These are:
+
+- `rosrun rtcf component_list`: List all the components currently loaded similar to `rosnode list`.
+- `rosrun rtcf component_info`: Obtain information about a single component. Usage is identical to `rosnode info`.
+- `rosrun rtcf connection_list`: List all internal real-time connections similar to `rostopic list`. Note, that ports which are not connected to other ports are not listed here.
+- `rosrun rtcf connection_info`: Show information about a connection with a given name. Usage is similar to `rostopic info`.
+- `rosrun rtcf component_order`: Print the determined real-time execution order after dependency resolution. This has no ROS equivalent.
+
 ### Real-Time Safe Code
 
 Writing real-time safe code is not black magic, but it requires some discipline. Here are some things that should NEVER be done in a real-time context:

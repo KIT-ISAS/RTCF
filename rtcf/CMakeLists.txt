@@ -27,6 +27,8 @@ catkin_package(
   CATKIN_DEPENDS   
 )
 
+catkin_python_setup()
+
 # OROCOS specific
 find_package(OROCOS-RTT REQUIRED)
 find_package(OROCOS-OCL REQUIRED)
@@ -48,11 +50,23 @@ add_subdirectory(src/rt_launcher)
 add_subdirectory(src/rt_runner)
 add_subdirectory(src/rtcf_extension)
 
+#############
+## Package ##
+#############
+
 # in addition to a catkin package, create an OROCOS package 
 # (this will make OROCOS find the dependencies automatically by reading the package.xml)
 orocos_generate_package(
   INCLUDE_DIRS include
 )
+
+catkin_install_python(PROGRAMS
+  scripts/component_info
+  scripts/component_list
+  scripts/component_order
+  scripts/connection_info
+  scripts/connection_list
+DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############
 ## Testing ##

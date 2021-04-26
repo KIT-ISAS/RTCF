@@ -1,0 +1,69 @@
+#! /usr/bin/env python
+
+from rtcf_msgs.srv import GetRunnerInfo
+import rospy
+import sys
+
+
+def getComponentData():
+    service_name = '/rt_runner/get_introspection_information'
+    rospy.wait_for_service(service_name)
+    try:
+        get_runner_info = rospy.ServiceProxy(service_name, GetRunnerInfo)
+        resp = get_runner_info()
+        return resp.runner_info.components
+    except rospy.ServiceException as e:
+        print("Service call failed: %s" % e)
+        return None
+
+
+def getComponentInfo(info, name):
+    results = [x for x in info if x.name == name]
+    if len(results) > 0:
+        return results[0]
+    else:
+        return None
+
+
+def printPorts(heading, port_info):
+    if not port_info:
+        print("{}: None".format(heading))
+    else:
+        print("{}:".format(heading))
+        port_info = sorted(port_info, key=lambda port: port.name_remapped)
+        for port in port_info:
+            print(" * {} [{}] {}".format(port.name_remapped,
+                                         port.msg_type,
+                                         "(connected to ROS)" if port.connected_to_ROS else ""))
+
+    print("")
+
+
+def printComponentInfo(component_info):
+    print("--------------------------------------------------------------------------------")
+    print("Node [{}] ({}/{})".format(component_info.name,
+                                     component_info.package,
+                                     component_info.type))
+
+    printPorts("Publications", component_info.output_ports)
+    printPorts("Subscriptions", component_info.input_ports)
+
+
+if __name__ == '__main__':
+    # if a component is given try to print that specific one
+    if len(sys.argv) == 2:
+        # fetch data
+        component_data = getComponentData()
+        if not component_data:
+            print("No components found!")
+            sys.exit()
+        # print
+        component_name = sys.argv[1]
+        component_info = getComponentInfo(component_data, component_name)
+        if component_info:
+            printComponentInfo(component_info)
+        else:
+            print("Given component not found!")
+    # no component is given, error
+    else:
+        print("Invalid number of arguments.")

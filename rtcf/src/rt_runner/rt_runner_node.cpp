@@ -79,6 +79,10 @@ void RTRunnerNode::setupROSServices() {
         deactivateRTLoopService_ = node_handle_.advertiseService("/rt_runner/deactivate_rt_loop",
                                                                  &RTRunnerNode::deactivateRTLoopCallback, this);
     }
+
+    // introspection
+    introspectionService_ = node_handle_.advertiseService("/rt_runner/get_introspection_information",
+                                                          &RTRunnerNode::introspectionCallback, this);
 };
 
 void RTRunnerNode::shutdownROSServices() {
@@ -250,6 +254,19 @@ bool RTRunnerNode::deactivateRTLoopCallback(std_srvs::Trigger::Request &req, std
     res.success = true;
     return true;
 };
+
+bool RTRunnerNode::introspectionCallback(rtcf_msgs::GetRunnerInfo::Request &req,
+                                         rtcf_msgs::GetRunnerInfo::Response &res) {
+    (void)req;
+    const std::lock_guard<std::mutex> lock(mtx_);
+    ROS_DEBUG_STREAM("Introspection service called.");
+
+    res.runner_info.component_order = rt_runner_->getComponentOrder();
+    res.runner_info.components      = rt_runner_->getComponentInfos();
+    res.runner_info.connections     = rt_runner_->getConnectionInfos();
+
+    return true;
+}
 
 void sigintHandler(int sig) {
     (void)sig;

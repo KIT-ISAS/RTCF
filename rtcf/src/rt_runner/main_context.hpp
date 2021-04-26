@@ -1,7 +1,7 @@
 #ifndef MAIN_CONTEXT_H
 #define MAIN_CONTEXT_H
 
-#include <rtcf_msgs/IterationInformation.h>
+#include <rtcf_msgs/IterationInfo.h>
 
 #include "rtcf/macros.hpp"
 OROCOS_HEADERS_BEGIN
@@ -17,7 +17,7 @@ class MainContext : public RTT::TaskContext {
     RTOrder slaves_;
 
     TimingAnalysis timing_analysis_;
-    RTT::OutputPort<rtcf_msgs::IterationInformation> port_iter_info_;
+    RTT::OutputPort<rtcf_msgs::IterationInfo> port_iter_info_;
 
   public:
     MainContext(std::string const& name);

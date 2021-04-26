@@ -5,9 +5,11 @@
 #include <ros/ros.h>
 
 #include <boost/functional/forward_adapter.hpp>
+#include <map>
 #include <memory>
 #include <regex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "rtcf/macros.hpp"
@@ -27,16 +29,26 @@ OROCOS_HEADERS_END
 #include "rtcf/rtcf_types.hpp"
 
 struct PortContainer {
-    PortContainer(RTT::base::PortInterface* port) : port(port) {
-        getName();
-        setDefaultMapping();
+    PortContainer(RTT::base::PortInterface* port, const std::string& component_name) :
+        port(port),
+        original_name(port->getName()),
+        mapped_name(original_name),
+        message_type(port->getTypeInfo()->getTypeName()),
+        component_name(component_name),
+        connected_to_ROS(false) {
+        // remove leading slash
+        if (!message_type.empty()) {
+            if (message_type.at(0) == '/') {
+                message_type = message_type.substr(1, std::string::npos);
+            }
+        }
     }
     RTT::base::PortInterface* port;
     std::string original_name;
     std::string mapped_name;
-
-    void getName() { original_name = port->getName(); }
-    void setDefaultMapping() { mapped_name = original_name; }
+    std::string message_type;
+    std::string component_name;
+    bool connected_to_ROS;
 };
 
 struct ComponentContainer {
@@ -102,7 +114,7 @@ struct ComponentContainer {
 
     void handlePorts() {
         for (RTT::base::PortInterface* port : task_context->ports()->getPorts()) {
-            PortContainer port_container(port);
+            PortContainer port_container(port, attributes.name);
             std::stringstream ss;
             ss << "Port of component " << attributes.name << " found: " << port_container.original_name << " ";
 
