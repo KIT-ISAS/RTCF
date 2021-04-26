@@ -41,9 +41,11 @@ void RTRunner::configure(const Settings& settings) {
     main_context_.configure();
 
     // do further thread configuration
-    // avoid page faults
-    prefaulting_executable_ = PrefaultingExecutable(settings_.safe_heap_size, settings_.safe_stack_size);
-    main_context_.engine()->runFunction(&prefaulting_executable_);
+    if (settings_.lock_memory) {
+        // avoid page faults
+        prefaulting_executable_ = PrefaultingExecutable(settings_.safe_heap_size, settings_.safe_stack_size);
+        main_context_.engine()->runFunction(&prefaulting_executable_);
+    }
 
     // whitelist/blacklist exceptions
     try {

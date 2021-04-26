@@ -64,6 +64,7 @@ class RTRunner {
         std::string ros_mapping_blacklist;
         double frequency;
         bool is_simulation;
+        bool lock_memory;
         size_t safe_heap_size;
         size_t safe_stack_size;
         unsigned cpu_affinity;

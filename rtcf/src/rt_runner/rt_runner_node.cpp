@@ -159,12 +159,18 @@ bool RTRunnerNode::loadROSParameters() {
     // simulation time
     settings_.is_simulation = node_handle_.param("/use_sim_time", false);
 
+    // optional flag for memory locking
+    settings_.lock_memory = node_handle_.param("lock_memory", false);
+
     // get optional heap memory size for pre-faulting
     int safe_heap_size_kB;
     if (node_handle_.getParam("safe_heap_size_kB", safe_heap_size_kB)) {
         if (safe_heap_size_kB < 0) {
             ROS_ERROR("Given heap size is infeasible.");
             return false;
+        }
+        if (!settings_.lock_memory) {
+            ROS_WARN("Safe heap size option has no effect when memory locking is disabled.");
         }
         settings_.safe_heap_size = safe_heap_size_kB * 1024;
     } else {
@@ -177,6 +183,9 @@ bool RTRunnerNode::loadROSParameters() {
         if (safe_stack_size_kB < 0) {
             ROS_ERROR("Given stack size is infeasible.");
             return false;
+        }
+        if (!settings_.lock_memory) {
+            ROS_WARN("Safe stack size option has no effect when memory locking is disabled.");
         }
         settings_.safe_stack_size = safe_stack_size_kB * 1024;
     } else {
