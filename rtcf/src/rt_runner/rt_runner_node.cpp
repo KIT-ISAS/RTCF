@@ -81,8 +81,8 @@ void RTRunnerNode::setupROSServices() {
     }
 
     // introspection
-    introspectionService_ =
-        node_handle_.advertiseService("/rt_runner/get_information", &RTRunnerNode::introspectionCallback, this);
+    introspectionService_ = node_handle_.advertiseService("/rt_runner/get_introspection_information",
+                                                          &RTRunnerNode::introspectionCallback, this);
 };
 
 void RTRunnerNode::shutdownROSServices() {

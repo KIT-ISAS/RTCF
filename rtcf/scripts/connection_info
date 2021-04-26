@@ -1,0 +1,75 @@
+#! /usr/bin/env python
+
+from rtcf_msgs.srv import GetRunnerInfo
+import rospy
+import sys
+
+
+def getConnectionData():
+    service_name = '/rt_runner/get_introspection_information'
+    rospy.wait_for_service(service_name)
+    try:
+        get_runner_info = rospy.ServiceProxy(service_name, GetRunnerInfo)
+        resp = get_runner_info()
+        return resp.runner_info.connections
+    except rospy.ServiceException as e:
+        print("Service call failed: %s" % e)
+        return None
+
+
+def getConnectionInfo(info, name):
+    results = [x for x in info if x.name == name]
+    if len(results) > 0:
+        return results[0]
+    else:
+        return None
+
+
+def printPeers(heading, peers):
+    if not peers:
+        print("{}: None".format(heading))
+    else:
+        print("{}:".format(heading))
+        peers = sorted(peers)
+        for peer in peers:
+            print(" * {}".format(peer))
+    print("")
+
+
+def printConnectionInfo(connection_info):
+    print("--------------------------------------------------------------------------------")
+    print("Connection [{}] ({})".format(connection_info.name,
+                                        connection_info.type))
+    if connection_info.connected_to_ROS:
+        print("Connection IS bridged to ROS.")
+    else:
+        print("Connection is NOT bridged to ROS.")
+    print("")
+
+    printPeers("Publishing components",
+               connection_info.publishing_components)
+    printPeers("Subscribing components",
+               connection_info.subscribing_components)
+
+
+if __name__ == '__main__':
+    # fetch data
+    connection_data = getConnectionData()
+    if not connection_data:
+        print("No connections found!")
+        sys.exit()
+
+    # if a connection is given try to print that specific one
+    if len(sys.argv) > 1:
+        connection_name = sys.argv[1]
+        connection_info = getConnectionInfo(connection_data, connection_name)
+        if connection_info:
+            printConnectionInfo(connection_info)
+        else:
+            print("Given connection not found!")
+    # no connection is given, so print all
+    else:
+        connection_data = sorted(connection_data, key=lambda entry: entry.name)
+        print("Available connections:")
+        for entry in connection_data:
+            print(" * {} ({})".format(entry.name, entry.type))
