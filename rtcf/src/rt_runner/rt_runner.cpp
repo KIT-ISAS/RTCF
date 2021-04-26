@@ -2,21 +2,20 @@
 
 #include <ros/ros.h>
 
+#include "rtcf/macros.hpp"
 #include "rtcf/rt_rosconsole_logging.hpp"
 #include "rtcf/rtcf_extension.hpp"
-
-#include "rtcf/macros.hpp"
 OROCOS_HEADERS_BEGIN
 #include <rtt_ros/rtt_ros.h>
 #include <rtt_rosclock/rtt_rosclock.h>
 #include <rtt_rosclock/rtt_rosclock_sim_clock_activity.h>
 #include <rtt_rosclock/rtt_rosclock_sim_clock_thread.h>
 #include <rtt_roscomm/rostopic.h>
+
 #include <rtt/Activity.hpp>
 #include <rtt/deployment/ComponentLoader.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
 OROCOS_HEADERS_END
-
 
 RTRunner::RTRunner() :
     is_active_external_(false), is_shutdown_(false), main_context_("main_context"), num_loaded_components_(0) {}
@@ -249,6 +248,7 @@ void RTRunner::stopExecution() {
     }
     deactivateRTLoop();
     disconnectPorts();
+    rt_order_.clear();
 }
 
 void RTRunner::setSlavesOnMainContext() {
@@ -406,14 +406,18 @@ void RTRunner::connectPorts() {
 void RTRunner::disconnectPorts() {
     // simply disconnect all input and output ports
     // this also stops ROS connections created by createStream()
-    for (const auto& container : component_containers_) {
-        for (const auto& output_port : container.output_ports) {
+    for (auto& container : component_containers_) {
+        for (auto& output_port : container.output_ports) {
             output_port.port->disconnect();
+            output_port.connected_to_ROS = false;
         }
-        for (const auto& input_port : container.input_ports) {
+        for (auto& input_port : container.input_ports) {
             input_port.port->disconnect();
+            input_port.connected_to_ROS = false;
         }
     }
+
+    internal_connections_.clear();
 }
 
 void RTRunner::connectOrocosPorts() {
@@ -439,10 +443,11 @@ void RTRunner::connectPortsToRos() {
     };
 
     // all output ports that meet whitelist/blacklist are always linked to ROS
-    for (const auto& container : component_containers_) {
-        for (const auto& output_port : container.output_ports) {
+    for (auto& container : component_containers_) {
+        for (auto& output_port : container.output_ports) {
             if (check_name(output_port.mapped_name)) {
                 output_port.port->createStream(rtt_roscomm::topic(output_port.mapped_name));
+                output_port.connected_to_ROS = true;
                 ROS_DEBUG_STREAM("Connected " << container.attributes.name << " (output " << output_port.original_name
                                               << ") to ROS topic " << output_port.mapped_name << "");
             }
@@ -451,12 +456,13 @@ void RTRunner::connectPortsToRos() {
     // all input ports that meet whitelist/blacklist
     // AND that do not have an internal connection to an output port are linked to ROS
     // this is required to avoid side-channels through ROS
-    for (const auto& container : component_containers_) {
-        for (const auto& input_port : container.input_ports) {
+    for (auto& container : component_containers_) {
+        for (auto& input_port : container.input_ports) {
             if (check_name(input_port.mapped_name)) {
                 // check for internal connection
                 if (internal_connections_.count(&input_port) == 0) {
                     input_port.port->createStream(rtt_roscomm::topic(input_port.mapped_name));
+                    input_port.connected_to_ROS = true;
                     ROS_DEBUG_STREAM("Connected " << container.attributes.name << " (input " << input_port.original_name
                                                   << ") to ROS topic " << input_port.mapped_name << "");
                 } else {
@@ -467,4 +473,93 @@ void RTRunner::connectPortsToRos() {
             }
         }
     }
+}
+
+std::vector<rtcf_msgs::ComponentInfo> RTRunner::getComponentInfos() {
+    std::vector<rtcf_msgs::ComponentInfo> all_infos;
+
+    for (const auto& component : component_containers_) {
+        rtcf_msgs::ComponentInfo component_info;
+        component_info.name    = component.attributes.name;
+        component_info.package = component.attributes.rt_package;
+        component_info.type    = component.attributes.rt_type;
+
+        auto create_port_info = [this](const PortContainer& port, rtcf_msgs::PortInfo::_port_type_type port_type) {
+            rtcf_msgs::PortInfo port_info;
+            port_info.port_type        = port_type;
+            port_info.name_remapped    = port.mapped_name;
+            port_info.name_unresolved  = port.original_name;
+            port_info.msg_type         = port.message_type;
+            port_info.connected_to_ROS = port.connected_to_ROS;
+            return port_info;
+        };
+
+        for (const auto& in_port : component.input_ports) {
+            component_info.input_ports.push_back(create_port_info(in_port, rtcf_msgs::PortInfo::TYPE_INPUT));
+        }
+        for (const auto& out_port : component.output_ports) {
+            component_info.output_ports.push_back(create_port_info(out_port, rtcf_msgs::PortInfo::TYPE_OUTPUT));
+        }
+
+        all_infos.push_back(component_info);
+    }
+    return all_infos;
+}
+
+std::vector<rtcf_msgs::ConnectionInfo> RTRunner::getConnectionInfos() {
+    // we use a map for collecting our data in a more efficient way
+    struct ConnectionData {
+        std::string type                                = "";
+        std::vector<std::string> publishing_components  = {};
+        std::vector<std::string> subscribing_components = {};
+        bool connected_to_ROS                           = false;
+    };
+    std::map<std::string, ConnectionData> data;
+
+    // populate the map
+    for (const auto& connection : internal_connections_) {
+        const auto& port_from = *connection.first;
+        const auto& port_to   = *connection.second;
+
+        ConnectionData& current_connection = data[port_from.mapped_name];
+
+        // fill in data from ports
+        // message type
+        if (current_connection.type == "") {
+            current_connection.type = port_from.message_type;
+        } else {
+            // must be the same if already set
+            assert(current_connection.type == port_from.message_type);
+        }
+        // ROS connection
+        current_connection.connected_to_ROS |= port_from.connected_to_ROS;
+        current_connection.connected_to_ROS |= port_to.connected_to_ROS;
+        // if both, input and output port are connected to ROS, a non-real-time bypass is created
+        assert(!(port_to.connected_to_ROS && port_from.connected_to_ROS));
+        // publishers and subscribers
+        current_connection.publishing_components.push_back(port_from.component_name);
+        current_connection.subscribing_components.push_back(port_to.component_name);
+    }
+
+    // then convert the map to ROS message format
+    std::vector<rtcf_msgs::ConnectionInfo> all_infos;
+    for (const auto& entry : data) {
+        rtcf_msgs::ConnectionInfo conn_info;
+        conn_info.name                   = entry.first;
+        conn_info.type                   = entry.second.type;
+        conn_info.publishing_components  = entry.second.publishing_components;
+        conn_info.subscribing_components = entry.second.subscribing_components;
+        conn_info.connected_to_ROS       = entry.second.connected_to_ROS;
+        all_infos.push_back(conn_info);
+    }
+
+    return all_infos;
+}
+
+std::vector<std::string> RTRunner::getComponentOrder() {
+    std::vector<std::string> order_info;
+    for (const auto& order_element : rt_order_) {
+        order_info.push_back(order_element->attributes.name);
+    }
+    return order_info;
 }

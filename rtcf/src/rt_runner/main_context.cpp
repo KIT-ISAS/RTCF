@@ -44,7 +44,7 @@ void MainContext::updateHook() {
     timing_analysis_.stop();
 
     // publish debugging information
-    rtcf_msgs::IterationInformation info;
+    rtcf_msgs::IterationInfo info;
     info.stamp       = timing_analysis_.getIterationStamp();
     info.duration_ns = (uint64_t)timing_analysis_.getCalculationDuration();
     port_iter_info_.write(info);
