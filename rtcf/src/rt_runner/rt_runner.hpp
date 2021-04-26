@@ -14,6 +14,7 @@ OROCOS_HEADERS_END
 #include <rtcf_msgs/PortInfo.h>
 
 #include "main_context.hpp"
+#include "prefaulting.hpp"
 #include "rt_runner_types.hpp"
 #include "rtcf/rtcf_types.hpp"
 
@@ -38,13 +39,34 @@ class RTRunner {
         return map[s];
     }
 
+    enum class WaitPolicy {
+        ABOLSUTE = ORO_WAIT_ABS,
+        RELATIVE = ORO_WAIT_REL,
+        UNKNOWN,
+    };
+    static WaitPolicy string2WaitPolicy(const std::string& s) {
+        // clang-format off
+        std::map<std::string, WaitPolicy> map{std::make_pair("absolute", WaitPolicy::ABOLSUTE),
+                                        std::make_pair("relative", WaitPolicy::RELATIVE)};
+        // clang-format on
+        const auto it = map.find(s);
+        if (it == map.end()) {
+            return RTRunner::WaitPolicy::UNKNOWN;
+        }
+        return map[s];
+    }
+
     struct Settings {
         Mode mode;
+        WaitPolicy wait_policy;
         size_t expected_num_components;
         std::string ros_mapping_whitelist;
         std::string ros_mapping_blacklist;
         double frequency;
         bool is_simulation;
+        size_t safe_heap_size;
+        size_t safe_stack_size;
+        unsigned cpu_affinity;
     };
 
   private:
@@ -74,6 +96,7 @@ class RTRunner {
     bool is_shutdown_;
 
     MainContext main_context_;
+    PrefaultingExecutable prefaulting_executable_;
     RTOrder rt_order_;
 
     std::regex whitelist_;

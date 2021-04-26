@@ -4,7 +4,7 @@ The Real-Time Control Framework (RTCF) provides an easy way to develop modular a
 
 ## About the Project
 
-In recent years, ROS evolved to one of the de-facto standards in robotics research. Although control systems are an inherent part of any robotic application, their implementation in ROS is somewhat limited due its design that is not real-time safe and tuned for asynchronous operation. In the past, several attempts have been made to mitigate those issues. A very popular among them is *ros_control*. However, this library has some shortcomings, including missing modularity as well as a steep learning curve.
+In recent years, ROS evolved to one of the de-facto standards in robotics research. Although control systems are an inherent part of any robotic application, their implementation in ROS is somewhat limited due to its design that is not real-time safe and tuned for asynchronous operation. In the past, several attempts have been made to mitigate those issues. A very popular among them is *ros_control*. However, this library has some shortcomings, including missing modularity as well as a steep learning curve.
 
 For this reason, we developed a new software package based on the *OROCOS toolchain* and *rtt_ros_integration* that we call the *Real-Time Control Framework* (RTCF). The features include:
 
@@ -58,7 +58,7 @@ The RTCF is designed to be used as simple as possible by ROS users. However, som
 - output port: publisher
 - connection: topic
 
-In the following, the basic concepts of the RTCF, that are required for component development and deployment, are introduced. Furthermore, it is highly recommended to have a look at the code in the [rtcf_examples-package](rtcf_examples/).
+In the following, the basic concepts of the RTCF, which are required for component development and deployment, are introduced. Furthermore, it is highly recommended to have a look at the code in the [rtcf_examples-package](rtcf_examples/).
 
 ### Components
 
@@ -219,6 +219,12 @@ The first `node` tag creates a so-called *rt_runner*, which is responsible for e
   - `wait_for_components`: Do not start the control loop until the expected number of components in `num_components_expected` is reached.
   - `no_wait`: Start the control loop immediately after the first component is loaded. When additional components are loaded, the control loop is paused briefly.
   - `wait_for_trigger`: The control loop does not start and stop automatically, but it is triggered using the services provided under `/rt_runner/activate_rt_loop` and `/rt_runner/deactivate_rt_loop`.
+- `wait_policy`: The policy of the wait-command used in the real-time loop. The default value is `absolute`. This option is ignored in simulation mode (parameter `/use_sim_time=True`).
+  - `absolute`: If the runtime of the components exceeds the cycle period, the following wait times are shortened to catch up with missed wake-up times. See also `ORO_WAIT_ABS` in OROCOS documentation.
+  - `relative`: If the runtime of the components exceeds the cycle period, the following wait times are not shortened.  See also `ORO_WAIT_REL` in OROCOS documentation. Due to the implementation, slightly high cycle periods (a few microseconds)
+- `safe_heap_size_kB`: The **heap** size in kilobytes that is pre-faulted (i.e. allocated, accessed, and then released). A value of zero means that no pre-faulting of the heap takes place. The default value is zero.
+- `safe_stack_size_kB`: The **stack** size in kilobytes that is pre-faulted (i.e. allocated, accessed, and then released). A value of zero means that no pre-faulting of the stack takes place. The default value is zero. Internally, the stack allocation is done using `alloca()`.
+- `cpu_affinity_mask`: A bitmask specifying on which CPUs the real-time thread is going to be run. The default value is 1. Examples: 1 means CPU0, 8 means CPU3, 3 means CPU0 and CPU1.
 
 The other `node` tags of type `rt_launcher` create an instance of the component `SimpleComponent`from the package `simple_component`. Therefore, the `rt_launcher` program is used with the following options:
 
@@ -295,11 +301,11 @@ In your `CMakeLists.txt`, add `rtt_your_custom_msgs` to your `find_package()`-co
 
 ROS parameters can be used in an RTCF component using the same API as in ROS nodes. Therefore, the component class must include `rtcf/rtcf_extension.hpp` and additionally inherit from `RtcfExtension`. Then, the methods `getPrivateNodeHandle()` and `getNodeHandle()` are available to obtain a private node handle or a node handle in the node's namespace. Refer to [rtcf_examples/src/parameter_handling/](rtcf_examples/src/parameter_handling/) for an example.
 
-Do **not** use this in `updateHook()` as it will break real-time properties. If the access to parameters is really a requirement in the real-time context, refer to the next section.
+Do **not** use this in `updateHook()` as it will break real-time properties. If access to parameters is really a requirement in the real-time context, refer to the next section.
 
 #### Dynamic Reconfigure
 
-The RTCF wraps *dynamic_reconfigure* from ROS to facilitate components that can be adjusted during runtime, e.g., for the dynamic tuning of controller parameters. To implement this in a custom component for real-time safe datatypes (see above), a dynamic_reconfigure-config-file [as known from ROS](http://wiki.ros.org/dynamic_reconfigure/Tutorials) must be created. Furthermore a struct with a conversion function must be provided. The struct has the following form, where both, the `ConfigType`-typedef and the converting constructor with the `ConfigType` parameter, are required.
+The RTCF wraps *dynamic_reconfigure* from ROS to facilitate components that can be adjusted during runtime, e.g., for the dynamic tuning of controller parameters. To implement this in a custom component for real-time safe datatypes (see above), a dynamic_reconfigure-config-file [as known from ROS](http://wiki.ros.org/dynamic_reconfigure/Tutorials) must be created. Furthermore, a struct with a conversion function must be provided. The struct has the following form, where both, the `ConfigType`-typedef and the converting constructor with the `ConfigType` parameter, are required.
 
 ```cpp
 struct ExampleParameters {
@@ -372,7 +378,7 @@ To monitor the performance of the deployed controllers, it is vital to measure t
 
 Additionally, some timing statistics are printed to the console each time the control loop is stopped.
 
-#### Miscellaneous 
+#### Miscellaneous
 
 Some controllers might be interested in information about the current execution cycle (e.g., for stamping messages or for scaling the gains of a PID controller). To serve these needs, the component-class can inherit from the `RtcfExtension`-class, which is included using `rtcf/rtcf_extension.hpp`. This gives access to the following methods:
 
@@ -392,7 +398,7 @@ Due to the implementation of the underlying `rtt_rosclock`-library, care must be
 
 ## Contributing
 
-Contributions are what makes the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 1. Fork the Project
 1. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
