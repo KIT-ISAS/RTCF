@@ -526,17 +526,17 @@ std::vector<rtcf_msgs::ComponentInfo> RTRunner::getComponentInfos() {
 std::vector<rtcf_msgs::ConnectionInfo> RTRunner::getConnectionInfos() {
     // we use a map for collecting our data in a more efficient way
     struct ConnectionData {
-        std::string type                                = "";
-        std::vector<std::string> publishing_components  = {};
-        std::vector<std::string> subscribing_components = {};
-        bool connected_to_ROS                           = false;
+        std::string type                             = "";
+        std::set<std::string> publishing_components  = {};
+        std::set<std::string> subscribing_components = {};
+        bool connected_to_ROS                        = false;
     };
     std::map<std::string, ConnectionData> data;
 
     // populate the map
     for (const auto& connection : internal_connections_) {
-        const auto& port_from = *connection.first;
-        const auto& port_to   = *connection.second;
+        const auto& port_to   = *connection.first;
+        const auto& port_from = *connection.second;
 
         ConnectionData& current_connection = data[port_from.mapped_name];
 
@@ -554,19 +554,21 @@ std::vector<rtcf_msgs::ConnectionInfo> RTRunner::getConnectionInfos() {
         // if both, input and output port are connected to ROS, a non-real-time bypass is created
         assert(!(port_to.connected_to_ROS && port_from.connected_to_ROS));
         // publishers and subscribers
-        current_connection.publishing_components.push_back(port_from.component_name);
-        current_connection.subscribing_components.push_back(port_to.component_name);
+        current_connection.publishing_components.insert(port_from.component_name);
+        current_connection.subscribing_components.insert(port_to.component_name);
     }
 
     // then convert the map to ROS message format
     std::vector<rtcf_msgs::ConnectionInfo> all_infos;
     for (const auto& entry : data) {
         rtcf_msgs::ConnectionInfo conn_info;
-        conn_info.name                   = entry.first;
-        conn_info.type                   = entry.second.type;
-        conn_info.publishing_components  = entry.second.publishing_components;
-        conn_info.subscribing_components = entry.second.subscribing_components;
-        conn_info.connected_to_ROS       = entry.second.connected_to_ROS;
+        conn_info.name             = entry.first;
+        conn_info.type             = entry.second.type;
+        conn_info.connected_to_ROS = entry.second.connected_to_ROS;
+        std::copy(entry.second.publishing_components.begin(), entry.second.publishing_components.end(),
+                  std::back_inserter(conn_info.publishing_components));
+        std::copy(entry.second.subscribing_components.begin(), entry.second.subscribing_components.end(),
+                  std::back_inserter(conn_info.subscribing_components));
         all_infos.push_back(conn_info);
     }
 
