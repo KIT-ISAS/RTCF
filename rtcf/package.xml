@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>Real-time Control Framework (RTCF)</description>
 
-  <maintainer email="github@caplett.com">caplett</maintainer>
+  <maintainer email="github@stefan-geyer.org">stefan geyer</maintainer>
   <maintainer email="michael.fennel@kit.edu">michael.fennel@kit.edu</maintainer>
 
   <license>MIT</license>
