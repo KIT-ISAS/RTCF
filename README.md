@@ -416,7 +416,7 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 ## Contact
 
 - Michael Fennel - michael.fennel@kit.edu
-- Caplett - git@caplett.com
+- Stefan Geyer - git@stefan-geyer.org
 
 Project Link: [https://github.com/KIT-ISAS/RTCF](https://github.com/KIT-ISAS/RTCF)
 
