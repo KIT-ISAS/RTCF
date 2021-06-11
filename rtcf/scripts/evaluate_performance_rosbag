@@ -1,0 +1,80 @@
+#!/usr/bin/python
+
+import rosbag
+from rospy import Time
+import matplotlib.pyplot as plt
+import numpy as np
+import sys
+import os.path
+
+
+path = sys.argv[1]
+frequency = float(sys.argv[2])
+folder, file = os.path.split(path)
+folder = folder + '/'
+
+
+durations = []
+intervalls = []
+last_time = None
+
+# open rosbag
+print("Opening rosbag")
+bag = rosbag.Bag(folder+file)
+topics = ['/rt_runner/iteration_info']
+count = bag.get_message_count(topic_filters=topics)
+
+
+print("Reading messages")
+i = 0
+for topic, msg, t in bag.read_messages(topics=topics):
+    time = msg.stamp.to_nsec()
+    i = i+1
+    if i % int(frequency*60*10) == 0:
+        print("10 minutes processed")
+    if last_time:
+        durations.append(msg.duration_ns)
+        intervalls.append(time-last_time)
+    last_time = time
+
+bag.close()
+
+durations = np.array(durations)
+intervalls = np.array(intervalls)
+
+durations = durations / 1000.0
+intervalls = intervalls / 1000.0
+
+last_index = durations.size
+
+# get min, max and 99.9 % percentile
+duration_min = np.min(durations)
+duration_max = np.max(durations)
+duration_percentile = np.percentile(durations, 99.9)
+
+intervall_min = np.min(intervalls)
+intervall_max = np.max(intervalls)
+intervall_percentile = np.percentile(intervalls, 99.9)
+
+t = np.arange(0, last_index, 1)
+t = t / (float(frequency)) / 60
+
+print("Sizes: {}, {}, {}".format(t.size, durations.size, intervalls.size))
+
+# TIME SERIES
+fig, axs = plt.subplots(2)
+axs[0].scatter(t, durations, marker='+')
+axs[0].set_ylim(0, 50)
+axs[0].set_xlabel("t in min")
+axs[0].set_ylabel("calculation duration in us")
+
+axs[1].scatter(t, intervalls, marker='+')
+center = 1.0/frequency * 1e6
+axs[1].set_ylim(center - 100, center + 100)
+axs[1].set_xlabel("t in min")
+axs[1].set_ylabel("calculation intervall in us")
+
+output_filename = folder+file+".evaluation.png"
+plt.savefig(output_filename, dpi=600)
+
+print("Plot was written to {}".format(folder+file+".evaluation.png"))
