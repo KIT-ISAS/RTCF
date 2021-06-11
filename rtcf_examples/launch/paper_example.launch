@@ -5,12 +5,12 @@
         <rosparam param="num_components_expected">2</rosparam>
         <rosparam param="frequency">1000.0</rosparam>
     </node>
-    <node name="identity1" pkg="rtcf" type="rt_launcher" args="rtcf_examples Identity">
+    <node name="example1" pkg="rtcf" type="rt_launcher" args="rtcf_examples PaperExample">
         <remap from="out_port" to="/tmp"/>
         <remap from="in_port" to="/ros/in"/>
         <rosparam param="is_first">True</rosparam>
     </node>
-    <node name="identity2" pkg="rtcf" type="rt_launcher" args="rtcf_examples Identity">
+    <node name="example1" pkg="rtcf" type="rt_launcher" args="rtcf_examples PaperExample">
         <remap from="out_port" to="/ros/out"/>
         <remap from="in_port" to="/tmp"/>
     </node>
