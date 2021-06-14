@@ -377,7 +377,17 @@ Both logging styles are fully compatible with *rosconsole*, including *rqt_logge
 
 To monitor the performance of the deployed controllers, it is vital to measure the calculation time as well as the jitter of the `updateHook()`-invocations. For this reason, the *rt_runner* publishes a timestamp of the update invocation time as well as the calculation time on the topic `/rt_runner/iteration_info` after the completion of every iteration.
 
-Additionally, some timing statistics are printed to the console each time the control loop is stopped.
+Additionally, some timing statistics are printed to the console each time the control loop is stopped. If a more detailed analysis is desired, a rosbag can be recorded using
+
+```bash
+rosbag record /rt_runner/iteration_info -o bagname --duration 3h
+```
+
+or a similar command. The resulting rosbag can then be analyzed conveniently with an in-built script that plots the latencies as well as the calculation durations. The necessary command for this is:
+
+```bash
+rosrun rtcf evaluate_performance_rosbag path_to_rosbag frequency
+```
 
 #### Miscellaneous
 
