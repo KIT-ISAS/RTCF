@@ -12,16 +12,17 @@ def printHelp():
     print("Evaluate a rosbag with performance data for the RTCF. The output file is located at the same path as the input file")
     print("")
     print("Syntax: rosrun rtcf evaluate_performance_rosbag path_to_rosbag frequency")
+    print("")
     print("path_to_rosbag   Path to the rosbag-file.")
     print("frequency        The frequency of the control-loop in the rosbag-file.")
     print("")
-    print("To record such a rosbag use the following command and adjust the recording duration:")
-    print("rosbag record /rt_runner/iteration_info -o evaluation_paper_2kHz --duration 3h")
+    print("To record such a rosbag use the following command as a starting point:")
+    print("rosbag record /rt_runner/iteration_info -o bagname --duration 3h")
     quit()
 
 
 # argument parsing
-if sys.argc != 2+1:
+if len(sys.argv) != 2+1:
     printHelp()
 try:
     frequency = float(sys.argv[2])
@@ -39,19 +40,19 @@ intervalls = []
 last_time = None
 
 # open rosbag
-print("Opening rosbag")
+print("Opening rosbag. This may take a while...")
 bag = rosbag.Bag(folder+file)
 topics = ['/rt_runner/iteration_info']
 count = bag.get_message_count(topic_filters=topics)
 
 
-print("Reading messages")
+print("Reading messages. This may take a while...")
 i = 0
 for topic, msg, t in bag.read_messages(topics=topics):
     time = msg.stamp.to_nsec()
     i = i+1
     if i % int(frequency*60*10) == 0:
-        print("10 minutes processed")
+        print("10 minutes processed...")
     if last_time:
         durations.append(msg.duration_ns)
         intervalls.append(time-last_time)
@@ -79,7 +80,8 @@ intervall_percentile = np.percentile(intervalls, 99.9)
 t = np.arange(0, last_index, 1)
 t = t / (float(frequency)) / 60
 
-print("Sizes: {}, {}, {}".format(t.size, durations.size, intervalls.size))
+print("Found {} samples.".format(t.size))
+print("Plotting the results. This may take a while...")
 
 # TIME SERIES
 fig, axs = plt.subplots(2)
@@ -97,4 +99,4 @@ axs[1].set_ylabel("calculation intervall in us")
 output_filename = folder+file+".evaluation.png"
 plt.savefig(output_filename, dpi=600)
 
-print("Plot was written to {}".format(folder+file+".evaluation.png"))
+print("Plot was written to: {}".format(folder+file+".evaluation.png"))
