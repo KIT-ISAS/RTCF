@@ -8,8 +8,28 @@ import sys
 import os.path
 
 
+def printHelp():
+    print("Evaluate a rosbag with performance data for the RTCF. The output file is located at the same path as the input file")
+    print("")
+    print("Syntax: rosrun rtcf evaluate_performance_rosbag path_to_rosbag frequency")
+    print("path_to_rosbag   Path to the rosbag-file.")
+    print("frequency        The frequency of the control-loop in the rosbag-file.")
+    print("")
+    print("To record such a rosbag use the following command and adjust the recording duration:")
+    print("rosbag record /rt_runner/iteration_info -o evaluation_paper_2kHz --duration 3h")
+    quit()
+
+
+# argument parsing
+if sys.argc != 2+1:
+    printHelp()
+try:
+    frequency = float(sys.argv[2])
+except ValueError:
+    printHelp()
 path = sys.argv[1]
-frequency = float(sys.argv[2])
+if not os.path.exists(path):
+    printHelp()
 folder, file = os.path.split(path)
 folder = folder + '/'
 
