@@ -5,7 +5,7 @@
         <rosparam param="num_components_expected">5</rosparam>
         <rosparam param="frequency">2000.0</rosparam>
         <rosparam param="lock_memory">True</rosparam>
-        <rosparam param="safe_heap_size_kB">4096000</rosparam>
+        <rosparam param="safe_heap_size_kB">4096</rosparam>
         <rosparam param="safe_stack_size_kB">512</rosparam>
         <rosparam param="cpu_affinity_mask">02</rosparam>
     </node>

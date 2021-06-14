@@ -10,7 +10,7 @@
         <remap from="in_port" to="/ros/in"/>
         <rosparam param="is_first">True</rosparam>
     </node>
-    <node name="example1" pkg="rtcf" type="rt_launcher" args="rtcf_examples PaperExample">
+    <node name="example2" pkg="rtcf" type="rt_launcher" args="rtcf_examples PaperExample">
         <remap from="out_port" to="/ros/out"/>
         <remap from="in_port" to="/tmp"/>
     </node>
