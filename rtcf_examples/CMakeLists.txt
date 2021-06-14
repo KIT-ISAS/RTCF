@@ -32,6 +32,7 @@ add_subdirectory(src/identity)
 add_subdirectory(src/mimo)
 add_subdirectory(src/parameter_handling)
 add_subdirectory(src/logging)
+add_subdirectory(src/paper_example)
 
 # finalize the OROCOS package
 orocos_generate_package()

@@ -1,0 +1,50 @@
+<launch>
+    <node name="rt_runner" pkg="rtcf" type="rt_runner" output="screen">
+        <rosparam param="mode">"wait_for_components"</rosparam>
+        <rosparam param="ros_mapping_whitelist">".*R3_G2H1|.*R1_H1R2|.*G2_R2"</rosparam>
+        <rosparam param="num_components_expected">5</rosparam>
+        <rosparam param="frequency">2000.0</rosparam>
+        <rosparam param="lock_memory">True</rosparam>
+        <rosparam param="safe_heap_size_kB">4096</rosparam>
+        <rosparam param="safe_stack_size_kB">512</rosparam>
+        <rosparam param="cpu_affinity_mask">02</rosparam>
+    </node>
+
+    <node name="H1" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo">
+        <remap from="out1" to="/H1_F1G1"/>
+        <remap from="out2" to="/H1_R1R2"/>
+        <remap from="in1" to="/R3_G2H1"/>
+        <remap from="in2" to="/R1_H1R2"/>
+        <rosparam param="is_first">True</rosparam>
+    </node>
+
+    <node name="F1" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo">
+        <remap from="out1" to="/F1_R2R3"/>
+        <remap from="out2" to="/F1_out2"/>
+        <remap from="in1" to="/H1_F1G1"/>
+    </node>
+
+    <node name="R1" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo">
+        <remap from="out1" to="/R1_H1R2"/>
+        <remap from="out2" to="/R1_out2"/>
+        <remap from="in1" to="/H1_R1R2"/>
+    </node>
+
+    <node name="R2" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo">
+        <remap from="out1" to="/R2_R3"/>
+        <remap from="out2" to="/R2_out2"/>
+        <remap from="in1" to="/F1_R2R3"/>
+        <remap from="in2" to="/H1_R1R2"/>
+        <remap from="in3" to="/R1_H1R2"/>
+        <remap from="in4" to="/G2_R2"/>
+    </node>
+
+    <node name="R3" pkg="rtcf" type="rt_launcher" args="rtcf_examples Mimo">
+        <remap from="out1" to="/R3_G2H1"/>
+        <remap from="out2" to="/R3_out2"/>
+        <remap from="in1" to="/F1_R2R3"/>
+        <remap from="in2" to="/R2_R3"/>
+    </node>
+
+</launch>
+

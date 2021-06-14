@@ -37,7 +37,25 @@ bool Mimo::startHook() {
     return true;
 }
 
-void Mimo::updateHook() {}
+void Mimo::updateHook() {
+    // read will copy old data, which is fine
+    std_msgs::Float64 in_msg_1_, in_msg_2_, in_msg_3_, in_msg_4_;
+    in_msg_1_.data = 1.0;
+    port_in1_.read(in_msg_1_, false);
+    port_in2_.read(in_msg_2_, false);
+    port_in3_.read(in_msg_3_, false);
+    port_in4_.read(in_msg_4_, false);
+
+    std_msgs::Float64 out_msg_;
+    // just do a plain simple addition with some overflow checking
+    out_msg_.data = in_msg_1_.data + in_msg_2_.data + in_msg_3_.data + in_msg_4_.data;
+    // make sure float does not overflow (pure addition will cause an overflow)
+    if (out_msg_.data > 1e20) {
+        out_msg_.data = 1;
+    }
+    port_out1_.write(out_msg_);
+    port_out2_.write(out_msg_);
+}
 
 void Mimo::stopHook() { NON_RT_INFO("Mimo executes stopping !"); }
 
