@@ -49,6 +49,25 @@ git clone https://github.com/KIT-ISAS/RTCF path_to_project_workspace/src/RTCF
 
 If everything is set up correctly, your preferred build command for ROS workspaces (`catkin_make` or `catkin build`) will now build RTCF like any other ROS package.
 
+### Publication
+If you find this work useful, please cite the following paper:
+
+*M. Fennel, S. Geyer, U. D. Hanebeck, "RTCF: A framework for seamless and modular real-time control with ROS", Software Impacts, vol. 9, August 2021.*
+
+```bibtex
+@article{RTCF,
+author = {Michael Fennel and Stefan Geyer and Uwe D. Hanebeck},
+title = {RTCF: A framework for seamless and modular real-time control with ROS},
+journal = {Software Impacts},
+volume = {9},
+pages = {100109},
+moth = {August},
+year = {2021},
+doi = {10.1016/j.simpa.2021.100109},
+url = {https://doi.org/10.1016/j.simpa.2021.100109},
+}
+```
+
 ## Usage
 
 The RTCF is designed to be used as simple as possible by ROS users. However, some new terminology appears due to the usage of OROCOS behind the scenes. Here is some translation guide from OROCOS to ROS:
