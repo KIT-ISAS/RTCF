@@ -33,8 +33,8 @@ class RtcfExtension {
     RtcfExtension() { last_timestamp_ = ros::Time(0); };
     virtual ~RtcfExtension(){};
 
-    const ros::NodeHandle& getNodeHandle() const { return *nh_; }
-    const ros::NodeHandle& getPrivateNodeHandle() const { return *nh_private_; }
+    ros::NodeHandle& getNodeHandle() const { return *nh_; }
+    ros::NodeHandle& getPrivateNodeHandle() const { return *nh_private_; }
 
     const ros::Time& getTime() const { return last_timestamp_; }
     const double& getFrequency() const { return frequency_; }
