@@ -1,8 +1,7 @@
 #include "main_context.hpp"
 
-#include "rtcf/rtcf_extension.hpp"
-
 #include "rtcf/macros.hpp"
+#include "rtcf/rtcf_extension.hpp"
 OROCOS_HEADERS_BEGIN
 #include <rtt_ros/rtt_ros.h>
 #include <rtt_roscomm/rostopic.h>
@@ -34,6 +33,7 @@ bool MainContext::startHook() {
 void MainContext::updateHook() {
     // save current time
     RtcfExtension::last_timestamp_ = timing_analysis_.start();
+    RtcfExtension::iteration_++;
 
     // this does all the heavy lifting and calls all our components in order
     for (const auto& slave : slaves_) {
@@ -52,7 +52,7 @@ void MainContext::updateHook() {
 
 void MainContext::stopHook() {
     ROS_DEBUG("MainContext::stopHook() called");
-    
+
     ROS_INFO("Real-time loop deactivated.");
     ROS_INFO_STREAM(timing_analysis_);
 }

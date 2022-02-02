@@ -26,17 +26,22 @@ class RtcfExtension {
     static double frequency_;
     // static double period_;
     static ros::Time last_timestamp_;
+    static size_t iteration_;
 
     OCL::logging::Category* logger_;
 
   public:
-    RtcfExtension() { last_timestamp_ = ros::Time(0); };
+    RtcfExtension() {
+        last_timestamp_ = ros::Time(0);
+        iteration_      = 0;
+    };
     virtual ~RtcfExtension(){};
 
     ros::NodeHandle& getNodeHandle() const { return *nh_; }
     ros::NodeHandle& getPrivateNodeHandle() const { return *nh_private_; }
 
     const ros::Time& getTime() const { return last_timestamp_; }
+    const size_t& getIteration() const { return iteration_; }
     const double& getFrequency() const { return frequency_; }
     // const double& getPeriod() const { return period_; }
 

@@ -2,4 +2,5 @@
 
 double RtcfExtension::frequency_;
 // double RtcfExtension::period_;
+size_t RtcfExtension::iteration_;
 ros::Time RtcfExtension::last_timestamp_;
