@@ -54,6 +54,13 @@ class RtcfExtension {
     OCL::logging::CategoryStream rtLogStream(ros::console::Level level) {
         return logger_->getRTStream(RtRosconsoleLogging::levelROS2RTT(level));
     }
+
+    void configureTestLogger() {
+        // this logger is not real-time safe and only meant for testing purposes
+        ROS_WARN("Component logger was set to non real-time safe test mode.");
+        log4cpp::HierarchyMaintainer::set_category_factory(OCL::logging::Category::createOCLCategory);
+        logger_ = dynamic_cast<OCL::logging::Category*>(&log4cpp::Category::getInstance("test"));
+    }
 };
 
 #endif /* RTCF_EXTENSION_H */
