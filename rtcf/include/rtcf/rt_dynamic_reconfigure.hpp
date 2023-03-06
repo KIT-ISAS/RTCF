@@ -3,6 +3,8 @@
 
 #include <dynamic_reconfigure/server.h>
 
+#include <atomic>
+
 #include "rtcf/macros.hpp"
 OROCOS_HEADERS_BEGIN
 #include <rtt/base/DataObjectLockFree.hpp>
@@ -23,7 +25,7 @@ class RTDynamicReconfigure {
     using ConfigType = typename T::ConfigType;
 
   public:
-    RTDynamicReconfigure() : rt_data_(ConfigType(), 2) {}
+    RTDynamicReconfigure() : rt_data_(ConfigType(), 2), new_data_available(false) {}
 
     // We could also handle this in the constructor but this requires a NodeHandle, which is not available at
     // construction-time of the OROCOS component. Therefore, the RTDynamicReconfigure object must be initialized in
@@ -35,7 +37,12 @@ class RTDynamicReconfigure {
         // this will also trigger the callback once, so no additional initialization needed
     }
 
-    void getValue(T& data) { rt_data_.Get(data); }
+    void getValue(T& data) {
+        rt_data_.Get(data);
+        new_data_available = false;
+    }
+
+    bool isNewDataAvailable() { return new_data_available; }
 
   private:
     void serverCallback(ConfigType& config, uint32_t level) {
@@ -46,11 +53,13 @@ class RTDynamicReconfigure {
             // In this case, we just repeat the read once more.
             // This is not problematic as we are in not in the real-time thread here.
         } while (!rt_data_.Set(T(config)));
+        new_data_available = true;
     }
 
     std::shared_ptr<dynamic_reconfigure::Server<ConfigType>> server_;
 
     RTT::base::DataObjectLockFree<T> rt_data_;  // this buffer is real-time safe, as long as its contents are
+    std::atomic<bool> new_data_available;
 };
 
 #endif  // RT_DYNAMIC_RECONFIGURE_H
